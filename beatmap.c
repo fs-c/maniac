@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static inline int col_to_modcode(int col);
-
 int parse_beatmap(char *file, hitpoint **points)
 {
 	FILE *stream;
