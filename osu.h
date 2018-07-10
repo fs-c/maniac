@@ -6,7 +6,7 @@
 
 #define MAX_LINE_LENGTH 1024
 
-#define TAPTIME_MS 12
+#define TAPTIME_MS 15
 
 #define TIME_ADDRESS 0x36e59ec
 
