@@ -6,22 +6,20 @@
 #include <sys/types.h>
 
 #ifdef _WIN32
-#define ON_WINDOWS
+  #define ON_WINDOWS
 
-#include <windows.h>
-
-extern HANDLE game_proc;
-
+  #include <windows.h>
+  
+  extern HANDLE game_proc;
 #endif /* _WIN32 */
 
 #ifdef __linux__
-#define ON_LINUX
+  #define ON_LINUX
 
-#include <X11/Xlib.h>
-#include <X11/extensions/XTest.h>
+  #include <X11/Xlib.h>
+  #include <X11/extensions/XTest.h>
 
-extern Display *display;
-
+  extern Display *display;
 #endif /* __linux__ */
 
 #define NUM_COLS 4
@@ -89,16 +87,21 @@ int sort_actions(int count, action **actions);
 int32_t get_maptime();
 
 /**
- * Send a keypress to the currently active window.
+ * Sends a keypress to the currently active window.
  */
 void send_keypress(char key, int down);
 
 /**
- * Perform operating system specific setup.
- * 
+ * Performs operating system specific setup.
  * Windows: Open handle to game process.
  * Linux: Open X11 display. 
  */
 void do_setup();
+
+/**
+ * Windows only.
+ * Returns the process id of the given process or zero if it was not found.
+ */
+unsigned long get_process_id(char *name);
 
 #endif /* OSU_H */

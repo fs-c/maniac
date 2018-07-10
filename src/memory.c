@@ -1,19 +1,17 @@
 #include "osu.h"
 
 #ifdef ON_LINUX
+  // Enable GNU extensions (process_vm_readv).
+  #define _GNU_SOURCE
 
-// Enable GNU extensions (process_vm_readv).
-#define _GNU_SOURCE
+  #include <sys/uio.h>
 
-#include <sys/uio.h>
-
-// TODO: Where the hell is this defined usually?
-ssize_t process_vm_readv(int, struct iovec *, int, struct iovec *, int, int);
-
+  // TODO: Where the hell is this defined usually?
+  ssize_t process_vm_readv(int, struct iovec *, int, struct iovec *, int, int);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-#include <tlhelp32.h>
+  #include <tlhelp32.h>
 #endif /* ON_WINDOWS */
 
 void *time_address;
