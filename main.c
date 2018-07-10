@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 			send_keypress(cur_a->code, cur_a->down);		
 		}
 
-		nanosleep((struct timespec[]){{0, 1000000L}}, NULL);
+		nanosleep((struct timespec[]){{0, 100000L}}, NULL);
 	}
 
 	return 0;
