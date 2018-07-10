@@ -24,7 +24,7 @@ pid_t game_proc_id;
  * referred to as `maptime` in *val.
  * Returns the number of bytes read.
  */
-int32_t get_maptime(pid_t pid)
+int32_t get_maptime()
 {
 	int32_t time;
 	size_t size = sizeof(int32_t);

@@ -93,6 +93,12 @@ int32_t get_maptime();
  */
 void send_keypress(char key, int down);
 
+/**
+ * Perform operating system specific setup.
+ * 
+ * Windows: Open handle to game process.
+ * Linux: Open X11 display. 
+ */
 void do_setup();
 
 #endif /* OSU_H */

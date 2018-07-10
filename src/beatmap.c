@@ -37,7 +37,7 @@ int parse_beatmap(char *file, hitpoint **points)
 int parse_beatmap_line(char *line, hitpoint *point)
 {
 	int end_time, secval = 0;
-	char *token, *extln, *ln = strdup(line), i = 0;
+	char *token, *ln = strdup(line), i = 0;
 
 	// Line is expexted to follow the following format:
 	// x, y, time, type, hitSound, extras (= a:b:c:d:)
