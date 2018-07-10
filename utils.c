@@ -38,7 +38,7 @@ void send_keypress(char key, int down)
 void do_setup()
 {
 #ifdef ON_LINUX
-	if (!(display = OpenDisplay(NULL))) {
+	if (!(display = XOpenDisplay(NULL))) {
 		printf("failed to open X display");
 	}
 #endif /* ON_LINUX */
