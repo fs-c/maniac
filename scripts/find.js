@@ -1,9 +1,12 @@
-const { join } = require('path');
-const { homedir } = require('os');
+const { join, relative } = require('path');
 const { readdirSync, readFileSync, writeFileSync } = require('fs');
 
 const searchTags = process.argv[2].split(',');
-const songsPath = '~/osufolder/Songs/'.replace('~', homedir());
+const songsPath = relative(
+	process.cwd(),
+	join(require('os').homedir(), '/AppData/Local/osu!/Songs'),
+);
+
 const beatmap = readdirSync(songsPath)
     .map((song) => readdirSync(join(songsPath, song))
         .map((el) => join(songsPath, song, el)))
