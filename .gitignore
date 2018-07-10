@@ -51,5 +51,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Osu beatmap files
 *.out
+
+# Binaries
 *.osu
+
+# VSCode config
+.vscode
