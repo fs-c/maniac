@@ -12,3 +12,5 @@ const beatmap = readdirSync(songsPath)
         .reduce((ac, cu) => !cu ? ac = cu : ac, true))[0];
 
 writeFileSync('map.osu', readFileSync(beatmap, 'utf8'), 'utf8');
+
+console.log(`copied ${beatmap} to ./map.osu`);
