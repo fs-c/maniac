@@ -2,13 +2,13 @@ const { join, relative } = require('path');
 const { readdirSync, readFileSync, writeFileSync, existsSync } = require('fs');
 
 const config = existsSync('config.json') ? (
-	JSON.parse(readFileSync('config.json', 'utf8'))
+    JSON.parse(readFileSync('config.json', 'utf8'))
 ) : {};
 
 const searchTags = process.argv[2].split(',');
 const songsPath = config.songsPath || relative(
-	process.cwd(),
-	join(require('os').homedir(), '/AppData/Local/osu!/Songs'),
+    process.cwd(),
+    join(require('os').homedir(), '/AppData/Local/osu!/Songs'),
 );
 
 const beatmap = readdirSync(songsPath)
