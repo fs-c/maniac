@@ -1,5 +1,28 @@
 #ifndef OSU_H
-#define OSU_H 
+#define OSU_H
+
+#include <stdlib.h>
+#include <inttypes.h>
+#include <sys/types.h>
+
+#ifdef _WIN32
+#define ON_WINDOWS
+
+#include <windows.h>
+
+extern HANDLE game_proc;
+
+#endif /* _WIN32 */
+
+#ifdef __linux__
+#define ON_LINUX
+
+#include <X11/Xlib.h>
+#include <X11/extensions/XTest.h>
+
+extern Display *display;
+
+#endif /* __linux__ */
 
 #define NUM_COLS 4
 #define COL_WIDTH 512
@@ -8,10 +31,10 @@
 
 #define TAPTIME_MS 15
 
-#define TIME_ADDRESS 0x36e59ec
+#define LINUX_TIME_ADDRESS 0x36e59ec
 
-#include <stdlib.h>
-#include <sys/types.h>
+extern void *time_address;
+extern pid_t game_proc_id;
 
 struct hitpoint {
 	int column;
@@ -24,7 +47,6 @@ typedef struct hitpoint hitpoint;
 struct action {
 	int time;
 	int down;
-	int code;
 	char key;
 };
 
@@ -64,6 +86,13 @@ int sort_actions(int count, action **actions);
  * Gets and returns the runtime of the currently playing song, internally
  * referred to as `maptime`.
  */
-int32_t get_maptime(pid_t pid);
+int32_t get_maptime();
+
+/**
+ * Send a keypress to the currently active window.
+ */
+void send_keypress(char key, int down);
+
+void do_setup();
 
 #endif /* OSU_H */
