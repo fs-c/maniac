@@ -31,6 +31,12 @@ int main(int argc, char **argv)
 		}
 	}
 
+#ifdef ON_WINDOWS
+	if (!game_proc_id) {
+		game_proc_id = get_process_id("osu!.exe");
+	}
+#endif
+
 	if (!game_proc_id || !map) {
 		printf("usage: <executable> -p <pid of osu! process> ");
 		printf("-m <path to beatmap.osu>\n");
@@ -77,7 +83,7 @@ int main(int argc, char **argv)
 			send_keypress(cur_a->key, cur_a->down);		
 		}
 
-		nanosleep((struct timespec[]){{0, 1000000L}}, NULL);
+		// nanosleep((struct timespec[]){{0, 1000000L}}, NULL);
 	}
 
 	return 0;
