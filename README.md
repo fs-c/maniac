@@ -1,16 +1,26 @@
-Cheating in osu!mania.
+<h2 align="center">maniac</h2>
 
-Compile with `-lX11` and `-lXtst` flags. This depends on the X Window System and requires a Linux kernel version >= 3.2.
+<p align="center">Cheating in osu!mania.</p>
 
-```bash
-$ osu -m <path to .osu beatmap file> -p <PID of osu! process>
+This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), more specifically for the [osu!mania](https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania) gamemode (where this project also got its name from). It attempts to be a __simple__, __lightweight__ and __portable__ application, and it can be compiled on many Linux distributions (where it depends on the X Window System) and Windows versions.
+
+```
+  Usage: maniac [options]
+
+  Options:
+
+    -m	path to .osu beatmap file
+    -p  PID of osu! process (optional on Windows)
+    -a  address of the playback time in memory (optional on Linux)
 ```
 
-For convenience, this repository also contains `scripts/find.js`, which can find and copy beatmap files to the current directory. It searches for beatmaps given a number of keywords and selects the best match.
+### Compilation
 
 ```bash
-$ node scripts/find.js Chroma,Heaven
-copied /.../Songs/738673 Chroma - I/Chroma - I (Lude) [Heavenly].osu to ./map.osu
+$ sudo apt-get install build-essential
+$ git clone https://github.com/LW2904/maniac.git
+$ cd maniac
+$ ./build.sh
 ```
 
-This is done seperately mostly because I don't feel like it belongs in the main application or that C is the right tool for the job.
+If you are on Windows, use [MinGW](http://www.mingw.org/) to compile.
