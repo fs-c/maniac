@@ -1,1 +1,1 @@
-gcc main.c beatmap.c memory.c -lX11 -lXtst -Ofast
+gcc main.c beatmap.c memory.c utils.c -lX11 -lXtst -Ofast
