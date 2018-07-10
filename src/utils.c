@@ -3,11 +3,13 @@
 #include <stdio.h>
 
 #ifdef ON_LINUX
-Display *display;
+  Display *display;
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-HANDLE game_proc;
+  #include <windows.h>
+  #include <tlhelp32.h>
+  HANDLE game_proc;
 #endif /* ON_WINDOWS */
 
 void send_keypress(char key, int down)
@@ -48,4 +50,33 @@ void do_setup()
 		printf("failed to get handle to game process\n");
 	}
 #endif /* ON_WINDOWS */
+}
+
+unsigned long get_process_id(char *name)
+{
+#ifdef ON_WINDOWS
+	DWORD proc_id;
+	HANDLE proc_list = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+	PROCESSENTRY32 entry = {0};
+	entry.dwSize = sizeof(PROCESSENTRY32);
+
+	if (!Process32First(proc_list, &entry)) {
+		CloseHandle(proc_list);
+
+		return 0;
+	}
+
+	while (Process32Next(proc_list, &entry)) {
+		if (strcmp((char *)entry.szExeFile, name) == 0) {
+			proc_id = entry.th32ProcessID;
+		}
+	}
+
+	CloseHandle(proc_list);
+
+	return proc_id;
+#elif /* ON_WINDOWS */
+	return 0;
+#endif
 }
