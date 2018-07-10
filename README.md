@@ -24,3 +24,16 @@ $ ./build.sh
 ```
 
 If you are on Windows, use [MinGW](http://www.mingw.org/) to compile.
+
+### Scripts
+
+Since it can be inconvenient to search for, and to always provide, the full path to osu! beatmap files `scripts/find.js` will search for beatmaps by a number of tags which will be matched against the individual maps names. The best match will be copied to the `./map.osu`.
+
+Usage is as follows, and requires [NodeJS](https://nodejs.org/en/).
+
+```bash
+$ node scripts/find.js Chroma,Heaven
+copied ..\..\AppData\Local\osu!\Songs\738673 Chroma - I\Chroma - I (Lude) [Heavenly].osu to ./map.osu
+```
+
+By default the script will search for folders in `~/AppData/Local/osu!/Songs/`, but you may provide an alternative path by setting the `songsPath` property in `scripts/settings.json`.
