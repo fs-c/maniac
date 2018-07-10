@@ -109,19 +109,9 @@ void hitpoint_to_action(hitpoint *point, action *start, action *end)
 	start->down = 1;	// Keydown.
 
 	const char key = COL_KEYS[point->column];
-	const int code = col_to_modcode(point->column);
 
 	end->key = key;
 	start->key = key;
-
-	end->code = code;
-	start->code = code;
-}
-
-// TODO: Ugly and too specific; make a charcode to modcode function.
-static inline int col_to_modcode(int col)
-{
-	return col == 0 ? 40 : col == 1 ? 41 : col == 2 ? 44 : col == 3 ? 45 : 0;
 }
 
 int sort_actions(int total, action **actions)
