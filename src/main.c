@@ -31,11 +31,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-#ifdef ON_WINDOWS
 	if (!game_proc_id) {
 		game_proc_id = get_process_id("osu!.exe");
 	}
-#endif
 
 	if (!game_proc_id || !map) {
 		printf("usage: <executable> -p <pid of osu! process> ");
