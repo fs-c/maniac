@@ -76,7 +76,7 @@ unsigned long get_process_id(char *name)
 	CloseHandle(proc_list);
 
 	return proc_id;
-#elif /* ON_WINDOWS */
+#endif /* ON_WINDOWS */
+
 	return 0;
-#endif
 }
