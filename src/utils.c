@@ -27,11 +27,11 @@ void send_keypress(char key, int down)
 
 	in.type = INPUT_KEYBOARD;
 
-	in.ki.wVk = 0;
 	in.ki.time = 0;
-	in.ki.wScan = key;
+	in.ki.wScan = 0;
 	in.ki.dwExtraInfo = 0;
-	in.ki.dwFlags = KEYEVENTF_UNICODE | (down ? 0 : KEYEVENTF_KEYUP);
+	in.ki.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
+	in.ki.wVk = VkKeyScanEx(key, GetKeyboardLayout(0)) & 0xFF;
 
 	SendInput(1, &in, sizeof(INPUT));
 #endif /* ON_WINDOWS */
