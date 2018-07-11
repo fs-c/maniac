@@ -59,3 +59,9 @@ dkms.conf
 
 # VSCode config
 .vscode
+
+# Maniac binary
+maniac
+
+# Script config
+scripts/config.json
