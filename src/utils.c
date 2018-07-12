@@ -77,6 +77,7 @@ unsigned long get_process_id(char *name)
 
 	return proc_id;
 #endif /* ON_WINDOWS */
-
-	return 0;
+	// Compiler will remove this anyways, and it gets rid of the annoying
+	// unused variable warning.
+	return name ? 0 : 0;
 }
