@@ -16,7 +16,7 @@ pid_t game_proc_id;
 
 int main(int argc, char **argv)
 {
-	char *map, c;
+	char *map = "map.osu", c;
 
 	time_address = (void *)LINUX_TIME_ADDRESS;
 
