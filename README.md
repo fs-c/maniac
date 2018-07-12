@@ -12,7 +12,14 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
     -m	path to .osu beatmap file
     -p  PID of osu! process (optional on Windows)
     -a  address of the playback time in memory (optional on Linux)
+    -d  humanization level
 ```
+
+#### Humanization
+
+The option `-d` (short for delay) allows the passing of a 'humanization level', which will be used to add a randomized delay to the hits. The delay in miliseconds will roughly be in the range of `]0, level * 10[`.
+
+Expect to get a perfect score with a level of zero, but a C with ~70% with a level of 10.
 
 ### Compilation
 
