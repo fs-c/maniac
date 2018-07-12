@@ -135,6 +135,7 @@ int sort_actions(int total, action **actions)
 	return i - total + 1;
 }
 
+// TODO: This function is retarded, fix it and add actual humanization.
 void humanize_hitpoints(int total, hitpoint **points, int level)
 {
 	hitpoint *p = *points;
