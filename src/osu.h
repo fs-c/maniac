@@ -104,4 +104,9 @@ void do_setup();
  */
 unsigned long get_process_id(char *name);
 
+/**
+ * Add a randomized delay of magnitude level to the hitpoints.
+ */
+void humanize_hitpoints(int total, hitpoint **points, int level);
+
 #endif /* OSU_H */

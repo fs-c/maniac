@@ -134,3 +134,21 @@ int sort_actions(int total, action **actions)
 
 	return i - total + 1;
 }
+
+void humanize_hitpoints(int total, hitpoint **points, int level)
+{
+	hitpoint *p = *points;
+
+	if (!level) {
+		return;
+	}
+
+	for (int i = 0; i < total; i++) {
+		int rn = rand() % ((level * 10) / 5);
+
+		p = *points + i;
+
+		p->end_time += rn * 5;
+		p->start_time += rn * 5;
+	}
+}

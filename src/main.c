@@ -16,17 +16,20 @@ pid_t game_proc_id;
 
 int main(int argc, char **argv)
 {
+	int delay = 0;
 	char *map = "map.osu", c;
 
 	time_address = (void *)LINUX_TIME_ADDRESS;
 
-	while ((c = getopt(argc, argv, "m:p:a:")) != -1) {
+	while ((c = getopt(argc, argv, "m:p:a:d:")) != -1) {
 		switch (c) {
 		case 'm': map = optarg;
 			break;
 		case 'p': game_proc_id = strtol(optarg, NULL, 10);
 			break;
 		case 'a': time_address = (void *)(uintptr_t)strtol(optarg, NULL, 0);
+			break;
+		case 'd': delay = strtol(optarg, NULL, 10);
 			break;
 		}
 	}
@@ -48,6 +51,8 @@ int main(int argc, char **argv)
 	}
 
 	printf("parsed %d hitpoints\n", num_points);
+
+	humanize_hitpoints(num_points, &points, delay);
 
 	action *actions;
 	int num_actions = 0;
