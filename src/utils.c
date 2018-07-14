@@ -55,23 +55,19 @@ void do_setup()
 unsigned long get_process_id(char *name)
 {
 #ifdef ON_WINDOWS
-	DWORD proc_id;
+	DWORD proc_id = 0;
 	HANDLE proc_list = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
 	PROCESSENTRY32 entry = {0};
 	entry.dwSize = sizeof(PROCESSENTRY32);
 
-	if (!Process32First(proc_list, &entry)) {
-		CloseHandle(proc_list);
-
-		return 0;
-	}
-
-	while (Process32Next(proc_list, &entry)) {
+	do {
 		if (strcmp((char *)entry.szExeFile, name) == 0) {
-			proc_id = entry.th32ProcessID;
+			CloseHandle(proc_list);
+
+			return entry.th32ProcessID;
 		}
-	}
+	} while (Process32Next(proc_list, &entry));
 
 	CloseHandle(proc_list);
 
