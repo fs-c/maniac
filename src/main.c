@@ -16,14 +16,15 @@ pid_t game_proc_id;
 
 int main(int argc, char **argv)
 {
-	int delay = 0;
-	char *map = "map.osu", c;
+	int delay = 0, c;
+	wchar_t *map = L"map.osu";
 
-	time_address = (void *)LINUX_TIME_ADDRESS;
+	time_address = 0;
+	game_proc_id = get_process_id(map);
 
 	while ((c = getopt(argc, argv, "m:p:a:d:")) != -1) {
 		switch (c) {
-		case 'm': map = optarg;
+		case 'm': map = (wchar_t *)optarg;
 			break;
 		case 'p': game_proc_id = strtol(optarg, NULL, 10);
 			break;
@@ -34,19 +35,20 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!game_proc_id) {
-		game_proc_id = get_process_id("osu!.exe");
-	}
+	printf("%ld, %S\n", (long int)game_proc_id, map);
 
 	if (!game_proc_id || !map) {
-		printf("usage: <executable> -p <pid of osu! process> ");
-		printf("-m <path to beatmap.osu>\n");
+		printf("usage: %s -p <pid of osu! process> ", argv[0]);
+		printf("-m <path to beatmap.osu> -a <time address> ");
+		printf("-d <humanization level>\n");
+
+		return EXIT_FAILURE;
 	}
 
 	hitpoint *points;
 	int num_points = 0;
-	if ((num_points = parse_beatmap(map, &points)) == 0 || !points) {
-		printf("failed to parse beatmap (%s)\n", map);
+	if ((num_points = parse_beatmap((char *)map, &points)) == 0 || !points) {
+		printf(L"failed to parse beatmap (%S)\n", map);
 		return EXIT_FAILURE;
 	}
 
@@ -72,6 +74,11 @@ int main(int argc, char **argv)
 	}
 
 	do_setup();
+
+	if (!time_address) {
+		printf("couldn't find time address");
+		return EXIT_FAILURE;
+	}
 
 	int32_t time;
 	int cur_i = 0;
