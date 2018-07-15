@@ -18,9 +18,8 @@ void *time_address;
 pid_t game_proc_id;
 
 /**
- * Gets and stores the runtime of the currently playing song, internally
- * referred to as `maptime` in *val.
- * Returns the number of bytes read.
+ * Returns the playtime of the currently playing song, internally
+ * referred to as `maptime`.
  */
 int32_t get_maptime()
 {
