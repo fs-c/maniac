@@ -2,11 +2,13 @@
 #define OSU_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <inttypes.h>
 #include <sys/types.h>
 
 #ifdef _WIN32
   #define ON_WINDOWS
+  #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
 
   #include <windows.h>
   
@@ -15,6 +17,8 @@
 
 #ifdef __linux__
   #define ON_LINUX
+
+  #define TIME_ADDRESS 0x36e59ec
 
   #include <X11/Xlib.h>
   #include <X11/extensions/XTest.h>
@@ -28,8 +32,6 @@
 #define MAX_LINE_LENGTH 1024
 
 #define TAPTIME_MS 15
-
-#define LINUX_TIME_ADDRESS 0x36e59ec
 
 extern void *time_address;
 extern pid_t game_proc_id;
@@ -102,11 +104,13 @@ void do_setup();
  * Windows only.
  * Returns the process id of the given process or zero if it was not found.
  */
-unsigned long get_process_id(char *name);
+unsigned long get_process_id(const wchar_t *name);
 
 /**
  * Add a randomized delay of magnitude level to the hitpoints.
  */
 void humanize_hitpoints(int total, hitpoint **points, int level);
+
+void *get_time_address();
 
 #endif /* OSU_H */
