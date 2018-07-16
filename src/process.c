@@ -50,8 +50,21 @@ int32_t get_maptime()
 
 unsigned long get_process_id(const char *name)
 {
+	unsigned long proc_id = 0;
+
+#ifdef ON_LINUX
+	char *cmd = (char *)calloc(1, 200);
+	sprintf(cmd, "pidof %s", name);
+
+	FILE *f = popen(cmd, "r");
+	fread(cmd ,1 , 200, f);
+
+	fclose(f);
+
+	proc_id = atoi(cmd);
+#endif /* ON_LINUX */
+
 #ifdef ON_WINDOWS
-	DWORD proc_id = NULL;
 	HANDLE proc_list = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
 	PROCESSENTRY32 entry = { 0 };
@@ -63,7 +76,7 @@ unsigned long get_process_id(const char *name)
 
 	while (Process32Next(proc_list, &entry)) {
 		if (_stricmp((char *)entry.szExeFile, name) == 0) {
-			proc_id = entry.th32ProcessID;
+			proc_id = (unsigned long)entry.th32ProcessID;
 
 			goto end;
 		}
@@ -71,11 +84,9 @@ unsigned long get_process_id(const char *name)
 
 end:
 	CloseHandle(proc_list);
-
-	return proc_id;
 #endif /* ON_WINDOWS */
 	// Remove warning.
-	return name ? 0 : 0;
+	return proc_id;
 }
 
 void *find_pattern(const unsigned char *signature)
@@ -129,6 +140,6 @@ void *get_time_address()
 #endif
 
 #ifdef ON_LINUX
-	return TIME_ADDRESS;
+	return (void *)TIME_ADDRESS;
 #endif
 }
