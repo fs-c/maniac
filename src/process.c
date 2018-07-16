@@ -48,7 +48,7 @@ int32_t get_maptime()
 	return time;
 }
 
-unsigned long get_process_id(const wchar_t *name)
+unsigned long get_process_id(const char *name)
 {
 #ifdef ON_WINDOWS
 	DWORD proc_id = NULL;
@@ -62,11 +62,7 @@ unsigned long get_process_id(const wchar_t *name)
 	}
 
 	while (Process32Next(proc_list, &entry)) {
-		printf("%S vs %S\n", (wchar_t *)entry.szExeFile, name);
-
-		if (_wcsicmp((wchar_t *)entry.szExeFile, name) == 0) {
-			printf("match\n");
-
+		if (_stricmp((char *)entry.szExeFile, name) == 0) {
 			proc_id = entry.th32ProcessID;
 
 			goto end;

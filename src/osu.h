@@ -104,7 +104,7 @@ void do_setup();
  * Windows only.
  * Returns the process id of the given process or zero if it was not found.
  */
-unsigned long get_process_id(const wchar_t *name);
+unsigned long get_process_id(const char *name);
 
 /**
  * Add a randomized delay of magnitude level to the hitpoints.
