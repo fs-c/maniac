@@ -17,7 +17,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 #### Humanization
 
-The option `-d` (short for delay) allows the passing of a 'humanization level', which will be used to add a randomized delay to the hits. The delay in miliseconds will roughly be in the range of `]0, level * 10[`.
+The option `-d` (short for delay) allows the passing of a 'humanization level', which will be used to add a randomized delay to the hits. The delay in miliseconds will roughly be in the range of `]-d, d[`.
 
 Expect to get a perfect score with a level of zero, but a C with ~70% with a level of 10.
 
