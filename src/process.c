@@ -57,11 +57,11 @@ unsigned long get_process_id(const char *name)
 	sprintf(cmd, "pidof %s", name);
 
 	FILE *f = popen(cmd, "r");
-	fread(cmd ,1 , 200, f);
+	size_t read = fread(cmd , 1, 200, f);
 
 	fclose(f);
 
-	proc_id = atoi(cmd);
+	proc_id = read ? atoi(cmd) : 0;
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
