@@ -145,8 +145,12 @@ void humanize_hitpoints(int total, hitpoint **points, int level)
 	}
 
 	for (int i = 0; i < total; i++) {
-		int fa = level * 5;
-		int rn = (rand() % (fa * 2)) - fa;
+		int d = level;
+
+		int ra = (rand() % d);
+		int rb = (rand() % (d / 4)) * ((ra < (d / 2)) ? -1 : 1);
+
+		int rn = ((ra - rb) - (d / 2)) % d;
 
 		p = *points + i;
 
