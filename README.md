@@ -19,7 +19,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 The option `-d` (short for delay) allows the passing of a 'humanization level', which will be used to add a randomized delay to the hits. The delay in miliseconds will roughly be in the range of `]-d, d[`.
 
-Expect to get a perfect score with a level of zero, but a C with ~70% with a level of 10.
+Expect to get a perfect score with a level of zero, but a C with ~70% with a level/delay of 150.
 
 ### Compilation
 
@@ -44,3 +44,9 @@ copied ..\..\AppData\Local\osu!\Songs\738673 Chroma - I\Chroma - I (Lude) [Heave
 ```
 
 By default the script will search for folders in `~/AppData/Local/osu!/Songs/`, but you may provide an alternative path by setting the `songsPath` property in `scripts/settings.json`.
+
+### TODO
+
+- Improve humanization especially in regards to (in)accuracy spread (in osu! terms: unstable rate).
+- Implement pattern scanning for Windows builds.
+- Implement reading the current map/song name from memory.
