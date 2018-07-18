@@ -3,9 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#define RNG_ROUNDS 2
+#define RNG_ROUNDS 80
 #define RNG_BOUNDARY 0.5
 
+/**
+ * Returns a randomly generated number in the range of [0, range], while
+ * attemting to constrain it to a bound(ary) given in percent (]0, 1[) in a
+ * given number of rounds.
+ */
 int generate_number(int range, int rounds, float bound);
 
 int parse_beatmap(char *file, hitpoint **points)
@@ -150,10 +155,10 @@ void humanize_hitpoints(int total, hitpoint **points, int level)
 	}
 
 	for (int i = 0; i < total; i++) {
+		p = *points + i;
+
 		int offset = generate_number(level, RNG_ROUNDS, RNG_BOUNDARY)
 			- (level / 2);
-
-		printf("%d\n", offset);
 
 		p->end_time += offset;
 		p->start_time += offset;
