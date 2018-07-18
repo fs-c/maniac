@@ -3,6 +3,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#define RNG_ROUNDS 80
+#define RNG_BOUNDARY 0.5
+
+/**
+ * Returns a randomly generated number in the range of [0, range], while
+ * attemting to constrain it to a bound(ary) given in percent (]0, 1[) in a
+ * given number of rounds.
+ */
+int generate_number(int range, int rounds, float bound);
+
 int parse_beatmap(char *file, hitpoint **points)
 {
 	FILE *stream;
@@ -144,23 +154,31 @@ void humanize_hitpoints(int total, hitpoint **points, int level)
 		return;
 	}
 
-	int d = level;	
-	float minr = 0.25;
-	float maxr = 0.75;
-
 	for (int i = 0; i < total; i++) {
-		int ra = (rand() % d);
-		int rb = (
-			(ra > (d * minr) && ra < (d * maxr))
-				? (rand() % (int)(d * minr)) : 0
-		) * (ra < (d * 0.5) ? -1 : 1);
-
-
-		int rn = (ra + rb) - (d / 2);
-
 		p = *points + i;
 
-		p->end_time += rn;
-		p->start_time += rn;
+		int offset = generate_number(level, RNG_ROUNDS, RNG_BOUNDARY)
+			- (level / 2);
+
+		p->end_time += offset;
+		p->start_time += offset;
 	}
+}
+
+int generate_number(int range, int rounds, float bound)
+{
+	int rn;
+	float minr = 0.5 - (bound / 2);
+	float maxr = 0.5 + (bound / 2);
+
+	rn = rand() % range;
+
+	for (int i = 0; i < rounds; i++) {
+		bool in = rn > (range * minr) && rn < (range * maxr);
+
+		rn += (in ? (rand() % (int)(range * minr)) : 0)
+			* (rn < (range * 0.5) ? -1 : 1);
+	}
+
+	return rn;
 }

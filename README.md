@@ -17,9 +17,11 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 #### Humanization
 
-The option `-d` (short for delay) allows the passing of a 'humanization level', which will be used to add a randomized delay to the hits. The delay in miliseconds will roughly be in the range of `]-d, d[`.
+The option `-d` (short for delay) allows the passing of a range in which hitpoint time offsets will be generated.
 
-Expect to get a perfect score with a level of zero, but a C with ~70% with a level/delay of 150.
+For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function.
+
+It is strongly recommended to always play with this option set to a reasonable (for your account) level. Players with perfect hits will be automatically banned after a certain period, and potentially manual revision.
 
 ### Compilation
 
@@ -48,5 +50,6 @@ By default the script will search for folders in `~/AppData/Local/osu!/Songs/`, 
 ### TODO
 
 - Improve humanization especially in regards to (in)accuracy spread (in osu! terms: unstable rate).
+  - Partly done, the unstable rate is still rather high, but comparable to many other legit players.
 - Implement pattern scanning for Windows builds.
 - Implement reading the current map/song name from memory.
