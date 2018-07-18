@@ -144,13 +144,19 @@ void humanize_hitpoints(int total, hitpoint **points, int level)
 		return;
 	}
 
+	int d = level;	
+	float minr = 0.25;
+	float maxr = 0.75;
+
 	for (int i = 0; i < total; i++) {
-		int d = level;
-
 		int ra = (rand() % d);
-		int rb = (rand() % (d / 4)) * ((ra < (d / 2)) ? -1 : 1);
+		int rb = (
+			(ra > (d * minr) && ra < (d * maxr))
+				? (rand() % (int)(d * minr)) : 0
+		) * (ra < (d * 0.5) ? -1 : 1);
 
-		int rn = ((ra - rb) - (d / 2)) % d;
+
+		int rn = (ra + rb) - (d / 2);
 
 		p = *points + i;
 
