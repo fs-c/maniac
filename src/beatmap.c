@@ -8,8 +8,8 @@
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
- * attemting to constrain it to a bound(ary) given in percent (]0, 1[) in a
- * given number of rounds.
+ * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
+ * in a given number of rounds.
  */
 int generate_number(int range, int rounds, float bound);
 
@@ -122,6 +122,7 @@ void hitpoint_to_action(hitpoint *point, action *start, action *end)
 	start->key = key;
 }
 
+// TODO: Implement a more efficient sorting algorithm than selection sort.
 int sort_actions(int total, action **actions)
 {
 	int min, i, j;
@@ -148,17 +149,20 @@ int sort_actions(int total, action **actions)
 // TODO: This function is retarded, fix it and add actual humanization.
 void humanize_hitpoints(int total, hitpoint **points, int level)
 {
-	hitpoint *p = *points;
-
 	if (!level) {
 		return;
 	}
 
-	for (int i = 0; i < total; i++) {
+	int i, offset;
+	hitpoint *p = NULL;
+	for (i = 0; i < total; i++) {
 		p = *points + i;
 
-		int offset = generate_number(level, RNG_ROUNDS, RNG_BOUNDARY)
-			- (level / 2);
+		// [0, level]
+		offset = generate_number(level, RNG_ROUNDS, RNG_BOUNDARY);
+		
+		// [-(level / 2), (level / 2)]
+		offset -= (level / 2);
 
 		p->end_time += offset;
 		p->start_time += offset;
