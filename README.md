@@ -21,8 +21,6 @@ The option `-d` (short for delay) allows the passing of a range in which hitpoin
 
 For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function.
 
-It is strongly recommended to always play with this option set to a reasonable (for your account) level. Players with perfect hits will be automatically banned after a certain period, and potentially manual revision.
-
 ### Compilation
 
 ```bash
