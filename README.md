@@ -11,8 +11,8 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
     -m	path to .osu beatmap file
     -p  PID of osu! process (optional on Windows)
-    -a  address of the playback time in memory (optional on Linux)
     -d  humanization level
+    -a  address of the playback time in memory (optional, supply this if the pattern scanning fails)
 ```
 
 #### Humanization
@@ -49,5 +49,5 @@ By default the script will search for folders in `~/AppData/Local/osu!/Songs/`, 
 
 - Improve humanization especially in regards to (in)accuracy spread (in osu! terms: unstable rate).
   - Partly done, the unstable rate is still rather high, but comparable to many other legit players.
-- Implement pattern scanning for Windows builds.
+- ~~Implement pattern scanning for Windows builds.~~
 - Implement reading the current map/song name from memory.
