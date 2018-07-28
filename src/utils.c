@@ -1,4 +1,5 @@
 #include "osu.h"
+#include "pattern.h"
 
 #include <stdio.h>
 
@@ -56,6 +57,25 @@ void do_setup()
 		return;
 	}
 #endif /* ON_WINDOWS */
+}
 
-	time_address = get_time_address();
+void *get_time_address()
+{
+#ifdef ON_WINDOWS
+	void *time_address = NULL;
+	void *time_ptr = find_pattern((unsigned char *)SIGNATURE,
+		sizeof(SIGNATURE) - 1);
+
+	if (!ReadProcessMemory(game_proc, (void *)time_ptr, &time_address,
+		sizeof(DWORD), NULL))
+	{
+		return NULL;
+	}
+
+	return time_address;
+#endif
+
+#ifdef ON_LINUX
+	return (void *)TIME_ADDRESS;
+#endif
 }

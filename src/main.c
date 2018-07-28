@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
 	do_setup();
 
-	if (!time_address) {
+	if (!(time_address = get_time_address())) {
 		printf("couldn't find time address");
 		return EXIT_FAILURE;
 	}

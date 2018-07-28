@@ -18,8 +18,6 @@
   HANDLE game_proc;
 #endif /* ON_WINDOWS */
 
-void *find_pattern(const unsigned char *signature);
-
 void *time_address;
 pid_t game_proc_id;
 
@@ -87,59 +85,4 @@ end:
 #endif /* ON_WINDOWS */
 	// Remove warning.
 	return proc_id;
-}
-
-void *find_pattern(const unsigned char *signature)
-{
-#ifdef ON_WINDOWS
-	bool hit = false;
-	const size_t read_size = 4096;
-	const size_t signature_size = sizeof(signature);
-
-	unsigned char chunk[read_size];
-
-	for (size_t i = 0; i < INT_MAX; i += read_size - signature_size) {
-		if (!ReadProcessMemory(game_proc, (LPCVOID)i,
-			&chunk, read_size, NULL))
-		{
-			continue;
-		}
-
-		for (size_t j = 0; j < read_size; j++) {
-			hit = true;
-
-			for (size_t k = 0; k < signature_size && hit; k++) {
-				if (chunk[j + k] != signature[k]) {
-					hit = false;
-				}
-			}
-
-			if (hit) {
-				return (void *)(i + j + sizeof(signature) - 1);
-			}
-		}
-	}
-#endif /* ON_WINDOWS */
-	// Remove warning.
-	return signature ? NULL : NULL;
-}
-
-void *get_time_address()
-{
-#ifdef ON_WINDOWS
-	DWORD time_address = NULL;
-	void *time_ptr = find_pattern((PBYTE)SIGNATURE);
-
-	if (!ReadProcessMemory(game_proc, (LPCVOID)time_ptr, &time_address,
-		sizeof(DWORD), NULL))
-	{
-		return NULL;
-	}
-
-	return (void *)(intptr_t)time_address;
-#endif
-
-#ifdef ON_LINUX
-	return (void *)TIME_ADDRESS;
-#endif
 }
