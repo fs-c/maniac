@@ -10,16 +10,20 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
   Options:
 
     -m	path to .osu beatmap file
-    -p  PID of osu! process (optional on Windows)
+        (optional, defaults to ./map.osu)
     -d  humanization level
-    -a  address of the playback time in memory (optional, supply this if the pattern scanning fails)
+        (optional, defaults to 0)
+    -p  PID of osu! process
+        (optional, depracated)
+    -a  address of the playback time in memory
+        (optional, supply this if the pattern scanning fails)
 ```
 
 #### Humanization
 
 The option `-d` (short for delay) allows the passing of a range in which hitpoint time offsets will be generated.
 
-For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function.
+For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function in `beatmap.c`.
 
 ### Compilation
 
