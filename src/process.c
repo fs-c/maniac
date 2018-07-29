@@ -83,6 +83,6 @@ unsigned long get_process_id(const char *name)
 end:
 	CloseHandle(proc_list);
 #endif /* ON_WINDOWS */
-	// Remove warning.
+
 	return proc_id;
 }
