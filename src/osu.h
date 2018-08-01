@@ -18,7 +18,7 @@
 #ifdef __linux__
   #define ON_LINUX
 
-  #define TIME_ADDRESS 0x36e59ec
+  #define LINUX_TIME_ADDRESS 0x36e59ec
 
   #include <X11/Xlib.h>
   #include <X11/extensions/XTest.h>
@@ -101,7 +101,7 @@ void send_keypress(char key, int down);
 void do_setup();
 
 /**
- * Windows only.
+ * Windows only:
  * Returns the process id of the given process or zero if it was not found.
  */
 unsigned long get_process_id(const char *name);
@@ -111,6 +111,12 @@ unsigned long get_process_id(const char *name);
  */
 void humanize_hitpoints(int total, hitpoint **points, int level);
 
+/**
+ * Returns the address of the playback time in the address space of the game
+ * process.
+ * Windows: Scans memory for the address using a signature.
+ * Linux: Returns static address (LINUX_TIME_ADDRESS).
+ */
 void *get_time_address();
 
 #endif /* OSU_H */
