@@ -76,6 +76,6 @@ void *get_time_address()
 #endif
 
 #ifdef ON_LINUX
-	return (void *)TIME_ADDRESS;
+	return (void *)LINUX_TIME_ADDRESS;
 #endif
 }
