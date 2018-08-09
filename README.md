@@ -10,7 +10,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
   Options:
 
     -m	path to .osu beatmap file
-        (optional, defaults to ./map.osu)
+        (optional, linux: defaults to ./map.osu, windows: refer to Map fetching section)
     -d  humanization level
         (optional, defaults to 0)
     -p  PID of osu! process
@@ -24,6 +24,14 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 The option `-d` (short for delay) allows the passing of a range in which hitpoint time offsets will be generated.
 
 For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function in `beatmap.c`.
+
+#### Map fetching
+
+On Windows, if no `-m` option is passed, `maniac` will attemt to read the beatmap from the window title, and idle while you're in the menus.
+
+The beatmaps are read from the `DEFAULT_OSU_PATH` defined in `osu.h`, and it is assumed that the folder structure has not been tampered with (eg that Songs/ contains only folders, ...).
+
+The default osu! path on Windows is `C:\Users\<username>\AppData\local\osu!\Songs`, and on Linux it's `/home/<username>/osufolder/Songs`. Since you will likely have gone through some hoops to get osu! running on Linux, it's probably easiest to just symlink `~/osufolder` to wherever you keep your osu! files. 
 
 ### Compilation
 
