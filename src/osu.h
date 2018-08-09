@@ -8,16 +8,21 @@
 
 #ifdef _WIN32
   #define ON_WINDOWS
+
+  #define HOME_ENV "USERPROFILE"
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
+  #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
 
   #include <windows.h>
   
+  extern HWND game_window;
   extern HANDLE game_proc;
 #endif /* _WIN32 */
 
 #ifdef __linux__
   #define ON_LINUX
 
+  #define HOME_ENV "HOME"
   #define LINUX_TIME_ADDRESS 0x36e59ec
 
   #include <X11/Xlib.h>
@@ -51,6 +56,8 @@ struct action {
 };
 
 typedef struct action action;
+
+int find_beatmap(char *base, char *partial, char **map);
 
 /**
  * Parse a beatmap file (*.osu) into an array of hitpoint structs pointed to by 
@@ -102,6 +109,13 @@ void do_setup();
 
 /**
  * Windows only:
+ * Fetches the title of the game window. Memory for the string title will
+ * be allocated and it's guaranteed to have less than 128 characters.
+ */
+int get_window_title(char **title);
+
+/**
+ * Windows only:
  * Returns the process id of the given process or zero if it was not found.
  */
 unsigned long get_process_id(const char *name);
@@ -118,5 +132,7 @@ void humanize_hitpoints(int total, hitpoint **points, int level);
  * Linux: Returns static address (LINUX_TIME_ADDRESS).
  */
 void *get_time_address();
+
+int partial_match(char *base, char *partial);
 
 #endif /* OSU_H */

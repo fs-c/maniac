@@ -10,10 +10,21 @@
 #ifdef ON_WINDOWS
   #include <windows.h>
   #include <tlhelp32.h>
+
+  HWND game_window;
   HANDLE game_proc;
+
+  struct handle_data {
+	HWND window_handle;
+	unsigned long process_id;
+  };
 #endif /* ON_WINDOWS */
 
+HWND find_window(unsigned long process_id);
+__stdcall int enum_windows_callback(HWND handle, void *param);
+
 void *time_address;
+pid_t game_proc_id;
 
 void send_keypress(char key, int down)
 {
@@ -56,6 +67,12 @@ void do_setup()
 
 		return;
 	}
+
+	if (!(game_window = find_window(game_proc_id))) {
+		printf("failed to find game window\n");
+
+		return;
+	}
 #endif /* ON_WINDOWS */
 }
 
@@ -78,4 +95,61 @@ void *get_time_address()
 #ifdef ON_LINUX
 	return (void *)LINUX_TIME_ADDRESS;
 #endif
+}
+
+int get_window_title(char **title)
+{
+#ifdef ON_WINDOWS
+	const int title_len = 128;
+	*title = malloc(title_len);
+	return GetWindowText(game_window, *title, title_len);
+#endif /* ON_WINDOWS */
+
+	return 0;
+}
+
+// I hate having to this but can't think of a cleaner solution.
+#ifdef ON_WINDOWS
+HWND find_window(unsigned long process_id)
+{
+	struct handle_data data = { 0, process_id };
+	EnumWindows((WNDENUMPROC)enum_windows_callback, (LPARAM)&data);
+
+	return data.window_handle;
+}
+
+__stdcall int enum_windows_callback(HWND handle, void *param)
+{
+	struct handle_data *data = (struct handle_data *)param;
+
+	unsigned long process_id = 0;
+	GetWindowThreadProcessId(handle, &process_id);
+
+	if (process_id != data->process_id)
+		return 1;
+
+	data->window_handle = handle;
+	return 0;
+}
+#endif /* ON_WINDOWS */
+
+// TODO: I'm certain there's a more elegant way to go about this.
+int partial_match(char *base, char *partial)
+{
+	int i = 0;
+	int m = 0;
+	while (*base) {
+		char c = partial[i];
+		if (c == '.') {
+			i++;
+			continue;
+		}
+
+		if (*base++ == c) {
+			i++;
+			m++;
+		}
+	}
+
+	return m;
 }

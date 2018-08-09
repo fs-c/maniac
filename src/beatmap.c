@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <dirent.h>
 
 #define RNG_ROUNDS 80
 #define RNG_BOUNDARY 0.5
@@ -12,6 +13,56 @@
  * in a given number of rounds.
  */
 int generate_number(int range, int rounds, float bound);
+
+int find_beatmap(char *base, char *partial, char **map)
+{
+	DIR *dp;
+	struct dirent *ep;
+
+	if (!(dp = opendir(base))) {
+		printf("couldn't open directory %s\n", base);
+		return 1;
+	}
+
+	char *folder = NULL;
+	while ((ep = readdir(dp)) != NULL) {
+		char *dir = ep->d_name;
+		if (strlen(dir) * 0.5 < partial_match(dir, partial)) {
+			folder = dir;
+			break;
+		}
+	}
+
+	if (!folder) {
+		printf("couldn't find beatmap folder name (%s)\n", partial);
+		return 2;
+	}
+
+	char absolute[256];
+	strcpy(absolute, base);
+	strcpy(absolute + strlen(absolute), folder);
+	strcpy(absolute + strlen(absolute), "\\");
+
+	if (!(dp = opendir(absolute))) {
+		printf("couldn't open directory %s\n", absolute);
+		return 1;
+	}
+
+	char *beatmap = NULL;
+	while ((ep = readdir(dp)) != NULL) {
+		char *file = ep->d_name;
+		if (strlen(partial) * 0.8 < partial_match(file, partial)) {
+			beatmap = file;
+			break;
+		}
+	}
+
+	strcpy(absolute + strlen(absolute), beatmap);
+
+	*map = absolute;
+
+	return 0;
+}
 
 int parse_beatmap(char *file, hitpoint **points)
 {
