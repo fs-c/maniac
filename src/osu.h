@@ -11,6 +11,7 @@
 
   #define HOME_ENV "USERPROFILE"
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
+ 
   #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
 
   #include <windows.h>
@@ -24,6 +25,8 @@
 
   #define HOME_ENV "HOME"
   #define LINUX_TIME_ADDRESS 0x36e59ec
+
+  #define DEFAULT_OSU_PATH "~/osufolder/Songs/"
 
   #include <X11/Xlib.h>
   #include <X11/extensions/XTest.h>
