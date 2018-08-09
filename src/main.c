@@ -6,9 +6,6 @@
 #include <string.h>
 #include <signal.h> 
 
-void dbg_print_actions(int count, action** actions);
-void dbg_print_hitpoints(int count, hitpoint **points);
-
 int opterr;
 char *optarg = 0;
 
@@ -56,7 +53,7 @@ int main(int argc, char **argv)
 	do_setup();
 
 	if (!(time_address = get_time_address())) {
-		printf("couldn't find time address");
+		printf("couldn't find time address\n");
 		return EXIT_FAILURE;
 	}
 
@@ -145,20 +142,4 @@ void play(char *map)
 	free(actions);
 
 	return;
-}
-
-void dbg_print_actions(int count, action **actions)
-{
-	for (int i = 0; i < count; i++) {
-		action *a = *actions + i;
-		printf("%d / %d (%c) / %d\n", a->time, a->key, a->key, a->down);
-	}
-}
-
-void dbg_print_hitpoints(int count, hitpoint **points)
-{
-	for (int i = 0; i < count; i++) {
-		hitpoint *p = *points + i;
-		printf("%d - %d / %d\n", p->start_time, p->end_time, p->column);
-	}
 }
