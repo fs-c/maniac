@@ -24,9 +24,12 @@ int find_beatmap(char *base, char *partial, char **map)
 		return 1;
 	}
 
+	// Iterate over all files (in this case only folders) of the osu
+	// beatmap directory.
 	char *folder = NULL;
 	while ((ep = readdir(dp)) != NULL) {
 		char *dir = ep->d_name;
+		// partial is missing map ID, allow for large-ish discrepancy.
 		if (strlen(dir) * 0.5 < partial_match(dir, partial)) {
 			folder = dir;
 			break;
@@ -38,6 +41,7 @@ int find_beatmap(char *base, char *partial, char **map)
 		return 2;
 	}
 
+	// Absolute path to the folder of our beatmap.
 	char absolute[256];
 	strcpy(absolute, base);
 	strcpy(absolute + strlen(absolute), folder);
@@ -48,15 +52,20 @@ int find_beatmap(char *base, char *partial, char **map)
 		return 1;
 	}
 
+	// Iterate over all files in the beatmap folder, ...
 	char *beatmap = NULL;
 	while ((ep = readdir(dp)) != NULL) {
 		char *file = ep->d_name;
-		if (strlen(partial) * 0.8 < partial_match(file, partial)) {
+		// ... , and check which one matches the one we are looking for.
+		// Allow for discrepancy since author note is omitted in our
+		// partial.
+		if (strlen(partial) * 0.6 < partial_match(file, partial)) {
 			beatmap = file;
 			break;
 		}
 	}
 
+	// This is now the absolute path to our beatmap.
 	strcpy(absolute + strlen(absolute), beatmap);
 
 	*map = absolute;
