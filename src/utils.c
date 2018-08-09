@@ -97,12 +97,12 @@ void *get_time_address()
 #endif
 }
 
-int get_window_title(char *title)
+int get_window_title(char **title)
 {
 #ifdef ON_WINDOWS
 	const int title_len = 128;
-	title = malloc(title_len);
-	return GetWindowText(game_window, title, title_len);
+	*title = malloc(title_len);
+	return GetWindowText(game_window, *title, title_len);
 #endif /* ON_WINDOWS */
 
 	return 0;
@@ -132,3 +132,24 @@ __stdcall int enum_windows_callback(HWND handle, void *param)
 	return 0;
 }
 #endif /* ON_WINDOWS */
+
+// TODO: I'm certain there's a more elegant way to go about this.
+int partial_match(char *base, char *partial)
+{
+	int i = 0;
+	int m = 0;
+	while (*base) {
+		char c = partial[i];
+		if (c == '.') {
+			i++;
+			continue;
+		}
+
+		if (*base++ == c) {
+			i++;
+			m++;
+		}
+	}
+
+	return m;
+}
