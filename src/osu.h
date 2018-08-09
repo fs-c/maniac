@@ -57,6 +57,8 @@ struct action {
 
 typedef struct action action;
 
+int find_beatmap(char *base, char *partial, char **map);
+
 /**
  * Parse a beatmap file (*.osu) into an array of hitpoint structs pointed to by 
  * **points.
@@ -110,7 +112,7 @@ void do_setup();
  * Fetches the title of the game window. Memory for the string title will
  * be allocated and it's guaranteed to have less than 128 characters.
  */
-int get_window_title(char *title);
+int get_window_title(char **title);
 
 /**
  * Windows only:
@@ -130,5 +132,7 @@ void humanize_hitpoints(int total, hitpoint **points, int level);
  * Linux: Returns static address (LINUX_TIME_ADDRESS).
  */
 void *get_time_address();
+
+int partial_match(char *base, char *partial);
 
 #endif /* OSU_H */
