@@ -124,7 +124,7 @@ void play(char *map)
 	if (sort_actions(num_actions, &actions) != 0) {
 		printf("failed sorting actions\n");
 		return;
-	}
+	} 
 
 	int32_t time;
 	int cur_i = 0;
