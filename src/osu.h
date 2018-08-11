@@ -75,21 +75,10 @@ int find_beatmap(char *base, char *partial, char **map);
 int parse_beatmap(char *file, hitpoint **points);
 
 /**
- * Parses a raw beatmap line into a hitpoint struct pointed to by *point.
- * Returns the number of tokens read.
- */
-int parse_beatmap_line(char *line, hitpoint *point);
-
-/**
  * Parses a total of count hitmapts from **points into **actions.
  * Returns the number of actions parsed and stored, which should be count * 2.
  */
 int parse_hitpoints(int count, hitpoint **points, action **actions);
-
-/**
- * Populates *start and *end with data from hitpoint *point.
- */
-void hitpoint_to_action(hitpoint *point, action *start, action *end);
 
 /**
  * Sort the array of actions given through **actions by time.
@@ -140,11 +129,5 @@ void humanize_hitpoints(int total, hitpoint **points, int level);
  * Linux: Returns static address (LINUX_TIME_ADDRESS).
  */
 void *get_time_address();
-
-/**
- * Given a base, returns the number of concurrent characters which match
- * partial.
- */
-int partial_match(char *base, char *partial);
 
 #endif /* OSU_H */

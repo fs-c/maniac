@@ -4,8 +4,19 @@
 #include <string.h>
 #include <dirent.h>
 
-#define RNG_ROUNDS 80
+#define RNG_ROUNDS 50
 #define RNG_BOUNDARY 0.5
+
+/**
+ * Parses a raw beatmap line into a hitpoint struct pointed to by *point.
+ * Returns the number of tokens read.
+ */
+int parse_beatmap_line(char *line, hitpoint *point);
+
+/**
+ * Populates *start and *end with data from hitpoint *point.
+ */
+void hitpoint_to_action(hitpoint *point, action *start, action *end);
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
@@ -231,14 +242,14 @@ void humanize_hitpoints(int total, hitpoint **points, int level)
 
 int generate_number(int range, int rounds, float bound)
 {
-	int rn;
+	int rn = rand() % range;
+
+	// Min and max percentage of the range we will use with our constraint.
 	float minr = 0.5 - (bound / 2);
 	float maxr = 0.5 + (bound / 2);
 
-	rn = rand() % range;
-
 	for (int i = 0; i < rounds; i++) {
-		bool in = rn > (range * minr) && rn < (range * maxr);
+		int in = rn > (range * minr) && rn < (range * maxr);
 
 		rn += (in ? (rand() % (int)(range * minr)) : 0)
 			* (rn < (range * 0.5) ? -1 : 1);
