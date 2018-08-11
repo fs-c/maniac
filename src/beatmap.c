@@ -25,6 +25,8 @@ void hitpoint_to_action(hitpoint *point, action *start, action *end);
  */
 int generate_number(int range, int rounds, float bound);
 
+const char col_keys[] = { 'd', 'f', 'j', 'k' };
+
 int find_beatmap(char *base, char *partial, char **map)
 {
 	DIR *dp;
@@ -176,9 +178,6 @@ int parse_hitpoints(int count, hitpoint **points, action **actions)
 	return num_actions;
 }
 
-// TODO: This really shouldn't be here but it was causing weird errors.
-const char COL_KEYS[] = { 'd', 'f', 'j', 'k' };
-
 void hitpoint_to_action(hitpoint *point, action *start, action *end)
 {
 	end->time = point->end_time;
@@ -187,7 +186,7 @@ void hitpoint_to_action(hitpoint *point, action *start, action *end)
 	end->down = 0;		// Keyup.
 	start->down = 1;	// Keydown.
 
-	const char key = COL_KEYS[point->column];
+	const char key = col_keys[point->column];
 
 	end->key = key;
 	start->key = key;
