@@ -21,12 +21,6 @@
 #endif /* ON_WINDOWS */
 
 /**
- * Given a base, returns the number of concurrent characters which match
- * partial.
- */
-int partial_match(char *base, char *partial);
-
-/**
  * Returns a handle to the main window of the process with the given ID.
  */
 HWND find_window(unsigned long process_id);

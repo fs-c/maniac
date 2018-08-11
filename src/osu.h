@@ -130,4 +130,10 @@ void humanize_hitpoints(int total, hitpoint **points, int level);
  */
 void *get_time_address();
 
+/**
+ * Given a base, returns the number of concurrent characters which match
+ * partial.
+ */
+int partial_match(char *base, char *partial);
+
 #endif /* OSU_H */
