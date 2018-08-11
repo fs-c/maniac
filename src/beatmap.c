@@ -78,6 +78,11 @@ int find_beatmap(char *base, char *partial, char **map)
 		}
 	}
 
+	if (!beatmap) {
+		printf("couldn't find beatmap file (%s)\n", partial);
+		return 2;
+	}
+
 	// This is now the absolute path to our beatmap.
 	strcpy(absolute + strlen(absolute), beatmap);
 
