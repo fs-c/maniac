@@ -36,6 +36,6 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len)
 
 	return NULL;
 #endif /* ON_WINDOWS */
-	// Remove warning.
-	return signature ? NULL : NULL;
+
+	return 0;
 }
