@@ -50,15 +50,11 @@ struct hitpoint {
 	int start_time;
 };
 
-typedef struct hitpoint hitpoint;
-
 struct action {
 	int time;
 	int down;
 	char key;
 };
-
-typedef struct action action;
 
 /**
  * Searches for a beatmap in DEFAULT_OSU_PATH + base given a part of the
@@ -72,19 +68,19 @@ int find_beatmap(char *base, char *partial, char **map);
  * **points.
  * Returns the number of points parsed and stored.
  */
-int parse_beatmap(char *file, hitpoint **points);
+int parse_beatmap(char *file, struct hitpoint **points);
 
 /**
  * Parses a total of count hitmapts from **points into **actions.
  * Returns the number of actions parsed and stored, which should be count * 2.
  */
-int parse_hitpoints(int count, hitpoint **points, action **actions);
+int parse_hitpoints(int count, struct hitpoint **points, struct action **actions);
 
 /**
  * Sort the array of actions given through **actions by time.
  * Returns nonzero on failure.
  */
-int sort_actions(int count, action **actions);
+int sort_actions(int count, struct action **actions);
 
 /**
  * Gets and returns the runtime of the currently playing song, internally
@@ -120,7 +116,7 @@ unsigned long get_process_id(const char *name);
 /**
  * Add a randomized delay of magnitude level to the hitpoints.
  */
-void humanize_hitpoints(int total, hitpoint **points, int level);
+void humanize_hitpoints(int total, struct hitpoint **points, int level);
 
 /**
  * Returns the address of the playback time in the address space of the game

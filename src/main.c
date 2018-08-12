@@ -95,7 +95,7 @@ int standby(char **map)
 
 void play(char *map)
 {
-	hitpoint *points;
+	struct hitpoint *points;
 	int num_points = 0;
 	if ((num_points = parse_beatmap(map, &points)) == 0 || !points) {
 		printf("failed to parse beatmap (%s)\n", map);
@@ -106,7 +106,7 @@ void play(char *map)
 
 	humanize_hitpoints(num_points, &points, delay);
 
-	action *actions;
+	struct action *actions;
 	int num_actions = 0;
 	if ((num_actions = parse_hitpoints(num_points, &points, &actions)) == 0
 		|| !actions)
@@ -124,8 +124,8 @@ void play(char *map)
 		return;
 	}
 
-	int cur_i = 0;	// Current action offset.
-	action *cur_a;	// Pointer to current action.
+	int cur_i = 0;		// Current action offset.
+	struct action *cur_a;	// Pointer to current action.
 	int32_t time = get_maptime();
 
 	// Discard all actions which come before our maptime.

@@ -11,12 +11,13 @@
  * Parses a raw beatmap line into a hitpoint struct pointed to by *point.
  * Returns the number of tokens read.
  */
-int parse_beatmap_line(char *line, hitpoint *point);
+int parse_beatmap_line(char *line, struct hitpoint *point);
 
 /**
  * Populates *start and *end with data from hitpoint *point.
  */
-void hitpoint_to_action(hitpoint *point, action *start, action *end);
+void hitpoint_to_action(struct hitpoint *point, struct action *start,
+	struct action *end);
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
@@ -91,7 +92,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	return 0;
 }
 
-int parse_beatmap(char *file, hitpoint **points)
+int parse_beatmap(char *file, struct hitpoint **points)
 {
 	FILE *stream;
 	char line[MAX_LINE_LENGTH];
@@ -102,19 +103,20 @@ int parse_beatmap(char *file, hitpoint **points)
 
 	int parsed = 0;		// Number of hitpoints parsed.
 	int in_section = 0;	// Currently in the hitobjects section?
+	size_t hp_size = sizeof(struct hitpoint);
 	while (fgets(line, sizeof(line), stream)) {
 		if (!in_section && strstr(line, "[HitObjects]")) {
 			in_section = 1;
 
-			*points = malloc(sizeof(hitpoint));
+			*points = malloc(hp_size);
 
 			continue;
 		} else if (!in_section) continue;
 
-		hitpoint point;
+		struct hitpoint point;
 		parse_beatmap_line(line, &point);
 
-		*points = realloc(*points, ++parsed * sizeof(hitpoint));
+		*points = realloc(*points, ++parsed * hp_size);
 		(*points)[parsed - 1] = point;
 	}
 
@@ -122,7 +124,7 @@ int parse_beatmap(char *file, hitpoint **points)
 }
 
 // Note that this function is not thread safe. (TODO?)
-int parse_beatmap_line(char *line, hitpoint *point)
+int parse_beatmap_line(char *line, struct hitpoint *point)
 {
 	int end_time, secval = 0;
 	char *token, *ln = strdup(line), i = 0;
@@ -160,20 +162,21 @@ int parse_beatmap_line(char *line, hitpoint *point)
 	return i;
 }
 
-int parse_hitpoints(int count, hitpoint **points, action **actions)
+int parse_hitpoints(int count, struct hitpoint **points,
+	struct action **actions)
 {
 	// Allocate enough memory for all actions at once.
-	*actions = malloc((2 * count) * sizeof(action));
+	*actions = malloc((2 * count) * sizeof(struct action));
 
-	hitpoint *cur_point;
 	int num_actions = 0, i = 0;
+	struct hitpoint *cur_point;
 
 	while (i < count) {
 		cur_point = (*points) + i++;
 
 		// Don't care about the order here.
-		action *end = *actions + num_actions++;
-		action *start = *actions + num_actions++;
+		struct action *end = *actions + num_actions++;
+		struct action *start = *actions + num_actions++;
 
 		hitpoint_to_action(cur_point, start, end);
 	}
@@ -183,7 +186,8 @@ int parse_hitpoints(int count, hitpoint **points, action **actions)
 	return num_actions;
 }
 
-void hitpoint_to_action(hitpoint *point, action *start, action *end)
+void hitpoint_to_action(struct hitpoint *point, struct action *start,
+	struct action *end)
 {
 	end->time = point->end_time;
 	start->time = point->start_time;
@@ -198,10 +202,10 @@ void hitpoint_to_action(hitpoint *point, action *start, action *end)
 }
 
 // TODO: Implement a more efficient sorting algorithm than selection sort.
-int sort_actions(int total, action **actions)
+int sort_actions(int total, struct action **actions)
 {
 	int min, i, j;
-	action *act = *actions, tmp;
+	struct action *act = *actions, tmp;
 
 	// For every element but the last, which will end up to be the biggest.
 	for (i = 0; i < (total - 1); i++) {
@@ -222,14 +226,14 @@ int sort_actions(int total, action **actions)
 }
 
 // TODO: This function is retarded, fix it and add actual humanization.
-void humanize_hitpoints(int total, hitpoint **points, int level)
+void humanize_hitpoints(int total, struct hitpoint **points, int level)
 {
 	if (!level) {
 		return;
 	}
 
 	int i, offset;
-	hitpoint *p = NULL;
+	struct hitpoint *p = NULL;
 	for (i = 0; i < total; i++) {
 		p = *points + i;
 
