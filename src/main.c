@@ -51,6 +51,7 @@ int main(int argc, char **argv)
 
 	do_setup();
 
+	// We can only fetch time address after setup has been done.
 	if (!(time_address = get_time_address())) {
 		printf("couldn't find time address\n");
 		return EXIT_FAILURE;
@@ -58,8 +59,8 @@ int main(int argc, char **argv)
 
 	char *fetched_map = NULL;
 	// If the user passed a map, play it.
-	// If window fetching failed (probably because we're on Linux), use the
-	// default map.
+	// If they didn't and window fetching is failing (probably because
+	// we're on Linux), use the default map.
 	if (map || !(get_window_title(&fetched_map))) {
 		play(map ? map : default_map);
 		return EXIT_SUCCESS;
@@ -92,7 +93,7 @@ int standby(char **map)
 
 void play(char *map)
 {
-	hitpoint *points;
+	struct hitpoint *points;
 	int num_points = 0;
 	if ((num_points = parse_beatmap(map, &points)) == 0 || !points) {
 		printf("failed to parse beatmap (%s)\n", map);
@@ -117,11 +118,16 @@ void play(char *map)
 	if (sort_actions(num_actions, &actions) != 0) {
 		printf("failed sorting actions\n");
 		return;
-	} 
+	}
 
-	int32_t time;
-	int cur_i = 0;
-	action *cur_a;
+	int cur_i = 0;		// Current action offset.
+	struct action *cur_a;	// Pointer to current action.
+	int32_t time = get_maptime();
+
+	// Discard all actions which come before our maptime.
+	for (; cur_i < num_actions; cur_i++)
+		if (actions[cur_i].time >= time)
+			break;
 
 	while (cur_i < num_actions) {
 		time = get_maptime();
