@@ -75,6 +75,8 @@ int main(int argc, char **argv)
 
 int standby(char **map)
 {
+	debug("in standby mode");
+
 	char osu_path[256];
 
 	strcpy(osu_path, getenv(HOME_ENV));
@@ -113,7 +115,7 @@ void play(char *map)
 		return;
 	}
 
-	printf("parsed %d actions\n", num_actions);
+	debug("parsed %d actions\n", num_actions);
 
 	free(points);
 
@@ -122,16 +124,18 @@ void play(char *map)
 		return;
 	}
 
-	int cur_i = 0;		// Current action offset.
-	struct action *cur_a;	// Pointer to current action.
-	int32_t time = get_maptime();
+	debug("sorted %d actions\n", num_actions);
 
-	// Discard all actions which come before our maptime.
+	int cur_i = 0;			// Current action offset.
+	struct action *cur_a;		// Pointer to current action.
+	uint32_t time = get_maptime();	// Current maptime.
+
+	// Discard all actions which come before our current maptime.
 	for (; cur_i < num_actions; cur_i++)
 		if (actions[cur_i].time >= time)
 			break;
 
-	printf("discarded %d actions\n", cur_i);
+	debug("discarded %d actions\n", cur_i);
 
 	while (cur_i < num_actions) {
 		time = get_maptime();

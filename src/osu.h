@@ -61,9 +61,9 @@ struct hitpoint {
 };
 
 struct action {
-	int time;
 	int down;
 	char key;
+	unsigned int time;
 };
 
 /**
