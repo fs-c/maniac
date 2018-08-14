@@ -68,6 +68,8 @@ int main(int argc, char **argv)
 
 	while (standby(&map)) {
 		play(map);
+
+		return EXIT_SUCCESS;
 	}
 
 	return EXIT_SUCCESS;
@@ -93,14 +95,16 @@ int standby(char **map)
 
 void play(char *map)
 {
-	struct hitpoint *points;
 	int num_points = 0;
-	if ((num_points = parse_beatmap(map, &points)) == 0 || !points) {
+	struct beatmap *meta;
+	struct hitpoint *points;
+	if ((num_points = parse_beatmap(map, &points, &meta)) == 0 || !points) {
 		printf("failed to parse beatmap (%s)\n", map);
 		return;
 	}
 
-	printf("parsed %d hitpoints\n", num_points);
+	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
+		meta->title, meta->version, meta->map_id);
 
 	humanize_hitpoints(num_points, &points, delay);
 
