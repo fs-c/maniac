@@ -104,7 +104,7 @@ void play(char *map)
 
 	humanize_hitpoints(num_points, &points, delay);
 
-	action *actions;
+	struct action *actions;
 	int num_actions = parse_hitpoints(num_points, &points, &actions);
 	if (!num_actions || !actions) {
 		printf("failed to parse hitpoints\n");
