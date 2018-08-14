@@ -157,3 +157,14 @@ int partial_match(char *base, char *partial)
 
 	return m;
 }
+
+void path_get_last(char *path, char **last)
+{
+	int i, l = 0;
+	*last = path;
+	for (i = 0; *path; path++, i++)
+		if (*path == SEPERATOR)
+			l = i + 1;
+
+	*last += l;
+}

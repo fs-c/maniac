@@ -18,6 +18,7 @@ pid_t game_proc_id;
 
 void play(char *map);
 int standby(char **map);
+void print_usage(char *path);
 
 int main(int argc, char **argv)
 {
@@ -27,9 +28,8 @@ int main(int argc, char **argv)
 	char *map = NULL;
 
 	time_address = 0;
-	game_proc_id = get_process_id("osu!.exe");
 
-	while ((c = getopt(argc, argv, "m:p:a:d:")) != -1) {
+	while ((c = getopt(argc, argv, "m:p:a:l:h")) != -1) {
 		switch (c) {
 		case 'm': map = optarg;
 			break;
@@ -37,16 +37,15 @@ int main(int argc, char **argv)
 			break;
 		case 'a': time_address = (void *)(uintptr_t)strtol(optarg, NULL, 0);
 			break;
-		case 'd': delay = strtol(optarg, NULL, 10);
+		case 'l': delay = strtol(optarg, NULL, 10);
 			break;
+		case 'h': print_usage(argv[0]);
+			exit(EXIT_SUCCESS);
 		}
 	}
 
-	if (!game_proc_id) {
-		printf("usage: %s -p <pid of osu! process> ", argv[0]);
-		printf("-m <path to beatmap.osu> -a <time address> ");
-		printf("-d <humanization level>\n");
-
+	if (!game_proc_id && !(game_proc_id = get_process_id("osu!.exe"))) {
+		printf("couldn't find game process ID\n");
 		return EXIT_FAILURE;
 	}
 
@@ -63,7 +62,6 @@ int main(int argc, char **argv)
 	// default map.
 	if (map || !(get_window_title(&fetched_map))) {
 		play(map ? map : default_map);
-
 		return EXIT_SUCCESS;
 	}
 
@@ -106,10 +104,8 @@ void play(char *map)
 	humanize_hitpoints(num_points, &points, delay);
 
 	action *actions;
-	int num_actions = 0;
-	if ((num_actions = parse_hitpoints(num_points, &points, &actions)) == 0
-		|| !actions)
-	{
+	int num_actions = parse_hitpoints(num_points, &points, &actions);
+	if (!num_actions || !actions) {
 		printf("failed to parse hitpoints\n");
 		return;
 	}
@@ -142,4 +138,25 @@ void play(char *map)
 	free(actions);
 
 	return;
+}
+
+void print_usage(char *path)
+{
+	char *name = NULL;
+	path_get_last(path, &name);
+
+	printf("  Usage: %s [options]\n\n", name);
+	printf("  Options: \n\n");
+
+	printf("    %-20s id of game process (optional)\n", "-p");
+	printf("    %-20s humanization level (default: 0)\n", "-l");
+	printf("    %-20s address to read time from (optional)\n", "-a");
+
+#ifdef ON_WINDOWS
+	printf("    %-20s path to beatmap (optional)\n", "-m");
+#endif /* ON_WINDOWS */
+
+#ifdef ON_LINUX
+	printf("    %-20s path to beatmap (default: ./osu.map)\n", "-m");
+#endif /* ON_LINUX */
 }

@@ -12,6 +12,7 @@
   #define HOME_ENV "USERPROFILE"
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
  
+  #define SEPERATOR '\\'
   #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
 
   #include <windows.h>
@@ -26,6 +27,7 @@
   #define HOME_ENV "HOME"
   #define LINUX_TIME_ADDRESS 0x36e59ec
 
+  #define SEPERATOR '/'
   #define DEFAULT_OSU_PATH "~/osufolder/Songs/"
 
   #include <X11/Xlib.h>
@@ -135,5 +137,11 @@ void *get_time_address();
  * partial.
  */
 int partial_match(char *base, char *partial);
+
+/**
+ * Store the address of the beginning of the last segment of `path` in `last`.
+ * If no seperator was found, `path` is equal to `*last`.
+ */
+void path_get_last(char *path, char **last);
 
 #endif /* OSU_H */
