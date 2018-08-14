@@ -5,18 +5,15 @@
 This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), more specifically for the [osu!mania](https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania) gamemode (where this project also got its name from). It attempts to be a __simple__, __lightweight__ and __portable__ application, and it can be compiled on many Linux distributions (where it depends on the X Window System) and Windows versions.
 
 ```
-  Usage: maniac [options]
+  Usage: maniac.exe [options]
 
   Options:
 
-    -m	path to .osu beatmap file
-        (optional, linux: defaults to ./map.osu, windows: refer to Map fetching section)
-    -d  humanization level
-        (optional, defaults to 0)
-    -p  PID of osu! process
-        (optional, depracated)
-    -a  address of the playback time in memory
-        (optional, supply this if the pattern scanning fails)
+    -p         id of game process (optional)
+    -l         humanization level (default: 0)
+    -a         address to read time from (optional)
+    -m         path to beatmap (optional)
+
 ```
 
 #### Humanization
