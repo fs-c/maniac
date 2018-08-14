@@ -18,14 +18,14 @@
 	HWND window_handle;
 	unsigned long process_id;
   };
+
+  __stdcall int enum_windows_callback(HWND handle, void *param);
+
+  /**
+   * Returns a handle to the main window of the process with the given ID.
+   */
+  HWND find_window(unsigned long process_id);
 #endif /* ON_WINDOWS */
-
-/**
- * Returns a handle to the main window of the process with the given ID.
- */
-HWND find_window(unsigned long process_id);
-
-__stdcall int enum_windows_callback(HWND handle, void *param);
 
 void *time_address;
 pid_t game_proc_id;
@@ -112,7 +112,7 @@ int get_window_title(char **title)
 	return 0;
 }
 
-// I hate having to this but can't think of a cleaner solution.
+// I hate having to this but I can't think of a cleaner solution. (TODO?)
 #ifdef ON_WINDOWS
 HWND find_window(unsigned long process_id)
 {
