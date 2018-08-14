@@ -8,7 +8,7 @@
 #define RNG_BOUNDARY 0.5
 
 /**
- * Parse a raw metadata line into a beatmap struct pointed to by *meta.
+ * Parses a raw metadata line into a beatmap struct pointed to by *meta.
  * Returns the number of tokens read.
  */
 int parse_metadata_line(char *line, struct beatmap *meta);
@@ -182,7 +182,6 @@ void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 		strcpy(meta->artist, value);
 	} else if (!(strcmp(key, "Version"))) {
 		value[strlen(value) - 1] = '\0';
-
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {

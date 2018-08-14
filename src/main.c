@@ -68,8 +68,6 @@ int main(int argc, char **argv)
 
 	while (standby(&map)) {
 		play(map);
-
-		return EXIT_SUCCESS;
 	}
 
 	return EXIT_SUCCESS;
