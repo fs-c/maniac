@@ -44,6 +44,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	DIR *dp;
 	struct dirent *ep;
 
+	debug("opening directory %s", base);
 	if (!(dp = opendir(base))) {
 		printf("couldn't open directory %s\n", base);
 		return 1;
@@ -52,10 +53,14 @@ int find_beatmap(char *base, char *partial, char **map)
 	// Iterate over all files (in this case only folders) of the osu
 	// beatmap directory.
 	char *folder = NULL;
+	debug("searching for %s in directory", partial);
 	while ((ep = readdir(dp)) != NULL) {
 		char *dir = ep->d_name;
+
 		// partial is missing map ID, allow for large-ish discrepancy.
 		if (strlen(dir) * 0.5 < partial_match(dir, partial)) {
+			debug("match found (%s), breaking out of search", dir);
+
 			folder = dir;
 			break;
 		}
@@ -67,36 +72,40 @@ int find_beatmap(char *base, char *partial, char **map)
 	}
 
 	// Absolute path to the folder of our beatmap.
-	char absolute[256];
+	static char absolute[256];
 	strcpy(absolute, base);
 	strcpy(absolute + strlen(absolute), folder);
 	strcpy(absolute + strlen(absolute), "\\");
 
+	debug("opening directory %s", absolute);
 	if (!(dp = opendir(absolute))) {
 		printf("couldn't open directory %s\n", absolute);
 		return 1;
 	}
 
 	// Iterate over all files in the beatmap folder, ...
-	char *beatmap = NULL;
+	char beatmap[256];
 	while ((ep = readdir(dp)) != NULL) {
+		int best_sc = 0;
 		char *file = ep->d_name;
+
 		// ... , and check which one matches the one we are looking for.
 		// Allow for discrepancy since author note is omitted in our
 		// partial.
-		if (strlen(partial) * 0.6 < partial_match(file, partial)) {
-			beatmap = file;
-			break;
-		}
-	}
+		int score;
+		if ((score = partial_match(file, partial)) > best_sc) {
+			debug("new best match string (%s) with score (%d)",
+				file, score);
 
-	if (!beatmap) {
-		printf("couldn't find beatmap file (%s)\n", partial);
-		return 2;
+			best_sc = score;
+			strcpy(beatmap, file);
+		}
 	}
 
 	// This is now the absolute path to our beatmap.
 	strcpy(absolute + strlen(absolute), beatmap);
+
+	debug("absolute string is %s", absolute);
 
 	*map = absolute;
 
