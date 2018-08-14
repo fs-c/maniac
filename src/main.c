@@ -156,15 +156,8 @@ void print_usage(char *path)
 	printf("  Usage: %s [options]\n\n", name);
 	printf("  Options: \n\n");
 
-	printf("    %-20s id of game process (optional)\n", "-p");
-	printf("    %-20s humanization level (default: 0)\n", "-l");
-	printf("    %-20s address to read time from (optional)\n", "-a");
-
-#ifdef ON_WINDOWS
-	printf("    %-20s path to beatmap (optional)\n", "-m");
-#endif /* ON_WINDOWS */
-
-#ifdef ON_LINUX
-	printf("    %-20s path to beatmap (default: ./osu.map)\n", "-m");
-#endif /* ON_LINUX */
+	printf("    %-10s id of game process (optional)\n", "-p");
+	printf("    %-10s humanization level (default: 0)\n", "-l");
+	printf("    %-10s address to read time from (optional)\n", "-a");
+	printf("    %-10s path to beatmap (optional)\n", "-m");
 }
