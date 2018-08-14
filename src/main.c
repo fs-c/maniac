@@ -131,6 +131,8 @@ void play(char *map)
 		if (actions[cur_i].time >= time)
 			break;
 
+	printf("discarded %d actions\n", cur_i);
+
 	while (cur_i < num_actions) {
 		time = get_maptime();
 
@@ -143,6 +145,7 @@ void play(char *map)
 		nanosleep((struct timespec[]){{ 0, 1000000L }}, NULL);
 	}
 
+	free(meta);
 	free(actions);
 
 	return;
