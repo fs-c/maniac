@@ -8,10 +8,21 @@
 #define RNG_BOUNDARY 0.5
 
 /**
- * Parses a raw beatmap line into a hitpoint struct pointed to by *point.
+ * Parse a raw metadata line into a beatmap struct pointed to by *meta.
  * Returns the number of tokens read.
  */
-int parse_beatmap_line(char *line, struct hitpoint *point);
+int parse_metadata_line(char *line, struct beatmap *meta);
+
+/**
+ * Parses a key:value set into *meta.
+ */
+void parse_metadata_token(char *key, char *value, struct beatmap *meta);
+
+/**
+ * Parses a raw hitobject line into a hitpoint struct pointed to by *point.
+ * Returns the number of tokens read.
+ */
+int parse_hitobject_line(char *line, struct hitpoint *point);
 
 /**
  * Populates *start and *end with data from hitpoint *point.
@@ -92,7 +103,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	return 0;
 }
 
-int parse_beatmap(char *file, struct hitpoint **points)
+int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
 	FILE *stream;
 	char line[MAX_LINE_LENGTH];
@@ -101,30 +112,88 @@ int parse_beatmap(char *file, struct hitpoint **points)
 		return 0;
 	}
 
-	int parsed = 0;		// Number of hitpoints parsed.
-	int in_section = 0;	// Currently in the hitobjects section?
+	int cur_section = 0;
+	int num_parsed = 0, len = 0;
 	size_t hp_size = sizeof(struct hitpoint);
+
+	struct hitpoint cur_point;
+
+	if (points && *points)
+		*points = malloc(hp_size);
+	if (meta && *meta)
+		*meta = malloc(sizeof(struct beatmap));
+
 	while (fgets(line, sizeof(line), stream)) {
-		if (!in_section && strstr(line, "[HitObjects]")) {
-			in_section = 1;
+		switch (cur_section) {
+		// [Metadata]
+		case 3:
+			parse_metadata_line(line, *meta);
+			break;
+		// [HitObjects]
+		case 7:
+			parse_hitobject_line(line, &cur_point);
 
-			*points = malloc(hp_size);
+			*points = realloc(*points, ++num_parsed * hp_size);
+			(*points)[num_parsed - 1] = cur_point;
+			break;
+		}
 
-			continue;
-		} else if (!in_section) continue;
-
-		struct hitpoint point;
-		parse_beatmap_line(line, &point);
-
-		*points = realloc(*points, ++parsed * hp_size);
-		(*points)[parsed - 1] = point;
+		if (line[0] == '[' && line[(len = strlen(line)) - 2] == ']') {
+			cur_section++;
+		}
 	}
 
-	return parsed;
+	return num_parsed;
 }
 
 // Note that this function is not thread safe. (TODO?)
-int parse_beatmap_line(char *line, struct hitpoint *point)
+int parse_metadata_line(char *line, struct beatmap *meta)
+{
+	char *token, *ln = strdup(line), *title = NULL, *value = NULL, i = 0;
+
+	token = strtok(ln, ":");
+	while (token != NULL) {
+		switch (i++) {
+		case 0: title = strdup(token);
+			break;
+		case 1: value = strdup(token);
+
+			parse_metadata_token(title, value, meta);
+
+			break;
+		}
+
+		token = strtok(NULL, ":");
+	}
+
+	return i;
+}
+
+// TODO: There has got to be a less ugly and more extensible way of doing this.
+void parse_metadata_token(char *key, char *value, struct beatmap *meta)
+{
+	if (!(strcmp(key, "Title"))) {
+		value[strlen(value) - 1] = '\0';
+
+		strcpy(meta->title, value);
+	} else if (!(strcmp(key, "Artist"))) {
+		value[strlen(value) - 1] = '\0';
+
+		strcpy(meta->artist, value);
+	} else if (!(strcmp(key, "Version"))) {
+		value[strlen(value) - 1] = '\0';
+
+
+		strcpy(meta->version, value);
+	} else if (!(strcmp(key, "BeatmapID"))) {
+		meta->map_id = atoi(value);
+	} else if (!(strcmp(key, "BeatmapSetID"))) {
+		meta->set_id = atoi(value);
+	}
+}
+
+// Note that this function is not thread safe. (TODO?)
+int parse_hitobject_line(char *line, struct hitpoint *point)
 {
 	int end_time, secval = 0;
 	char *token, *ln = strdup(line), i = 0;

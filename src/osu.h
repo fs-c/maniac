@@ -46,6 +46,14 @@
 extern void *time_address;
 extern pid_t game_proc_id;
 
+struct beatmap {
+	int set_id;
+	int map_id;
+	char title[256];
+	char artist[256];
+	char version[256];
+};
+
 struct hitpoint {
 	int column;
 	int end_time;
@@ -67,10 +75,10 @@ int find_beatmap(char *base, char *partial, char **map);
 
 /**
  * Parse a beatmap file (*.osu) into an array of hitpoint structs pointed to by 
- * **points.
+ * **points and a metadata struct.
  * Returns the number of points parsed and stored.
  */
-int parse_beatmap(char *file, struct hitpoint **points);
+int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta);
 
 /**
  * Parses a total of count hitmapts from **points into **actions.
