@@ -18,7 +18,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 #### Humanization
 
-The option `-d` (short for delay) allows the passing of a range in which hitpoint time offsets will be generated.
+The switch `-l` allows the passing of a range in which hitpoint time offsets will be generated.
 
 For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function in `beatmap.c`.
 
