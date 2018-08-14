@@ -168,3 +168,22 @@ void path_get_last(char *path, char **last)
 
 	*last += l;
 }
+
+void debug(char *fmt, ...)
+{
+#ifdef DEBUG
+	va_list args;
+	va_start(args, fmt);
+
+	char message[256] = "[debug] ";
+	strcat(message, fmt);
+
+	int len = strlen(message);
+	message[len] = '\n';
+	message[len + 1] = '\0';
+
+	vprintf(message, args);
+
+	va_end(args);
+#endif /* DEBUG */
+}

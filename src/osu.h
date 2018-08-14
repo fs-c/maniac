@@ -148,4 +148,10 @@ int partial_match(char *base, char *partial);
  */
 void path_get_last(char *path, char **last);
 
+/**
+ * Same interface as printf, with "debug: " being prepended to every message.
+ * This is a NOP if DEBUG is not defined.
+ */
+void debug(char *fmt, ...);
+
 #endif /* OSU_H */
