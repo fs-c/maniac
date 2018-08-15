@@ -16,9 +16,9 @@ int delay = 0;
 void *time_address;
 pid_t game_proc_id;
 
-void play(char *map);
-int standby(char **map);
-void print_usage(char *path);
+static void play(char *map);
+static int standby(char **map);
+static void print_usage(char *path);
 
 int main(int argc, char **argv)
 {
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-int standby(char **map)
+static int standby(char **map)
 {
 	debug("in standby mode");
 
@@ -93,7 +93,7 @@ int standby(char **map)
 	return 1;
 }
 
-void play(char *map)
+static void play(char *map)
 {
 	int num_points = 0;
 	struct beatmap *meta;
@@ -155,7 +155,7 @@ void play(char *map)
 	return;
 }
 
-void print_usage(char *path)
+static void print_usage(char *path)
 {
 	char *name = NULL;
 	path_get_last(path, &name);

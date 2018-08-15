@@ -4,12 +4,10 @@
 
 #ifdef ON_LINUX
   // Enable GNU extensions (process_vm_readv).
-  #define _GNU_SOURCE
+  // TODO: This is hacky and undocumented.
+  #define __USE_GNU
 
   #include <sys/uio.h>
-
-  // TODO: Where the hell is this defined usually?
-  ssize_t process_vm_readv(int, struct iovec *, int, struct iovec *, int, int);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS

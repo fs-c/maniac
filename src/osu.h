@@ -156,4 +156,11 @@ void path_get_last(char *path, char **last);
  */
 void debug(char *fmt, ...);
 
+/**
+ * Returns a randomly generated number in the range of [0, range], while
+ * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
+ * in a given number of rounds.
+ */
+int generate_number(int range, int rounds, float bound);
+
 #endif /* OSU_H */
