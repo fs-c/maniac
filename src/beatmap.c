@@ -75,7 +75,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	static char absolute[256];
 	strcpy(absolute, base);
 	strcpy(absolute + strlen(absolute), folder);
-	strcpy(absolute + strlen(absolute), "\\");
+	strcpy(absolute + strlen(absolute), (char[2]){(char)SEPERATOR, '\0'});
 
 	debug("opening directory %s", absolute);
 	if (!(dp = opendir(absolute))) {
@@ -83,17 +83,17 @@ int find_beatmap(char *base, char *partial, char **map)
 		return 1;
 	}
 
-	// Iterate over all files in the beatmap folder, ...
+	int best_sc = 0;
 	char beatmap[256];
+	// Iterate over all files in the beatmap folder, ...
 	while ((ep = readdir(dp)) != NULL) {
-		int best_sc = 0;
 		char *file = ep->d_name;
 
 		// ... , and check which one matches the one we are looking for.
 		// Allow for discrepancy since author note is omitted in our
 		// partial.
-		int score;
-		if ((score = partial_match(file, partial)) > best_sc) {
+		int score = partial_match(file, partial);
+		if (score > best_sc) {
 			debug("new best match string (%s) with score (%d)",
 				file, score);
 
@@ -104,8 +104,6 @@ int find_beatmap(char *base, char *partial, char **map)
 
 	// This is now the absolute path to our beatmap.
 	strcpy(absolute + strlen(absolute), beatmap);
-
-	debug("absolute string is %s", absolute);
 
 	*map = absolute;
 
