@@ -23,12 +23,12 @@
 	unsigned long process_id;
   };
 
-  __stdcall int enum_windows_callback(HWND handle, void *param);
+  __stdcall static int enum_windows_callback(HWND handle, void *param);
 
   /**
    * Returns a handle to the main window of the process with the given ID.
    */
-  HWND find_window(unsigned long process_id);
+  static HWND find_window(unsigned long process_id);
 #endif /* ON_WINDOWS */
 
 void *time_address;
@@ -116,7 +116,7 @@ int get_window_title(char **title)
 
 // I hate having to do this but I can't think of a cleaner solution. (TODO?)
 #ifdef ON_WINDOWS
-HWND find_window(unsigned long process_id)
+static HWND find_window(unsigned long process_id)
 {
 	struct handle_data data = { 0, process_id };
 	EnumWindows((WNDENUMPROC)enum_windows_callback, (LPARAM)&data);
@@ -124,7 +124,7 @@ HWND find_window(unsigned long process_id)
 	return data.window_handle;
 }
 
-__stdcall int enum_windows_callback(HWND handle, void *param)
+__stdcall static int enum_windows_callback(HWND handle, void *param)
 {
 	struct handle_data *data = (struct handle_data *)param;
 
@@ -169,6 +169,24 @@ void path_get_last(char *path, char **last)
 			l = i + 1;
 
 	*last += l;
+}
+
+int generate_number(int range, int rounds, float bound)
+{
+	int rn = rand() % range;
+
+	// Min and max percentage of the range we will use with our constraint.
+	float minr = 0.5 - (bound / 2);
+	float maxr = 0.5 + (bound / 2);
+
+	for (int i = 0; i < rounds; i++) {
+		int in = rn > (range * minr) && rn < (range * maxr);
+
+		rn += (in ? (rand() % (int)(range * minr)) : 0)
+			* (rn < (range * 0.5) ? -1 : 1);
+	}
+
+	return rn;
 }
 
 void debug(char *fmt, ...)

@@ -11,31 +11,24 @@
  * Parses a raw metadata line into a beatmap struct pointed to by *meta.
  * Returns the number of tokens read.
  */
-int parse_metadata_line(char *line, struct beatmap *meta);
+static int parse_metadata_line(char *line, struct beatmap *meta);
 
 /**
  * Parses a key:value set into *meta.
  */
-void parse_metadata_token(char *key, char *value, struct beatmap *meta);
+static void parse_metadata_token(char *key, char *value, struct beatmap *meta);
 
 /**
  * Parses a raw hitobject line into a hitpoint struct pointed to by *point.
  * Returns the number of tokens read.
  */
-int parse_hitobject_line(char *line, struct hitpoint *point);
+static int parse_hitobject_line(char *line, struct hitpoint *point);
 
 /**
  * Populates *start and *end with data from hitpoint *point.
  */
-void hitpoint_to_action(struct hitpoint *point, struct action *start,
+static void hitpoint_to_action(struct hitpoint *point, struct action *start,
 	struct action *end);
-
-/**
- * Returns a randomly generated number in the range of [0, range], while
- * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
- * in a given number of rounds.
- */
-int generate_number(int range, int rounds, float bound);
 
 const char col_keys[] = { 'd', 'f', 'j', 'k' };
 
@@ -154,7 +147,7 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 }
 
 // Note that this function is not thread safe. (TODO?)
-int parse_metadata_line(char *line, struct beatmap *meta)
+static int parse_metadata_line(char *line, struct beatmap *meta)
 {
 	char *token, *ln = strdup(line), *title = NULL, *value = NULL, i = 0;
 
@@ -177,7 +170,7 @@ int parse_metadata_line(char *line, struct beatmap *meta)
 }
 
 // TODO: There has got to be a less ugly and more extensible way of doing this.
-void parse_metadata_token(char *key, char *value, struct beatmap *meta)
+static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 {
 	if (!(strcmp(key, "Title"))) {
 		value[strlen(value) - 1] = '\0';
@@ -199,7 +192,7 @@ void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 }
 
 // Note that this function is not thread safe. (TODO?)
-int parse_hitobject_line(char *line, struct hitpoint *point)
+static int parse_hitobject_line(char *line, struct hitpoint *point)
 {
 	int end_time, secval = 0;
 	char *token, *ln = strdup(line), i = 0;
@@ -261,7 +254,7 @@ int parse_hitpoints(int count, struct hitpoint **points,
 	return num_actions;
 }
 
-void hitpoint_to_action(struct hitpoint *point, struct action *start,
+static void hitpoint_to_action(struct hitpoint *point, struct action *start,
 	struct action *end)
 {
 	end->time = point->end_time;
@@ -321,22 +314,4 @@ void humanize_hitpoints(int total, struct hitpoint **points, int level)
 		p->end_time += offset;
 		p->start_time += offset;
 	}
-}
-
-int generate_number(int range, int rounds, float bound)
-{
-	int rn = rand() % range;
-
-	// Min and max percentage of the range we will use with our constraint.
-	float minr = 0.5 - (bound / 2);
-	float maxr = 0.5 + (bound / 2);
-
-	for (int i = 0; i < rounds; i++) {
-		int in = rn > (range * minr) && rn < (range * maxr);
-
-		rn += (in ? (rand() % (int)(range * minr)) : 0)
-			* (rn < (range * 0.5) ? -1 : 1);
-	}
-
-	return rn;
 }
