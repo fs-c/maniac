@@ -115,7 +115,7 @@ void play(char *map)
 		return;
 	}
 
-	debug("parsed %d actions\n", num_actions);
+	debug("parsed %d actions", num_actions);
 
 	free(points);
 
@@ -124,18 +124,18 @@ void play(char *map)
 		return;
 	}
 
-	debug("sorted %d actions\n", num_actions);
+	debug("sorted %d actions", num_actions);
 
 	int cur_i = 0;			// Current action offset.
 	struct action *cur_a;		// Pointer to current action.
-	uint32_t time = get_maptime();	// Current maptime.
+	int32_t time = get_maptime();	// Current maptime.
 
 	// Discard all actions which come before our current maptime.
 	for (; cur_i < num_actions; cur_i++)
 		if (actions[cur_i].time >= time)
 			break;
 
-	debug("discarded %d actions\n", cur_i);
+	debug("discarded %d actions", cur_i);
 
 	while (cur_i < num_actions) {
 		time = get_maptime();
