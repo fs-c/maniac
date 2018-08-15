@@ -1,10 +1,15 @@
+CC="gcc"
+FILES="main.c beatmap.c process.c utils.c"
+
+POST_FLAGS="-Ofast"
+
 cd src
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-	gcc main.c beatmap.c process.c utils.c -lX11 -lXtst -Ofast -o maniac
+	${CC} ${FILES} ${POST_FLAGS} -lX11 -lXtst -o maniac
 	mv maniac ../maniac
 elif [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]]; then
-	gcc main.c beatmap.c process.c utils.c -Ofast -o maniac.exe
+	${CC} ${FILES} ${POST_FLAGS} -o maniac
 	mv maniac.exe ../maniac.exe
 fi
 
