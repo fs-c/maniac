@@ -21,7 +21,7 @@
 void *time_address;
 pid_t game_proc_id;
 
-int32_t get_maptime()
+__hot int32_t get_maptime()
 {
 	int32_t time;
 	size_t size = sizeof(int32_t);

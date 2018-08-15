@@ -43,6 +43,8 @@
 
 #define TAPTIME_MS 15
 
+#define __hot __attribute__((__hot__))
+
 extern void *time_address;
 extern pid_t game_proc_id;
 
@@ -96,7 +98,7 @@ int sort_actions(int count, struct action **actions);
  * Gets and returns the runtime of the currently playing song, internally
  * referred to as `maptime`.
  */
-int32_t get_maptime();
+__hot int32_t get_maptime();
 
 /**
  * Sends a keypress to the currently active window.
