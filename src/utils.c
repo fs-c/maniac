@@ -3,9 +3,12 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef ON_LINUX
   Display *display;
+
+  #include <stdarg.h>
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
