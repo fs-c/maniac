@@ -1,6 +1,7 @@
 #include "osu.h"
 #include "pattern.h"
 
+#include <time.h>
 #include <stdio.h>
 
 #ifdef ON_LINUX
@@ -62,21 +63,19 @@ void do_setup()
 		printf("failed to open X display");
 
 		return;
-	}
+	} else debug("opened X display (%#x)", display);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
 	if (!(game_proc = OpenProcess(PROCESS_VM_READ, 0, game_proc_id))) {
 		printf("failed to get handle to game process\n");
-
 		return;
-	}
+	} else debug("got handle to game process with ID %d", game_proc_id);
 
 	if (!(game_window = find_window(game_proc_id))) {
 		printf("failed to find game window\n");
-
 		return;
-	}
+	} else debug("found game window");;
 #endif /* ON_WINDOWS */
 }
 
@@ -112,7 +111,7 @@ int get_window_title(char **title)
 	return 0;
 }
 
-// I hate having to this but I can't think of a cleaner solution. (TODO?)
+// I hate having to do this but I can't think of a cleaner solution. (TODO?)
 #ifdef ON_WINDOWS
 HWND find_window(unsigned long process_id)
 {
@@ -172,10 +171,15 @@ void path_get_last(char *path, char **last)
 void debug(char *fmt, ...)
 {
 #ifdef DEBUG
+	static clock_t old_clock = 0;
+	clock_t cur_clock = clock();
+
 	va_list args;
 	va_start(args, fmt);
 
-	char message[256] = "[debug] ";
+	char message[256];
+	sprintf(message, "[debug] [t:%-6ld s:%-.8x]   ", cur_clock - old_clock,
+		(int)(uintptr_t)__builtin_return_address(1));
 	strcat(message, fmt);
 
 	int len = strlen(message);
@@ -185,5 +189,7 @@ void debug(char *fmt, ...)
 	vprintf(message, args);
 
 	va_end(args);
+
+	old_clock = clock();
 #endif /* DEBUG */
 }
