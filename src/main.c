@@ -6,6 +6,9 @@
 #include <string.h>
 #include <signal.h> 
 
+#define PLAY_ERROR 0
+#define PLAY_FINISH 1
+
 int opterr;
 char *optarg = 0;
 
@@ -16,7 +19,7 @@ int delay = 0;
 void *time_address;
 pid_t game_proc_id;
 
-static void play(char *map);
+static int play(char *map);
 static int standby(char **map);
 static void print_usage(char *path);
 
@@ -66,7 +69,16 @@ int main(int argc, char **argv)
 	}
 
 	while (standby(&map)) {
-		play(map);
+		int status = play(map);
+
+		debug("play returned status %d", status);
+
+		if (status == PLAY_ERROR) {
+			printf("an error occured while playing, "
+				"there's likely additional error output above");
+
+			break;
+		}
 	}
 
 	return EXIT_SUCCESS;
@@ -92,14 +104,14 @@ static int standby(char **map)
 	return 1;
 }
 
-static void play(char *map)
+static int play(char *map)
 {
 	int num_points = 0;
 	struct beatmap *meta;
 	struct hitpoint *points;
 	if ((num_points = parse_beatmap(map, &points, &meta)) == 0 || !points) {
 		printf("failed to parse beatmap (%s)\n", map);
-		return;
+		return PLAY_ERROR;
 	}
 
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
@@ -111,7 +123,7 @@ static void play(char *map)
 	int num_actions = parse_hitpoints(num_points, &points, &actions);
 	if (!num_actions || !actions) {
 		printf("failed to parse hitpoints\n");
-		return;
+		return PLAY_ERROR;
 	}
 
 	debug("parsed %d actions", num_actions);
@@ -120,12 +132,13 @@ static void play(char *map)
 
 	if (sort_actions(num_actions, &actions) != 0) {
 		printf("failed sorting actions\n");
-		return;
+		return PLAY_ERROR;
 	}
 
 	debug("sorted %d actions", num_actions);
 
 	int cur_i = 0;			// Current action offset.
+	char *title = NULL;		// Current window title.
 	struct action *cur_a;		// Pointer to current action.
 	int32_t time = get_maptime();	// Current maptime.
 
@@ -136,9 +149,12 @@ static void play(char *map)
 
 	debug("discarded %d actions", cur_i);
 
-	// -1 because the last action always seems to be invalid.
+	// num_actions - 1 because the last action always seems to be invalid.
 	// TODO: Verify this.
 	while (cur_i < num_actions - 1) {
+		if (get_window_title(&title) && strcmp(title, "osu!") == 0)
+			goto cleanup_and_exit;
+
 		time = get_maptime();
 
 		while ((cur_a = actions + cur_i)->time <= time) {
@@ -150,10 +166,13 @@ static void play(char *map)
 		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
 	}
 
+	nanosleep((struct timespec[]){{ 3, 0 }}, NULL);
+
+cleanup_and_exit:
 	free(meta);
 	free(actions);
 
-	return;
+	return PLAY_FINISH;
 }
 
 static void print_usage(char *path)
