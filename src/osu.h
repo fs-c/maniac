@@ -25,14 +25,15 @@
   #define ON_LINUX
 
   #define HOME_ENV "HOME"
-  #define LINUX_TIME_ADDRESS 0x36e59ec
+  #define LINUX_TIME_ADDRESS 0x36e5bf4
 
   #define SEPERATOR '/'
-  #define DEFAULT_OSU_PATH "~/osufolder/Songs/"
+  #define DEFAULT_OSU_PATH "/osufolder/Songs/"
 
   #include <X11/Xlib.h>
   #include <X11/extensions/XTest.h>
 
+  extern Window window;
   extern Display *display;
 #endif /* __linux__ */
 
