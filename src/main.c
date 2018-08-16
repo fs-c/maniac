@@ -146,7 +146,7 @@ static void play(char *map)
 			send_keypress(cur_a->key, cur_a->down);		
 		}
 
-		nanosleep((struct timespec[]){{ 0, 1000000L }}, NULL);
+		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
 	}
 
 	free(meta);
