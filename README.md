@@ -19,13 +19,13 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 ```
 
-#### Humanization
+### Humanization
 
 The switch `-l` allows the passing of a range in which hitpoint time offsets will be generated.
 
 For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function in `beatmap.c`.
 
-#### Map fetching
+### Map fetching
 
 If no `-m` switch is passed, `maniac` will attempt to read the beatmap from the window title, and idle while you're in the menus.
 
@@ -39,7 +39,7 @@ The `-r` switch enables replays, meaning that, after the end of the current map 
 
 To simulate human progression, `-r` accepts a delta that will be subtracted from the current delay at every replay.
 
-### Compilation
+## Compilation
 
 ```bash
 $ sudo apt-get install build-essential
@@ -50,7 +50,7 @@ $ ./build.sh
 
 If you are on Windows, use [MinGW](http://www.mingw.org/) to compile.
 
-### Scripts
+## Scripts
 
 Since it can be inconvenient to search for, and to always provide, the full path to osu! beatmap files `scripts/find.js` will search for beatmaps by a number of tags which will be matched against the individual maps names. The best match will be copied to `./map.osu`.
 
