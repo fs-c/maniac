@@ -110,6 +110,12 @@ int find_beatmap(char *base, char *partial, char **map)
 
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
+	#ifdef ON_WINDOWS
+		const int offset = -2;
+	#elif
+		const int offset = -3;
+	#endif
+
 	FILE *stream;
 	char line[MAX_LINE_LENGTH];
 
@@ -143,7 +149,9 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 			break;
 		}
 
-		if (line[0] == '[' && line[(len = strlen(line)) - 3] == ']') {
+		if (line[0] == '['
+			&& line[(len = strlen(line)) + offset] == ']')
+		{
 			cur_section++;
 		}
 	}
@@ -179,16 +187,22 @@ static int parse_metadata_line(char *line, struct beatmap *meta)
 // TODO: There has got to be a less ugly and more extensible way of doing this.
 static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 {
+#ifdef ON_WINDOWS
+	const int offset = -1;
+#elif
+	const int offset = -2;
+#endif
+
 	if (!(strcmp(key, "Title"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value) + offset] = '\0';
 
 		strcpy(meta->title, value);
 	} else if (!(strcmp(key, "Artist"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value) + offset] = '\0';
 
 		strcpy(meta->artist, value);
 	} else if (!(strcmp(key, "Version"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value) + offset] = '\0';
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {
