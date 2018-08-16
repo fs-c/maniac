@@ -43,10 +43,13 @@
 void *time_address;
 pid_t game_proc_id;
 
-void send_keypress(char key, int down)
+__hot inline void send_keypress(char key, int down)
 {
 #ifdef ON_LINUX
 	int keycode = XKeysymToKeycode(display, key);
+
+	if (!keycode)
+		return;
 
 	XTestFakeKeyEvent(display, keycode, down, CurrentTime);
 
@@ -66,6 +69,13 @@ void send_keypress(char key, int down)
 
 	SendInput(1, &in, sizeof(INPUT));
 #endif /* ON_WINDOWS */
+}
+
+void tap_key(char key)
+{
+	send_keypress(key, 1);
+	nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
+	send_keypress(key, 0);
 }
 
 void do_setup()
