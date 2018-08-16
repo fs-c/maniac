@@ -27,7 +27,7 @@ For further fine-tuning, refer to the `#define RNG_*` defines and the comments o
 
 #### Map fetching
 
-On Windows, if no `-m` switch is passed, `maniac` will attempt to read the beatmap from the window title, and idle while you're in the menus.
+If no `-m` switch is passed, `maniac` will attempt to read the beatmap from the window title, and idle while you're in the menus.
 
 Beatmaps are read from the `DEFAULT_OSU_PATH` defined in `osu.h`, and it is assumed that the folder structure has not been tampered with (eg that `Songs/` contains only folders, etc).
 
@@ -62,10 +62,3 @@ copied ..\..\AppData\Local\osu!\Songs\738673 Chroma - I\Chroma - I (Lude) [Heave
 ```
 
 By default the script will search for folders in `~/AppData/Local/osu!/Songs/`, but you may provide an alternative path by setting the `songsPath` property in `scripts/settings.json`.
-
-### TODO
-
-- Improve humanization especially in regards to (in)accuracy spread (in osu! terms: unstable rate).
-  - Partly done, the unstable rate is still rather high, but comparable to many other legit players.
-- ~~Implement pattern scanning for Windows builds.~~
-- Implement reading the current map/song name from memory.
