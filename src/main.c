@@ -12,6 +12,7 @@
 int opterr;
 char *optarg = 0;
 
+char osu_path[256];
 char *default_map = "map.osu";
 
 int delay = 0;
@@ -27,12 +28,12 @@ int main(int argc, char **argv)
 {
 	setbuf(stdout, NULL);
 
-	int c;
 	char *map = NULL;
+	int replay = 0, replay_delta = 0, c;
 
 	time_address = 0;
 
-	while ((c = getopt(argc, argv, "m:p:a:l:h")) != -1) {
+	while ((c = getopt(argc, argv, "m:p:a:l:r:h")) != -1) {
 		switch (c) {
 		case 'm': map = optarg;
 			break;
@@ -42,10 +43,16 @@ int main(int argc, char **argv)
 			break;
 		case 'l': delay = strtol(optarg, NULL, 10);
 			break;
+		case 'r': replay = 1;
+			replay_delta = strtol(optarg, NULL, 10);
+			break;
 		case 'h': print_usage(argv[0]);
 			exit(EXIT_SUCCESS);
 		}
 	}
+
+	strcpy(osu_path, getenv(HOME_ENV));
+	strcpy(osu_path + strlen(osu_path), DEFAULT_OSU_PATH);
 
 	if (!game_proc_id && !(game_proc_id = get_process_id("osu!.exe"))) {
 		printf("couldn't find game process ID\n");
@@ -60,13 +67,16 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	char *fetched_map = NULL;
+	const int fetch_len = 128;
+	char *fetched_map = malloc(fetch_len);
 	// If the user passed a map, play it.
 	// If they didn't and window fetching is failing, use the default map.
-	if (map || !(get_window_title(&fetched_map))) {
+	if (map || !(get_window_title(&fetched_map, fetch_len))) {
 		play(map ? map : default_map);
 		return EXIT_SUCCESS;
 	}
+
+	free(fetched_map);
 
 	while (standby(&map)) {
 		int status = play(map);
@@ -79,6 +89,26 @@ int main(int argc, char **argv)
 
 			break;
 		}
+
+		if (replay) {
+			send_keypress(0x1B, 1);
+			nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
+			send_keypress(0x1B, 0);
+
+			debug("pressed escape");
+
+			nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
+
+			send_keypress(0x0D, 1);
+			nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
+			send_keypress(0x0D, 0);
+
+			debug("pressed enter");
+
+			nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
+
+			delay -= replay_delta;
+		}
 	}
 
 	return EXIT_SUCCESS;
@@ -88,14 +118,10 @@ static int standby(char **map)
 {
 	debug("in standby mode");
 
-	char osu_path[256];
-
-	strcpy(osu_path, getenv(HOME_ENV));
-	strcpy(osu_path + strlen(osu_path), DEFAULT_OSU_PATH);
-
-	char *title;
+	const int title_len = 128;
+	char *title = malloc(title_len);
 	// Idle while we're in menus.
-	while (get_window_title(&title) && strcmp(title, "osu!") == 0) {
+	while (get_window_title(&title, title_len) && !strcmp(title, "osu!")) {
 		nanosleep((struct timespec[]){{ 0, 500000000L }}, NULL);
 	}
 
@@ -119,6 +145,8 @@ static int play(char *map)
 
 	humanize_hitpoints(num_points, &points, delay);
 
+	debug("humanized %d hitpoints with delay of %d", num_points, delay);
+
 	struct action *actions;
 	int num_actions = parse_hitpoints(num_points, &points, &actions);
 	if (!num_actions || !actions) {
@@ -137,10 +165,12 @@ static int play(char *map)
 
 	debug("sorted %d actions", num_actions);
 
-	int cur_i = 0;			// Current action offset.
-	char *title = NULL;		// Current window title.
-	struct action *cur_a;		// Pointer to current action.
-	int32_t time = get_maptime();	// Current maptime.
+	int cur_i = 0;				// Current action offset.
+	struct action *cur_a;			// Pointer to current action.
+	int32_t time = get_maptime();		// Current maptime.
+
+	const int title_len = 128;		// Max length of title.
+	char *title = malloc(title_len);	// Current window title.
 
 	// Discard all actions which come before our current maptime.
 	for (; cur_i < num_actions; cur_i++)
@@ -150,9 +180,10 @@ static int play(char *map)
 	debug("discarded %d actions", cur_i);
 
 	// num_actions - 1 because the last action always seems to be invalid.
-	// TODO: Verify this.
+	// TODO: Verify this. Is it caused by us?
 	while (cur_i < num_actions - 1) {
-		if (get_window_title(&title) && strcmp(title, "osu!") == 0)
+		// If the user exited the map...
+		if (get_window_title(&title, title_len) && !strcmp(title, "osu!"))
 			goto cleanup_and_exit;
 
 		time = get_maptime();
@@ -166,7 +197,7 @@ static int play(char *map)
 		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
 	}
 
-	nanosleep((struct timespec[]){{ 3, 0 }}, NULL);
+	nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
 
 cleanup_and_exit:
 	free(meta);
