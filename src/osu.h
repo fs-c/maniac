@@ -104,7 +104,12 @@ __hot int32_t get_maptime();
 /**
  * Sends a keypress to the currently active window.
  */
-void send_keypress(char key, int down);
+__hot void send_keypress(char key, int down);
+
+/**
+ * Convenience function to send a keydown and keyup event with a 10ms interval.
+ */
+void tap_key(char key);
 
 /**
  * Performs operating system specific setup.
