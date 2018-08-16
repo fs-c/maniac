@@ -40,6 +40,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	debug("opening directory %s", base);
 	if (!(dp = opendir(base))) {
 		printf("couldn't open directory %s\n", base);
+
 		return 1;
 	}
 
@@ -47,7 +48,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	// beatmap directory.
 	char *folder = NULL;
 	debug("searching for %s in directory", partial);
-	while ((ep = readdir(dp)) != NULL) {
+	while ((ep = readdir(dp))) {
 		char *dir = ep->d_name;
 
 		// partial is missing map ID, allow for large-ish discrepancy.
@@ -58,6 +59,8 @@ int find_beatmap(char *base, char *partial, char **map)
 			break;
 		}
 	}
+
+	closedir(dp);
 
 	if (!folder) {
 		printf("couldn't find beatmap folder name (%s)\n", partial);
@@ -94,6 +97,8 @@ int find_beatmap(char *base, char *partial, char **map)
 			strcpy(beatmap, file);
 		}
 	}
+
+	closedir(dp);
 
 	// This is now the absolute path to our beatmap.
 	strcpy(absolute + strlen(absolute), beatmap);
@@ -138,10 +143,12 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 			break;
 		}
 
-		if (line[0] == '[' && line[(len = strlen(line)) - 2] == ']') {
+		if (line[0] == '[' && line[(len = strlen(line)) - 3] == ']') {
 			cur_section++;
 		}
 	}
+
+	fclose(stream);
 
 	return num_parsed;
 }
@@ -173,15 +180,15 @@ static int parse_metadata_line(char *line, struct beatmap *meta)
 static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 {
 	if (!(strcmp(key, "Title"))) {
-		value[strlen(value) - 1] = '\0';
+		value[strlen(value) - 2] = '\0';
 
 		strcpy(meta->title, value);
 	} else if (!(strcmp(key, "Artist"))) {
-		value[strlen(value) - 1] = '\0';
+		value[strlen(value) - 2] = '\0';
 
 		strcpy(meta->artist, value);
 	} else if (!(strcmp(key, "Version"))) {
-		value[strlen(value) - 1] = '\0';
+		value[strlen(value) - 2] = '\0';
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {
