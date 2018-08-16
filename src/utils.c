@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #ifdef ON_LINUX
   Window window;
