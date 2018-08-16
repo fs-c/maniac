@@ -13,6 +13,8 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
     -l         humanization level (default: 0)
     -a         address to read time from (optional)
     -m         path to beatmap (optional)
+    -r         replay humanization level delta (optional)
+    -h         print this message
 
 ```
 
