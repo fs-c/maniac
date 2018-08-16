@@ -82,7 +82,7 @@ end:
 	CloseHandle(proc_list);
 #endif /* ON_WINDOWS */
 
-	debug("process ID for name %s is %ld", name, proc_id);
+	debug("process ID for %s is %ld", name, proc_id);
 
 	return proc_id;
 }
