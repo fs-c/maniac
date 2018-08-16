@@ -26,11 +26,17 @@ For further fine-tuning, refer to the `#define RNG_*` defines and the comments o
 
 #### Map fetching
 
-On Windows, if no `-m` option is passed, `maniac` will attempt to read the beatmap from the window title, and idle while you're in the menus.
+On Windows, if no `-m` switch is passed, `maniac` will attempt to read the beatmap from the window title, and idle while you're in the menus.
 
 Beatmaps are read from the `DEFAULT_OSU_PATH` defined in `osu.h`, and it is assumed that the folder structure has not been tampered with (eg that `Songs/` contains only folders, etc).
 
 The default osu! path on Windows is `C:\Users\<username>\AppData\local\osu!\Songs`, and on Linux it's `/home/<username>/osufolder/Songs`. Since you will likely have gone through some hoops to get osu! running on Linux, it's probably easiest to just symlink `~/osufolder` to wherever you keep your osu! files. 
+
+### Replay functionality
+
+The `-r` switch enables replays, meaning that, after the end of the current map has been reached, `maniac` will restart the current map and play it again.
+
+To simulate human progression, `-r` accepts a delta that will be subtracted from the current delay at every replay.
 
 ### Compilation
 
