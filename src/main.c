@@ -91,12 +91,12 @@ int main(int argc, char **argv)
 		}
 
 		if (replay) {
-			tap_key(0x1B);
+			tap_key(KEY_ESCAPE);
 			debug("pressed escape");
 
 			nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
 
-			tap_key(0x0D);
+			tap_key(KEY_RETURN);
 			debug("pressed enter");
 
 			nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
@@ -212,5 +212,6 @@ static void print_usage(char *path)
 	printf("    %-10s humanization level (default: 0)\n", "-l");
 	printf("    %-10s address to read time from (optional)\n", "-a");
 	printf("    %-10s path to beatmap (optional)\n", "-m");
-	printf("    %-10s keep replaying the first map (optional)", "-r");
+	printf("    %-10s replay humanization level delta (optional)\n", "-r");
+	printf("    %-10s print this message\n", "-h");
 }

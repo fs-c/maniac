@@ -15,6 +15,9 @@
   #define SEPERATOR '\\'
   #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
 
+  #define KEY_RETURN 0xFF0D
+  #define KEY_ESCAPE 0xFF1B
+
   #include <windows.h>
   
   extern HWND game_window;
@@ -29,6 +32,9 @@
 
   #define SEPERATOR '/'
   #define DEFAULT_OSU_PATH "/osufolder/Songs/"
+
+  #define KEY_RETURN 0x0D
+  #define KEY_ESCAPE 0x1B
 
   #include <X11/Xlib.h>
   #include <X11/extensions/XTest.h>
@@ -104,12 +110,12 @@ __hot int32_t get_maptime();
 /**
  * Sends a keypress to the currently active window.
  */
-__hot void send_keypress(char key, int down);
+__hot void send_keypress(int key, int down);
 
 /**
  * Convenience function to send a keydown and keyup event with a 10ms interval.
  */
-void tap_key(char key);
+void tap_key(int key);
 
 /**
  * Performs operating system specific setup.
