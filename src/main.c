@@ -59,8 +59,7 @@ int main(int argc, char **argv)
 
 	char *fetched_map = NULL;
 	// If the user passed a map, play it.
-	// If they didn't and window fetching is failing (probably because
-	// we're on Linux), use the default map.
+	// If they didn't and window fetching is failing, use the default map.
 	if (map || !(get_window_title(&fetched_map))) {
 		play(map ? map : default_map);
 		return EXIT_SUCCESS;
