@@ -19,29 +19,50 @@
 void *time_address;
 pid_t game_proc_id;
 
+/**
+ * Copy game memory at base for size bytes into buffer.
+ * Inlined, hot version without argument validation.
+ */
+static inline __hot void _read_game_memory(void *base, void *buffer,
+	size_t size);
+
 __hot int32_t get_maptime()
 {
-	int32_t time;
+	int32_t time = 0;
 	size_t size = sizeof(int32_t);
 
+	_read_game_memory(time_address, &time, size);
+
+	return time;
+}
+
+void read_game_memory(void *base, void *buffer, size_t size)
+{
+	if (!base || !buffer || !size)
+		return;
+
+	_read_game_memory(base, buffer, size);
+}
+
+static inline __hot void _read_game_memory(void *base, void *buffer,
+	size_t size)
+{
 #ifdef ON_LINUX
 	struct iovec local[1];
 	struct iovec remote[1];
 
 	local[0].iov_len = size;
-	local[0].iov_base = &time;
+	local[0].iov_base = buffer;
 
 	remote[0].iov_len = size;
-	remote[0].iov_base = time_address;
+	remote[0].iov_base = base;
 
 	process_vm_readv(game_proc_id, local, 1, remote, 1, 0);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-	ReadProcessMemory(game_proc, (LPCVOID)time_address, &time, size, NULL);
+	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size, NULL);
 #endif /* ON_WINDOWS */
-
-	return time;
 }
 
 unsigned long get_process_id(const char *name)

@@ -108,6 +108,12 @@ int sort_actions(int count, struct action **actions);
 __hot int32_t get_maptime();
 
 /**
+ * Copy game memory starting at `base` for `size` bytes into `buffer`.
+ * Internally, this is a wrapper for _read_game_memory, with argument checking.
+ */
+void read_game_memory(void *base, void *buffer, size_t size);
+
+/**
  * Sends a keypress to the currently active window.
  */
 __hot void send_keypress(int key, int down);
@@ -131,7 +137,6 @@ void do_setup();
 __hot int get_window_title(char **title, int title_len);
 
 /**
- * Windows only:
  * Returns the process id of the given process or zero if it was not found.
  */
 unsigned long get_process_id(const char *name);
