@@ -136,7 +136,9 @@ static void play(char *map)
 
 	debug("discarded %d actions", cur_i);
 
-	while (cur_i < num_actions) {
+	// -1 because the last action always seems to be invalid.
+	// TODO: Verify this.
+	while (cur_i < num_actions - 1) {
 		time = get_maptime();
 
 		while ((cur_a = actions + cur_i)->time <= time) {
