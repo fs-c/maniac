@@ -177,10 +177,19 @@ static int play(char *map)
 
 	debug("discarded %d actions", cur_i);
 
+	unsigned int check_i = 0;
 	while (cur_i < num_actions) {
+		if (check_i++ > 5) {
+			check_i = 0;
+
+			int len = get_window_title(&title, title_len);
+			if (len <= 4)
+				goto cleanup_and_exit;
+		}
+
 		// If the user exited the map...
-		if (get_window_title(&title, title_len) && !strcmp(title, "osu!"))
-			goto cleanup_and_exit;
+		// if (get_window_title(&title, title_len) && !strcmp(title, "osu!"))
+		// 	goto cleanup_and_exit;
 
 		time = get_maptime();
 
