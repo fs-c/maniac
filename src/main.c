@@ -21,8 +21,8 @@ void *time_address;
 pid_t game_proc_id;
 
 static int play(char *map);
-static int standby(char **map);
 static void print_usage(char *path);
+static int standby(char **map, int search);
 
 int main(int argc, char **argv)
 {
@@ -78,7 +78,8 @@ int main(int argc, char **argv)
 
 	free(fetched_map);
 
-	while (standby(&map)) {
+	int search = 1;
+	while (standby(&map, search)) {
 		int status = play(map);
 
 		debug("play returned status %d", status);
@@ -99,8 +100,9 @@ int main(int argc, char **argv)
 			tap_key(KEY_RETURN);
 			debug("pressed enter");
 
-			nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
+			nanosleep((struct timespec[]){{ 1, 0 }}, NULL);
 
+			search = 0;
 			delay -= replay_delta;
 		}
 	}
@@ -108,7 +110,7 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-static int standby(char **map)
+static int standby(char **map, int search)
 {
 	debug("in standby mode");
 
@@ -119,7 +121,9 @@ static int standby(char **map)
 		nanosleep((struct timespec[]){{ 0, 500000000L }}, NULL);
 	}
 
-	find_beatmap(osu_path, title + 8, map);
+	if (search) {
+		find_beatmap(osu_path, title + 8, map);
+	}
 
 	return 1;
 }
