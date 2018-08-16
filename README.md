@@ -14,6 +14,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
     -a         address to read time from (optional)
     -m         path to beatmap (optional)
     -r         replay humanization level delta (optional)
+    -e         toggle exit checks in game loop (default: on)
     -h         print this message
 
 ```

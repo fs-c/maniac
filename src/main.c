@@ -220,5 +220,6 @@ static void print_usage(char *path)
 	printf("    %-10s address to read time from (optional)\n", "-a");
 	printf("    %-10s path to beatmap (optional)\n", "-m");
 	printf("    %-10s replay humanization level delta (optional)\n", "-r");
+	printf("    %-10s toggle exit checks in game loop (default: on)\n", "-e");
 	printf("    %-10s print this message\n", "-h");
 }
