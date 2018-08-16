@@ -173,9 +173,7 @@ static int play(char *map)
 
 	debug("discarded %d actions", cur_i);
 
-	// num_actions - 1 because the last action always seems to be invalid.
-	// TODO: Verify this. Is it caused by us?
-	while (cur_i < num_actions - 1) {
+	while (cur_i < num_actions) {
 		// If the user exited the map...
 		if (get_window_title(&title, title_len) && !strcmp(title, "osu!"))
 			goto cleanup_and_exit;
