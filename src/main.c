@@ -9,6 +9,9 @@
 #define PLAY_ERROR 0
 #define PLAY_FINISH 1
 
+#define STANDBY_BREAK 0
+#define STANDBY_CONTINUE 1
+
 int opterr;
 char *optarg = 0;
 
@@ -17,6 +20,7 @@ char *default_map = "map.osu";
 
 int delay = 0;
 int exit_check = 1;
+int replay_delta = 0;
 
 void *time_address;
 pid_t game_proc_id;
@@ -24,13 +28,14 @@ pid_t game_proc_id;
 static int play(char *map);
 static void print_usage(char *path);
 static int standby(char **map, int search);
+static int standby_loop(char *map, int *search, int replay);
 
 int main(int argc, char **argv)
 {
 	setbuf(stdout, NULL);
 
 	char *map = NULL;
-	int replay = 0, replay_delta = 0, c;
+	int replay = 0, c;
 
 	time_address = 0;
 
@@ -83,31 +88,8 @@ int main(int argc, char **argv)
 
 	int search = 1;
 	while (standby(&map, search)) {
-		int status = play(map);
-
-		debug("play returned status %d", status);
-
-		if (status == PLAY_ERROR) {
-			printf("an error occured while playing, "
-				"there's likely additional error output above");
-
+		if (standby_loop(map, &search, replay) == STANDBY_BREAK)
 			break;
-		}
-
-		if (replay) {
-			tap_key(KEY_ESCAPE);
-			debug("pressed escape");
-
-			nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
-
-			tap_key(KEY_RETURN);
-			debug("pressed enter");
-
-			nanosleep((struct timespec[]){{ 1, 0 }}, NULL);
-
-			search = 0;
-			delay -= replay_delta;
-		}
 	}
 
 	return EXIT_SUCCESS;
@@ -129,6 +111,53 @@ static int standby(char **map, int search)
 	}
 
 	return 1;
+}
+
+static int standby_loop(char *map, int *search, int replay)
+{
+	debug("standby_loop: %s (%#x, %d, %d)", map, search, *search, replay);
+
+	int status = play(map);
+	static int retries = 0;
+
+	debug("play returned status %d", status);
+
+	if (status == PLAY_ERROR) {
+		printf("an error occured while playing, "
+			"there's likely additional error output above");
+
+		if (replay) {
+			int delay = 1000 * retries++;
+			printf("retrying in %d ms\n", delay);
+
+			nanosleep((struct timespec[]){{
+				0, (long)(delay * 1000)
+			}}, NULL);
+
+			return STANDBY_CONTINUE;
+		}
+
+		return STANDBY_BREAK;
+	}
+
+	retries = 0;
+
+	if (replay) {
+		tap_key(KEY_ESCAPE);
+		debug("pressed escape");
+
+		nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
+
+		tap_key(KEY_RETURN);
+		debug("pressed enter");
+
+		nanosleep((struct timespec[]){{ 1, 0 }}, NULL);
+
+		*search = 0;
+		delay -= replay_delta;
+	}
+
+	return STANDBY_CONTINUE;
 }
 
 static int play(char *map)
