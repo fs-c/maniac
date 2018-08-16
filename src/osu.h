@@ -114,11 +114,10 @@ void send_keypress(char key, int down);
 void do_setup();
 
 /**
- * Windows only:
- * Fetches the title of the game window. Memory for the string title will
- * be allocated and it's guaranteed to have less than 128 characters.
+ * Fetches the title of the game window. *title is expected to point to a
+ * region of memory that is writable.
  */
-int get_window_title(char **title);
+__hot int get_window_title(char **title, int title_len);
 
 /**
  * Windows only:

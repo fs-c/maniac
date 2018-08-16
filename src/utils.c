@@ -118,11 +118,8 @@ void *get_time_address()
 #endif
 }
 
-int get_window_title(char **title)
+__hot int get_window_title(char **title, int title_len)
 {
-	const int title_len = 128;
-	*title = malloc(title_len);
-
 #ifdef ON_WINDOWS
 	return GetWindowText(game_window, *title, title_len);
 #endif /* ON_WINDOWS */
