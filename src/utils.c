@@ -43,7 +43,7 @@
 void *time_address;
 pid_t game_proc_id;
 
-__hot inline void send_keypress(char key, int down)
+__hot inline void send_keypress(int key, int down)
 {
 #ifdef ON_LINUX
 	int keycode = XKeysymToKeycode(display, key);
@@ -71,7 +71,7 @@ __hot inline void send_keypress(char key, int down)
 #endif /* ON_WINDOWS */
 }
 
-void tap_key(char key)
+void tap_key(int key)
 {
 	send_keypress(key, 1);
 	nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
