@@ -16,6 +16,7 @@ char osu_path[256];
 char *default_map = "map.osu";
 
 int delay = 0;
+int exit_check = 1;
 
 void *time_address;
 pid_t game_proc_id;
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
 
 	time_address = 0;
 
-	while ((c = getopt(argc, argv, "m:p:a:l:r:h")) != -1) {
+	while ((c = getopt(argc, argv, "m:p:a:l:r:he")) != -1) {
 		switch (c) {
 		case 'm': map = optarg;
 			break;
@@ -45,6 +46,8 @@ int main(int argc, char **argv)
 			break;
 		case 'r': replay = 1;
 			replay_delta = strtol(optarg, NULL, 10);
+			break;
+		case 'e': exit_check = !exit_check;
 			break;
 		case 'h': print_usage(argv[0]);
 			exit(EXIT_SUCCESS);
@@ -177,19 +180,12 @@ static int play(char *map)
 
 	debug("discarded %d actions", cur_i);
 
-	unsigned int check_i = 0;
 	while (cur_i < num_actions) {
-		if (check_i++ > 5) {
-			check_i = 0;
-
-			int len = get_window_title(&title, title_len);
-			if (len <= 4)
-				goto cleanup_and_exit;
+		if (exit_check) {
+			// If the user exited the map...
+			if (get_window_title(&title, title_len)
+				&& !strcmp(title, "osu!")) goto clean_exit;
 		}
-
-		// If the user exited the map...
-		// if (get_window_title(&title, title_len) && !strcmp(title, "osu!"))
-		// 	goto cleanup_and_exit;
 
 		time = get_maptime();
 
@@ -204,7 +200,7 @@ static int play(char *map)
 
 	nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
 
-cleanup_and_exit:
+clean_exit:
 	free(meta);
 	free(actions);
 
