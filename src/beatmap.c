@@ -110,11 +110,12 @@ int find_beatmap(char *base, char *partial, char **map)
 
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
-	#ifdef ON_WINDOWS
-		const int offset = -2;
-	#elif
-		const int offset = -3;
-	#endif
+#ifdef ON_WINDOWS
+	const int offset = -2;
+#endif /* ON_WINDOWS */
+#ifdef ON_LINUX
+	const int offset = -3;
+#endif /* ON_LINUX */
 
 	FILE *stream;
 	char line[MAX_LINE_LENGTH];
@@ -189,9 +190,10 @@ static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 {
 #ifdef ON_WINDOWS
 	const int offset = -1;
-#elif
+#endif /* ON_WINDOWS */
+#ifdef ON_LINUX
 	const int offset = -2;
-#endif
+#endif /* ON_LINUX */
 
 	if (!(strcmp(key, "Title"))) {
 		value[strlen(value) + offset] = '\0';
