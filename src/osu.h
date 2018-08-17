@@ -179,4 +179,10 @@ void debug(char *fmt, ...);
  */
 int generate_number(int range, int rounds, float bound);
 
+/**
+ * Searches for a signature (sequence of bytes) in the process, returning the
+ * addresses of the end of the first occurence.
+ */
+void *find_pattern(const unsigned char *signature, unsigned int sig_len);
+
 #endif /* OSU_H */
