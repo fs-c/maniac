@@ -1,5 +1,4 @@
 #include "osu.h"
-#include "pattern.h"
 
 #include <time.h>
 #include <stdio.h>
