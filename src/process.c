@@ -20,10 +20,11 @@ void *time_address;
 pid_t game_proc_id;
 
 /**
- * Copy game memory at base for size bytes into buffer.
+ * Copies game memory at base for size bytes into buffer.
  * Inlined, hot version without argument validation.
+ * Returns number of bytes read.
  */
-static inline __hot void _read_game_memory(void *base, void *buffer,
+static inline __hot ssize_t _read_game_memory(void *base, void *buffer,
 	size_t size);
 
 __hot int32_t get_maptime()
@@ -31,22 +32,32 @@ __hot int32_t get_maptime()
 	int32_t time = 0;
 	size_t size = sizeof(int32_t);
 
-	_read_game_memory(time_address, &time, size);
+	// This function is called in tight loops, use the faster, insecure
+	// read_game_memory since we know our arguments are valid.
+	if (!(_read_game_memory(time_address, &time, size)))
+		return 0;
 
 	return time;
 }
 
-void read_game_memory(void *base, void *buffer, size_t size)
+ssize_t read_game_memory(void *base, void *buffer, size_t size)
 {
 	if (!base || !buffer || !size)
-		return;
+		return 0;
 
-	_read_game_memory(base, buffer, size);
+	ssize_t read = 0;
+
+	if (!(read = _read_game_memory(base, buffer, size)))
+		return 0;
+	
+	return read;
 }
 
-static inline __hot void _read_game_memory(void *base, void *buffer,
+static inline __hot ssize_t _read_game_memory(void *base, void *buffer,
 	size_t size)
 {
+	ssize_t read = 0;
+	
 #ifdef ON_LINUX
 	struct iovec local[1];
 	struct iovec remote[1];
@@ -57,12 +68,14 @@ static inline __hot void _read_game_memory(void *base, void *buffer,
 	remote[0].iov_len = size;
 	remote[0].iov_base = base;
 
-	process_vm_readv(game_proc_id, local, 1, remote, 1, 0);
+	read = process_vm_readv(game_proc_id, local, 1, remote, 1, 0);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size, NULL);
+	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size, &read);
 #endif /* ON_WINDOWS */
+
+	return read;
 }
 
 unsigned long get_process_id(const char *name)

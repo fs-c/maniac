@@ -29,6 +29,8 @@
 
   #define HOME_ENV "HOME"
   #define LINUX_TIME_ADDRESS 0x36e5bf4
+  // Probably incorrect.
+  #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"  
 
   #define SEPERATOR '/'
   #define DEFAULT_OSU_PATH "/osufolder/Songs/"
@@ -108,10 +110,11 @@ int sort_actions(int count, struct action **actions);
 __hot int32_t get_maptime();
 
 /**
- * Copy game memory starting at `base` for `size` bytes into `buffer`.
+ * Copies game memory starting at `base` for `size` bytes into `buffer`.
  * Internally, this is a wrapper for _read_game_memory, with argument checking.
+ * Returns number of bytes read and copied.
  */
-void read_game_memory(void *base, void *buffer, size_t size);
+ssize_t read_game_memory(void *base, void *buffer, size_t size);
 
 /**
  * Sends a keypress to the currently active window.
