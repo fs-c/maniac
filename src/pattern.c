@@ -5,7 +5,7 @@
   #include <limits.h>
 #endif /* ON_LINUX */
 
-static inline void *check_chunk(unsigned char *sig, size_t sig_size,
+static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
 	unsigned char *buf, size_t buf_size);
 
 void *find_pattern(const unsigned char *signature, unsigned int sig_len)
@@ -15,7 +15,11 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len)
 
 	// Get reasonably sized chunks of memory...
 	for (size_t off = 0; off < INT_MAX; off += read_size - sig_len) {
-		read_game_memory((void *)off, chunk, read_size);
+		if (!(read_game_memory((void *)off, chunk, read_size))) {
+			debug("failed getting chunk at %#x", off);
+
+			continue;
+		}
 
 		// ...and check if they contain our signature.
 		void *hit = check_chunk(signature, sig_len, chunk, read_size);
@@ -28,7 +32,7 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len)
 }
 
 // TODO: Use a more efficient pattern matching algorithm.
-static inline void *check_chunk(unsigned char *sig, size_t sig_size,
+static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
 	unsigned char *buf, size_t buf_size)
 {
 	// Iterate over the buffer...
