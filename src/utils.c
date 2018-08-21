@@ -385,3 +385,30 @@ void debug(char *fmt, ...)
 	old_clock = clock();
 #endif /* DEBUG */
 }
+
+int get_env_var(char *name, char **out_var)
+{
+	if (!out_var || !name) {
+		debug("get_env_var: received null pointer");
+
+		return 0;
+	}
+
+	int var_len = 0;
+	char *var = getenv(name);
+
+	// getenv() returns NULL if the variable could not be found.
+	if (!var || !(var_len = strlen(var))) {
+		debug("get_env_var: environmental variable (%s) "
+			"does not exist", name);
+
+		return 0;
+	}
+
+	// Add one for the terminating zero.
+	*out_var = malloc(var_len + 1);
+	// Copy because getenv returns a pointer to internal memory.
+	strcpy(*out_var, var);
+
+	return var_len;
+}

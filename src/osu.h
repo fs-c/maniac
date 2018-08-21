@@ -176,6 +176,13 @@ void path_get_last(char *path, char **last);
 void debug(char *fmt, ...);
 
 /**
+ * Attempts to read an environmental variable named `name`, and stores it in
+ * the pointer pointed at by `out_var`.
+ * Returns the length of the variable stored or zero on failure.
+ */
+int get_env_var(char *name, char **out_var);
+
+/**
  * Returns a randomly generated number in the range of [0, range], while
  * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
  * in a given number of rounds.
