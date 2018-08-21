@@ -50,6 +50,8 @@ $ ./build.sh
 
 If you are on Windows, use [MinGW](http://www.mingw.org/) to compile.
 
+To enable debug logging, tell your compiler to add the `DEBUG` define (e.g. `-D DEBUG` for GCC).
+
 ## Scripts
 
 This is a relic from when `-m` was not yet implemented, but it can still be useful for when beatmap searching is failing (and it is, in some edge cases).
