@@ -16,7 +16,6 @@ char *optarg = 0;
 
 char *osu_path;
 char *default_map = "map.osu";
-char *osu_game_path = DEFAULT_OSU_PATH;
 
 int delay = 0;
 int exit_check = 1;
@@ -39,7 +38,7 @@ int main(int argc, char **argv)
 
 	time_address = 0;
 
-	while ((c = getopt(argc, argv, "m:p:a:l:r:o:he")) != -1) {
+	while ((c = getopt(argc, argv, "m:p:a:l:r:he")) != -1) {
 		switch (c) {
 		case 'm': map = optarg;
 			break;
@@ -53,8 +52,6 @@ int main(int argc, char **argv)
 			replay_delta = strtol(optarg, NULL, 10);
 			break;
 		case 'e': exit_check = !exit_check;
-			break;
-		case 'o': osu_game_path = optarg;
 			break;
 		case 'h': print_usage(argv[0]);
 			exit(EXIT_SUCCESS);

@@ -71,7 +71,6 @@
 
 extern void *time_address;
 extern pid_t game_proc_id;
-extern char *osu_game_path;
 
 struct beatmap {
 	int set_id;
