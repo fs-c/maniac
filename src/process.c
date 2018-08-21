@@ -70,7 +70,8 @@ static inline __hot ssize_t _read_game_memory(void *base, void *buffer,
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size, &read);
+	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size,
+		(unsigned long long *)&read);
 #endif /* ON_WINDOWS */
 
 	return read;
