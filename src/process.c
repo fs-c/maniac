@@ -1,7 +1,5 @@
 #include "osu.h"
 
-#include <stdio.h>
-
 #ifdef ON_LINUX
   // Enable GNU extensions (process_vm_readv).
   // TODO: This is hacky and undocumented.

@@ -1,8 +1,6 @@
 #include "osu.h"
 
-#include <stdio.h>
 #include <string.h>
-#include <dirent.h>
 
 #define RNG_ROUNDS 50
 #define RNG_BOUNDARY 0.5
