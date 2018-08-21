@@ -32,87 +32,60 @@ static void hitpoint_to_action(struct hitpoint *point, struct action *start,
 
 const char col_keys[] = { 'd', 'f', 'j', 'k' };
 
-// Note that this function is not thread safe.
 int find_beatmap(char *base, char *partial, char **map)
 {
-	DIR *dp;
-	struct dirent *ep;
-
-	if (!base || !partial || !map || !(*map)) {
-		debug("null pointer to find_beatmap (%x, %x, %x)", base,
-			partial, map);
-		return;		
+	if (!base || !partial || !map) {
+		debug("received null pointer");
+		return 0;
 	}
 
-	debug("opening directory %s", base);
-	if (!(dp = opendir(base))) {
-		printf("couldn't open directory %s\n", base);
+	int folder_len = 0;
+	char *folder = NULL;
 
-		return 1;
+	if (!(folder_len = find_partial_file(base, partial, &folder))) {
+		debug("couldn't find folder (%s)", partial);
+		return 0;
 	}
 
-	// Iterate over all files (in this case only folders) of the osu
-	// beatmap directory.
-	char folder[256];
-	debug("searching for %s in directory", partial);
-	while ((ep = readdir(dp))) {
-		char *dir = ep->d_name;
+	int map_len = 256, base_len = strlen(base);
+	*map = malloc(map_len);
 
-		// partial is missing map ID, allow for large-ish discrepancy.
-		if (strlen(dir) * 0.5 < partial_match(dir, partial)) {
-			debug("match found (%s), breaking out of search", dir);
+	// Absolute path to our base.
+	strcpy(*map, base);
+	// A.p. to the beatmap folder.
+	strcpy(*map + base_len, folder);
+	// Add a trailing seperator and terminating zero.
+	strcpy(*map + base_len + folder_len, (char[2]){(char)SEPERATOR, '\0'});
 
-			strcpy(folder, dir);
-			break;
-		}
+	free(folder);
+
+	int beatmap_len = 0;
+	char *beatmap = NULL;
+
+	if (!(beatmap_len = find_partial_file(*map, partial, &beatmap))) {
+		debug("couldn't find beatmap in %s", *map);
+		return 0;
 	}
-
-	closedir(dp);
-
-	if (!folder) {
-		printf("couldn't find beatmap folder name (%s)\n", partial);
-		return 2;
-	}
-
-	// Absolute path to the folder of our beatmap.
-	static char absolute[256];
-	strcpy(absolute, base);
-	strcpy(absolute + strlen(absolute), folder);
-	strcpy(absolute + strlen(absolute), (char[2]){(char)SEPERATOR, '\0'});
-
-	debug("opening directory %s", absolute);
-	if (!(dp = opendir(absolute))) {
-		printf("couldn't open directory %s\n", absolute);
-		return 1;
-	}
-
-	int best_sc = 0;
-	char beatmap[256];
-	// Iterate over all files in the beatmap folder, ...
-	while ((ep = readdir(dp)) != NULL) {
-		char *file = ep->d_name;
-
-		// ... , and check which one matches the one we are looking for.
-		// Allow for discrepancy since author note is omitted in our
-		// partial.
-		int score = partial_match(file, partial);
-		if (score > best_sc) {
-			debug("new best match string (%s) with score (%d)",
-				file, score);
-
-			best_sc = score;
-			strcpy(beatmap, file);
-		}
-	}
-
-	closedir(dp);
 
 	// This is now the absolute path to our beatmap.
-	strcpy(absolute + strlen(absolute), beatmap);
+	strcpy(*map + base_len + folder_len + 1, beatmap);
+	free(beatmap);
 
-	*map = absolute;
+	map_len = base_len + folder_len + 1 + beatmap_len;
 
-	return 0;
+	// Change block size to fit what we really need.
+	*map = realloc(*map, map_len + 1);
+
+	// Verify that the file we found is beatmap.
+	if (strcmp(*map + map_len - 4, ".osu") != 0) {
+		debug("%s is not a beatmap", *map);
+		
+		free(*map);
+
+		return 0;
+	}
+
+	return map_len;
 }
 
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)

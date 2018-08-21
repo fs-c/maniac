@@ -93,8 +93,8 @@ struct action {
 
 /**
  * Searches for a beatmap in DEFAULT_OSU_PATH + base given a part of the
- * file name, and stores the absolute path to it in **map.
- * Returns zero on success (1 == couldn't open dir, 2 == couldn't find file).
+ * file name, and stores the absolute path to it in *map.
+ * Returns the length of the path stored, or zero on failure.
  */
 int find_beatmap(char *base, char *partial, char **map);
 
