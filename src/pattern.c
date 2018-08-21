@@ -1,9 +1,6 @@
 #include "osu.h"
 
-// This is obsolete on Windows.
-#ifdef ON_LINUX
-  #include <limits.h>
-#endif /* ON_LINUX */
+#include <limits.h>
 
 static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
 	unsigned char *buf, size_t buf_size);
