@@ -184,19 +184,25 @@ int partial_match(char *base, char *partial);
 void path_get_last(char *path, char **last);
 
 /**
- * Attempts to read an environmental variable named `name` and writes the
- * address of the memory block it allocated into *out_var.
+ * Attempts to read an environmental variable named `name` and returns it
+ * through *out_var.
  * Returns the length of the variable stored or zero on failure.
  */
 int get_env_var(char *name, char **out_var);
 
 /**
- * Returns the absolute path to the main osu! directory, using HOME_ENV
- * and DEFAULT_OSU_PATH, and stores the address of the memory block it allocated
- * into *out_path.
- * Returns the length o
+ * Fetches the absolute path to the main osu! directory, using HOME_ENV
+ * and DEFAULT_OSU_PATH, and returns it through *out_path.
+ * Returns the length of the path stored or zero on failure.
  */
 int get_osu_path(char **out_path);
+
+/**
+ * Searches for a file or folder in `base`, matching all directory entries
+ * against `partial`. The best match is returned through *out_file.
+ * Returns the length of the matched path or zero on failure.
+ */
+int find_partial_file(char *base, char *partial, char **out_file);
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
@@ -207,7 +213,7 @@ int generate_number(int range, int rounds, float bound);
 
 /**
  * Searches for a signature (sequence of bytes) in the process, returning the
- * addresses of the end of the first occurence.
+ * address of the end (!) of the first occurence.
  */
 void *find_pattern(const unsigned char *signature, unsigned int sig_len);
 
