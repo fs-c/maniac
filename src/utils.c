@@ -389,8 +389,7 @@ void debug(char *fmt, ...)
 int get_env_var(char *name, char **out_var)
 {
 	if (!out_var || !name) {
-		debug("get_env_var: received null pointer");
-
+		debug("%s: received null pointer");
 		return 0;
 	}
 
@@ -399,16 +398,42 @@ int get_env_var(char *name, char **out_var)
 
 	// getenv() returns NULL if the variable could not be found.
 	if (!var || !(var_len = strlen(var))) {
-		debug("get_env_var: environmental variable (%s) "
-			"does not exist", name);
+		debug("%s: environmental variable (%s) "
+			"does not exist", __func__, name);
 
 		return 0;
 	}
 
-	// Add one for the terminating zero.
 	*out_var = malloc(var_len + 1);
 	// Copy because getenv returns a pointer to internal memory.
 	strcpy(*out_var, var);
 
 	return var_len;
+}
+
+int get_osu_path(char **out_path)
+{
+	if (!out_path) {
+		debug("%s: received null pointer", __func__);
+		return 0;
+	}
+
+	char *home;
+	int home_len;
+
+	if (!(home_len = get_env_var(HOME_ENV, &home))) {
+		debug("%s: failed fetching home path", __func__);
+	}
+
+	// Subtract one since sizeof includes the terminating null.
+	int path_len = home_len + (sizeof(DEFAULT_OSU_PATH) - 1);
+	*out_path = malloc(path_len + 1);
+
+	strcpy(*out_path, home);
+	// We overwrite the old terminating null here.
+	strcpy(*out_path + home_len, DEFAULT_OSU_PATH);
+
+	free(home);
+
+	return path_len;
 }

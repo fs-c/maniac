@@ -176,11 +176,19 @@ void path_get_last(char *path, char **last);
 void debug(char *fmt, ...);
 
 /**
- * Attempts to read an environmental variable named `name`, and stores it in
- * the pointer pointed at by `out_var`.
+ * Attempts to read an environmental variable named `name` and writes the
+ * address of the memory block it allocated into *out_var.
  * Returns the length of the variable stored or zero on failure.
  */
 int get_env_var(char *name, char **out_var);
+
+/**
+ * Returns the absolute path to the main osu! directory, using HOME_ENV
+ * and DEFAULT_OSU_PATH, and stores the address of the memory block it allocated
+ * into *out_path.
+ * Returns the length o
+ */
+int get_osu_path(char **out_path);
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
