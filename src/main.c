@@ -116,7 +116,8 @@ static int standby(char **map, int search)
 
 static int standby_loop(char *map, int *search, int replay)
 {
-	debug("standby_loop: %s (%#x, %d, %d)", map, search, *search, replay);
+	debug("standby_loop: %s (%#x, %d, %d)", map, (unsigned)search,
+		*search, replay);
 
 	int status = play(map);
 	static int retries = 0;

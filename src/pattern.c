@@ -16,7 +16,7 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len)
 	// Get reasonably sized chunks of memory...
 	for (size_t off = 0; off < INT_MAX; off += read_size - sig_len) {
 		if (!(read_game_memory((void *)off, chunk, read_size))) {
-			debug("failed getting chunk at %#x", off);
+			debug("failed getting chunk at %#x", (unsigned)off);
 
 			continue;
 		}
