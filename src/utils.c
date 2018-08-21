@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <dirent.h>
 
 #ifdef ON_LINUX
   Window window;
@@ -411,4 +412,40 @@ int get_osu_path(char **out_path)
 	free(home);
 
 	return path_len;
+}
+
+int find_partial_file(char *base, char *partial, char **out_file)
+{
+	if (!base || !partial || !out_file) {
+		debug("received null pointer");
+		return 0;
+	}
+
+	DIR *dp;
+	struct dirent *ep;
+
+	if (!(dp = opendir(base))) {
+		debug("couldn't open directory %s", base);
+		return 0;
+	}
+
+	const int file_len = 256;
+	*out_file = malloc(file_len);
+
+	int best_match = 0;
+
+	while((ep = readdir(dp))) {
+		char *name = ep->d_name;
+		int score = partial_match(name, partial);
+
+		if (score > best_match) {
+			best_match = score;
+
+			strcpy(*out_file, name);
+		}
+	}
+
+	closedir(dp);
+
+	return strlen(*out_file);
 }
