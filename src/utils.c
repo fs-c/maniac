@@ -97,7 +97,7 @@ void do_setup()
 	if (!(game_proc = OpenProcess(PROCESS_VM_READ, 0, game_proc_id))) {
 		printf("failed to get handle to game process\n");
 		return;
-	} else debug("got handle to game process with ID %d", game_proc_id);
+	} else debug("got handle to game process with ID %d", (int)game_proc_id);
 
 	if (!(game_window = find_window(game_proc_id))) {
 		printf("failed to find game window\n");
