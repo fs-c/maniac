@@ -84,7 +84,7 @@ void do_setup()
 		printf("failed to open X display\n");
 
 		return;
-	} else debug("opened X display (%#x)", display);
+	} else debug("opened X display (%#x)", (unsigned)(intptr_t)display);
 
 	if (!(window = find_window(game_proc_id))) {
 		printf("failed to find game window\n");
@@ -361,35 +361,10 @@ int generate_number(int range, int rounds, float bound)
 	return rn;
 }
 
-void debug(char *fmt, ...)
-{
-#ifdef DEBUG
-	static clock_t old_clock = 0;
-	clock_t cur_clock = clock();
-
-	va_list args;
-	va_start(args, fmt);
-
-	char message[256];
-	sprintf(message, "[debug] %-8ld  ", cur_clock - old_clock);
-	strcat(message, fmt);
-
-	int len = strlen(message);
-	message[len] = '\n';
-	message[len + 1] = '\0';
-
-	vprintf(message, args);
-
-	va_end(args);
-
-	old_clock = clock();
-#endif /* DEBUG */
-}
-
 int get_env_var(char *name, char **out_var)
 {
 	if (!out_var || !name) {
-		debug("%s: received null pointer");
+		debug("received null pointer");
 		return 0;
 	}
 
@@ -398,8 +373,7 @@ int get_env_var(char *name, char **out_var)
 
 	// getenv() returns NULL if the variable could not be found.
 	if (!var || !(var_len = strlen(var))) {
-		debug("%s: environmental variable (%s) "
-			"does not exist", __func__, name);
+		debug("environmental variable (%s) does not exist", name);
 
 		return 0;
 	}
@@ -414,7 +388,7 @@ int get_env_var(char *name, char **out_var)
 int get_osu_path(char **out_path)
 {
 	if (!out_path) {
-		debug("%s: received null pointer", __func__);
+		debug("received null pointer");
 		return 0;
 	}
 
@@ -422,7 +396,8 @@ int get_osu_path(char **out_path)
 	int home_len;
 
 	if (!(home_len = get_env_var(HOME_ENV, &home))) {
-		debug("%s: failed fetching home path", __func__);
+		debug("failed fetching home path");
+		return 0;
 	}
 
 	// Subtract one since sizeof includes the terminating null.

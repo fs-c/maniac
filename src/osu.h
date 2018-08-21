@@ -45,6 +45,20 @@
   extern Display *display;
 #endif /* __linux__ */
 
+#ifdef DEBUG
+
+  #define debug(...)\
+      printf("[debug] [%s:%s] ", __FILE__, __func__);\
+      printf(__VA_ARGS__);\
+      putchar('\n');\
+
+#elif !DEBUG
+
+  #define debug(...)\
+      0;\
+
+#endif
+
 #define NUM_COLS 4
 #define COL_WIDTH 512
 
@@ -168,12 +182,6 @@ int partial_match(char *base, char *partial);
  * If no seperator was found, `path` is equal to `*last`.
  */
 void path_get_last(char *path, char **last);
-
-/**
- * Same interface as printf, with "debug: " being prepended to every message.
- * This is a NOP if DEBUG is not defined.
- */
-void debug(char *fmt, ...);
 
 /**
  * Attempts to read an environmental variable named `name` and writes the
