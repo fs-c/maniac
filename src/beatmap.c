@@ -32,10 +32,17 @@ static void hitpoint_to_action(struct hitpoint *point, struct action *start,
 
 const char col_keys[] = { 'd', 'f', 'j', 'k' };
 
+// Note that this function is not thread safe.
 int find_beatmap(char *base, char *partial, char **map)
 {
 	DIR *dp;
 	struct dirent *ep;
+
+	if (!base || !partial || !map || !(*map)) {
+		debug("null pointer to find_beatmap (%x, %x, %x)", base,
+			partial, map);
+		return;		
+	}
 
 	debug("opening directory %s", base);
 	if (!(dp = opendir(base))) {
@@ -46,7 +53,7 @@ int find_beatmap(char *base, char *partial, char **map)
 
 	// Iterate over all files (in this case only folders) of the osu
 	// beatmap directory.
-	char *folder = NULL;
+	char folder[256];
 	debug("searching for %s in directory", partial);
 	while ((ep = readdir(dp))) {
 		char *dir = ep->d_name;
@@ -55,7 +62,7 @@ int find_beatmap(char *base, char *partial, char **map)
 		if (strlen(dir) * 0.5 < partial_match(dir, partial)) {
 			debug("match found (%s), breaking out of search", dir);
 
-			folder = dir;
+			strcpy(folder, dir);
 			break;
 		}
 	}
