@@ -1,7 +1,6 @@
 #include "osu.h"
 
 #include <time.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <signal.h> 
@@ -15,7 +14,7 @@
 int opterr;
 char *optarg = 0;
 
-char osu_path[256];
+char *osu_path;
 char *default_map = "map.osu";
 
 int delay = 0;
@@ -59,8 +58,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	strcpy(osu_path, getenv(HOME_ENV));
-	strcpy(osu_path + strlen(osu_path), DEFAULT_OSU_PATH);
+	if (!(get_osu_path(&osu_path))) {
+		printf("couldn't get osu! path\n");
+		return EXIT_FAILURE;
+	}
 
 	if (!game_proc_id && !(game_proc_id = get_process_id("osu!.exe"))) {
 		printf("couldn't find game process ID\n");
