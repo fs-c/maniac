@@ -126,7 +126,7 @@ static int standby_loop(char *map, int *search, int replay)
 
 	if (status == PLAY_ERROR) {
 		printf("an error occured while playing, "
-			"there's likely additional error output above");
+			"there's likely additional error output above\n");
 
 		if (replay) {
 			int delay = 1000 * retries++;
