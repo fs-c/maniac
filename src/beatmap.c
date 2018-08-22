@@ -88,6 +88,14 @@ int find_beatmap(char *base, char *partial, char **map)
 
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
+	if (!file || !points || !meta) {
+		debug("received a null pointer (%#x, %#x, %#x)",
+			(unsigned)(intptr_t)file, (unsigned)(intptr_t)points,
+			(unsigned)(intptr_t)meta);
+		
+		return 0;
+	}
+
 #ifdef ON_WINDOWS
 	const int offset = -2;
 #endif /* ON_WINDOWS */
@@ -99,6 +107,7 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 	char line[MAX_LINE_LENGTH];
 
 	if (!(stream = fopen(file, "r"))) {
+		debug("failed to open file %s", file);
 		return 0;
 	}
 
