@@ -91,43 +91,15 @@ int find_beatmap(char *base, char *partial, char **map)
 // 	 memory in chunks and copy it to adequqtely sized buffer once done.
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
-<<<<<<< HEAD
-<<<<<<< HEAD
 	if (!points || !meta || !file) {
 		debug("received null pointer");
 		return 0;
 	}
-=======
-=======
->>>>>>> 306724ca7785a25d141493d364d75863961ce66c
-	if (!file || !points || !meta) {
-		debug("received a null pointer (%#x, %#x, %#x)",
-			(unsigned)(intptr_t)file, (unsigned)(intptr_t)points,
-			(unsigned)(intptr_t)meta);
-		
-		return 0;
-	}
-
-#ifdef ON_WINDOWS
-	const int offset = -2;
-#endif /* ON_WINDOWS */
-#ifdef ON_LINUX
-	const int offset = -3;
-#endif /* ON_LINUX */
->>>>>>> 306724ca7785a25d141493d364d75863961ce66c
 
 	FILE *stream;
 
 	if (!(stream = fopen(file, "r"))) {
-<<<<<<< HEAD
-<<<<<<< HEAD
 		debug("couldn't open file %s", file);
-=======
-		debug("failed to open file %s", file);
->>>>>>> 306724ca7785a25d141493d364d75863961ce66c
-=======
-		debug("failed to open file %s", file);
->>>>>>> 306724ca7785a25d141493d364d75863961ce66c
 		return 0;
 	}
 
