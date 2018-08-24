@@ -6,7 +6,7 @@ PRE_FLAGS="-DDEBUG"
 #			cause warnings
 # frame-address:	debug functions call unsafe functions, this is
 #			irrelevant for production and an acceptable risk here
-POST_FLAGS="-Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-frame-address"
+POST_FLAGS="-Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-frame-address -g"
 
 cd src
 
