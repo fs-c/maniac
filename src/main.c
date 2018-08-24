@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	setbuf(stdout, NULL);
 
 	char *map = NULL;
-	int replay = 0, c;
+	int replay = 0, c = 0;
 
 	time_address = 0;
 
