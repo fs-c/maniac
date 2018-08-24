@@ -42,8 +42,8 @@
   #include <X11/Xlib.h>
   #include <X11/extensions/XTest.h>
 
-  extern Window window;
   extern Display *display;
+  extern Window game_window;
 #endif /* __linux__ */
 
 #ifdef DEBUG
@@ -217,5 +217,7 @@ int generate_number(int range, int rounds, float bound);
  * address of the end (!) of the first occurence.
  */
 void *find_pattern(const unsigned char *signature, unsigned int sig_len);
+
+int find_window(unsigned long process_id, void **out_window);
 
 #endif /* OSU_H */

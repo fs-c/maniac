@@ -11,6 +11,14 @@
 #define STANDBY_BREAK 0
 #define STANDBY_CONTINUE 1
 
+#ifdef ON_LINUX
+  Window game_window;
+#endif /* ON_LINUX */
+
+#ifdef ON_WINDOWS
+  HWND game_window;
+#endif /* ON_WINDOWS */
+
 int opterr;
 char *optarg = 0;
 
@@ -73,6 +81,11 @@ int main(int argc, char **argv)
 	// We can only fetch time address after setup has been done.
 	if (!(time_address = get_time_address())) {
 		printf("couldn't find time address\n");
+		return EXIT_FAILURE;
+	}
+
+	if (!(find_window(game_proc_id, (void *)&game_window))) {
+		printf("couldn't find game window\n");
 		return EXIT_FAILURE;
 	}
 

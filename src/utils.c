@@ -6,17 +6,8 @@
 #include <dirent.h>
 
 #ifdef ON_LINUX
-  Window window;
   Display *display;
-
-  static Window find_window(pid_t pid);
-  static pid_t get_window_pid(Window window);
-  static int is_window_visible(Window window);
-  static int is_window_match(Window window, pid_t pid);
-  static void search_children(pid_t pid, Window window, Window *out);
-  static int get_window_name(Window window, char *title, int title_len);
-  static unsigned char *get_window_property(Window window, Atom atom,
-	size_t *num_items);
+  Window game_window;
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
@@ -25,18 +16,6 @@
 
   HWND game_window;
   HANDLE game_proc;
-
-  struct handle_data {
-	HWND window_handle;
-	unsigned long process_id;
-  };
-
-  __stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param);
-
-  /**
-   * Returns a handle to the main window of the process with the given ID.
-   */
-  static HWND find_window(unsigned long process_id);
 #endif /* ON_WINDOWS */
 
 void *time_address;
@@ -84,28 +63,19 @@ void do_setup()
 		printf("failed to open X display\n");
 
 		return;
-	} else { debug("opened X display (%#x)", (unsigned)(intptr_t)display); }
-
-	if (!(window = find_window(game_proc_id))) {
-		printf("failed to find game window\n");
-
-		return;
-	} else { debug("found game window (%ld)", window); }
+	}
+	
+	debug("opened X display (%#x)", (unsigned)(intptr_t)display);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
 	if (!(game_proc = OpenProcess(PROCESS_VM_READ, 0, game_proc_id))) {
 		printf("failed to get handle to game process\n");
 		return;
-	} else {
-		debug("got handle to game process with ID %d",
-			(int)game_proc_id);
 	}
-
-	if (!(game_window = find_window(game_proc_id))) {
-		printf("failed to find game window\n");
-		return;
-	} else { debug("found game window"); }
+	
+	debug("got handle to game process with ID %d",
+		(int)game_proc_id);
 #endif /* ON_WINDOWS */
 }
 
@@ -129,190 +99,6 @@ void *get_time_address()
 	return (void *)LINUX_TIME_ADDRESS;
 #endif
 }
-
-__hot int get_window_title(char **title, int title_len)
-{
-#ifdef ON_WINDOWS
-	return GetWindowText(game_window, *title, title_len);
-#endif /* ON_WINDOWS */
-
-#ifdef ON_LINUX
-	return get_window_name(window, *title, title_len);
-#endif /* ON_LINUX */
-
-	return 0;
-}
-
-// I hate having to do this but I can't think of a cleaner solution. (TODO?)
-#ifdef ON_WINDOWS
-static HWND find_window(unsigned long process_id)
-{
-	struct handle_data data = { 0, process_id };
-	EnumWindows((WNDENUMPROC)enum_windows_callback, (LPARAM)&data);
-
-	return data.window_handle;
-}
-
-__stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param)
-{
-	struct handle_data *data = (struct handle_data *)param;
-
-	unsigned long process_id = 0;
-	GetWindowThreadProcessId(handle, &process_id);
-
-	if (process_id != data->process_id)
-		return 1;
-
-	data->window_handle = handle;
-	return 0;
-}
-#endif /* ON_WINDOWS */
-
-// See above, this seems like a horrible solution.
-#ifdef ON_LINUX
-static Window find_window(pid_t pid)
-{
-	Window root = RootWindow(display, 0), found = 0;
-
-	search_children(pid, root, &found);
-
-	if (found) {
-		return found;
-	}
-
-	return 0;
-}
-
-static void search_children(pid_t pid, Window window, Window *out)
-{
-	size_t num_children = 0;
-	Window dummy, *children = NULL;
-
-	int success = XQueryTree(display, window, &dummy, &dummy, &children,
-		(unsigned *)&num_children);
-	
-	if (!success) {
-		if (children)
-			XFree(children);
-
-		printf("failed getting children of %ld\n", window);
-
-		return;
-	}
-
-	for (size_t i = 0; i < num_children; i++) {
-		Window child = children[i];
-
-		if (is_window_match(child, pid)) {
-			*out = child;			
-
-			return;
-		}
-	}
-
-	for (size_t i = 0; i < num_children; i++) {
-		search_children(pid, children[i], out);
-	}
-}
-
-static int is_window_match(Window window, pid_t pid)
-{
-	if (get_window_pid(window) != pid)
-		return 0;
-
-	if (!(is_window_visible(window)))
-		return 0;
-
-	return 1;
-}
-
-static pid_t get_window_pid(Window window)
-{
-	size_t num_items;
-	unsigned char *data;
-
-	static Atom pid_atom = -1;
-
-	if (pid_atom == (Atom)-1) {
-		pid_atom = XInternAtom(display, "_NET_WM_PID", 0);
-	}
-
-	data = get_window_property(window, pid_atom, &num_items);
-
-	pid_t pid = (num_items > 0) ? ((pid_t) *((unsigned long *)data)) : 0;
-
-	XFree(data);
-	
-	return pid;
-}
-
-static unsigned char *get_window_property(Window window, Atom atom,
-	size_t *num_items)
-{
-	Atom actual_type;
-	int actual_format;
-
-	size_t bytes_after;
-	unsigned char *prop;
-
-	int status = XGetWindowProperty(display, window, atom, 0, (~0L), 0,
-		AnyPropertyType, &actual_type, &actual_format, num_items,
-		&bytes_after, &prop);
-
-	if (status != Success) {
-		printf("failed getting window (%ld) property\n", window);
-
-		return NULL;
-	}
-
-	return prop;
-}
-
-static int is_window_visible(Window window)
-{
-	XWindowAttributes attr;
-	int success = XGetWindowAttributes(display, window, &attr);
-
-	if (!success) {
-		printf("failed getting window (%ld) attributes\n",
-			window);
-
-		return 0;
-	}
-
-	if (attr.map_state != IsViewable) {
-		return 0;
-	}
-
-	return 1;
-}
-
-static int get_window_name(Window window, char *title, int title_len)
-{
-	static Atom net_name_atom = -1, name_atom = -1;
-
-	if (name_atom == (Atom)-1)
-		name_atom = XInternAtom(display, "WM_NAME", 0);
-	if (net_name_atom == (Atom)-1)
-		net_name_atom = XInternAtom(display, "_NET_WM_NAME", 0);
-
-	 // http://standards.freedesktop.org/wm-spec/1.3/ar01s05.html
-	 // Prefer _NET_WM_NAME if available, otherwise use WM_NAME
-
-	size_t num_items = 0;
-
-	unsigned char *prop = get_window_property(window, net_name_atom,
-		&num_items);
-
-	if (!num_items) {
-		prop = get_window_property(window, name_atom, &num_items);
-	}
-
-	strcpy(title, (char *)prop);
-
-	return strlen(title);
-}
-#endif /* ON_LINUX */
 
 // TODO: I'm certain there's a more elegant way to go about this.
 int partial_match(char *base, char *partial)
