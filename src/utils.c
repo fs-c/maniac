@@ -31,7 +31,7 @@
 	unsigned long process_id;
   };
 
-  __stdcall static int enum_windows_callback(HWND handle, void *param);
+  __stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param);
 
   /**
    * Returns a handle to the main window of the process with the given ID.
@@ -84,25 +84,28 @@ void do_setup()
 		printf("failed to open X display\n");
 
 		return;
-	} else debug("opened X display (%#x)", (unsigned)(intptr_t)display);
+	} else { debug("opened X display (%#x)", (unsigned)(intptr_t)display); }
 
 	if (!(window = find_window(game_proc_id))) {
 		printf("failed to find game window\n");
 
 		return;
-	} else debug("found game window (%ld)", window);
+	} else { debug("found game window (%ld)", window); }
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
 	if (!(game_proc = OpenProcess(PROCESS_VM_READ, 0, game_proc_id))) {
 		printf("failed to get handle to game process\n");
 		return;
-	} else debug("got handle to game process with ID %d", (int)game_proc_id);
+	} else {
+		debug("got handle to game process with ID %d",
+			(int)game_proc_id);
+	}
 
 	if (!(game_window = find_window(game_proc_id))) {
 		printf("failed to find game window\n");
 		return;
-	} else debug("found game window");;
+	} else { debug("found game window"); }
 #endif /* ON_WINDOWS */
 }
 
@@ -150,7 +153,7 @@ static HWND find_window(unsigned long process_id)
 	return data.window_handle;
 }
 
-__stdcall static int enum_windows_callback(HWND handle, void *param)
+__stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param)
 {
 	struct handle_data *data = (struct handle_data *)param;
 
