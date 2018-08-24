@@ -92,11 +92,14 @@ int find_beatmap(char *base, char *partial, char **map)
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if (!points || !meta || !file) {
 		debug("received null pointer");
 		return 0;
 	}
 =======
+=======
+>>>>>>> 306724ca7785a25d141493d364d75863961ce66c
 	if (!file || !points || !meta) {
 		debug("received a null pointer (%#x, %#x, %#x)",
 			(unsigned)(intptr_t)file, (unsigned)(intptr_t)points,
@@ -117,7 +120,11 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 
 	if (!(stream = fopen(file, "r"))) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		debug("couldn't open file %s", file);
+=======
+		debug("failed to open file %s", file);
+>>>>>>> 306724ca7785a25d141493d364d75863961ce66c
 =======
 		debug("failed to open file %s", file);
 >>>>>>> 306724ca7785a25d141493d364d75863961ce66c
