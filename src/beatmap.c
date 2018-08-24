@@ -67,6 +67,7 @@ int find_beatmap(char *base, char *partial, char **map)
 
 	// This is now the absolute path to our beatmap.
 	strcpy(*map + base_len + folder_len + 1, beatmap);
+
 	free(beatmap);
 
 	map_len = base_len + folder_len + 1 + beatmap_len;
@@ -86,34 +87,33 @@ int find_beatmap(char *base, char *partial, char **map)
 	return map_len;
 }
 
+// TODO: Inefficient as it calls realloc() for very parsed line. Allocate
+// 	 memory in chunks and copy it to adequqtely sized buffer once done.
 int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 {
-#ifdef ON_WINDOWS
-	const int offset = -2;
-#endif /* ON_WINDOWS */
-#ifdef ON_LINUX
-	const int offset = -3;
-#endif /* ON_LINUX */
-
-	FILE *stream;
-	char line[MAX_LINE_LENGTH];
-
-	if (!(stream = fopen(file, "r"))) {
+	if (!points || !meta || !file) {
+		debug("received null pointer");
 		return 0;
 	}
 
-	int cur_section = 0;
-	int num_parsed = 0, len = 0;
-	size_t hp_size = sizeof(struct hitpoint);
+	FILE *stream;
+
+	if (!(stream = fopen(file, "r"))) {
+		debug("couldn't open file %s", file);
+		return 0;
+	}
+
+	*points = NULL;
+	*meta = calloc(1, sizeof(struct beatmap));
+
+	const int line_len = 256;
+	char *line = malloc(line_len);
 
 	struct hitpoint cur_point;
+	int num_parsed = 0, cur_section = 0;
+	size_t hp_size = sizeof(struct hitpoint);
 
-	if (points && *points)
-		*points = malloc(hp_size);
-	if (meta && *meta)
-		*meta = malloc(sizeof(struct beatmap));
-
-	while (fgets(line, sizeof(line), stream)) {
+	while (fgets(line, line_len, stream)) {
 		switch (cur_section) {
 		// [Metadata]
 		case 3:
@@ -124,35 +124,37 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 			parse_hitobject_line(line, &cur_point);
 
 			*points = realloc(*points, ++num_parsed * hp_size);
-			(*points)[num_parsed - 1] = cur_point;
+			points[0][num_parsed - 1] = cur_point;
 			break;
 		}
 
-		if (line[0] == '['
-			&& line[(len = strlen(line)) + offset] == ']')
-		{
+		if (line[0] == '[' && line[strlen(line) - 3] == ']')
 			cur_section++;
-		}
 	}
 
+	free(line);
 	fclose(stream);
 
 	return num_parsed;
 }
 
-// Note that this function is not thread safe. (TODO?)
+// TODO: This function is not thread safe.
 static int parse_metadata_line(char *line, struct beatmap *meta)
 {
-	char *token, *ln = strdup(line), *title = NULL, *value = NULL, i = 0;
+	int i = 0;
+	// strtok() modfies it's arguments, work with a copy.
+	char *ln = strdup(line);
+	char *token = NULL, *key = NULL, *value = NULL;
 
+	// Metadata lines come in key:value pairs.
 	token = strtok(ln, ":");
 	while (token != NULL) {
 		switch (i++) {
-		case 0: title = strdup(token);
+		case 0: key = strdup(token);
 			break;
 		case 1: value = strdup(token);
 
-			parse_metadata_token(title, value, meta);
+			parse_metadata_token(key, value, meta);
 
 			break;
 		}
@@ -160,29 +162,34 @@ static int parse_metadata_line(char *line, struct beatmap *meta)
 		token = strtok(NULL, ":");
 	}
 
+	free(ln);
+	free(token);
+
+	free(key);
+	free(value);
+
 	return i;
 }
 
-// TODO: There has got to be a less ugly and more extensible way of doing this.
 static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 {
-#ifdef ON_WINDOWS
-	const int offset = -1;
-#endif /* ON_WINDOWS */
-#ifdef ON_LINUX
-	const int offset = -2;
-#endif /* ON_LINUX */
+	if (!key || !value || !meta) {
+		debug("received null pointer");
+		return;
+	}
 
+	// Always ignore last two characters since .osu files are CRLF by
+	// default.
 	if (!(strcmp(key, "Title"))) {
-		value[strlen(value) + offset] = '\0';
+		value[strlen(value) - 2] = '\0';
 
 		strcpy(meta->title, value);
 	} else if (!(strcmp(key, "Artist"))) {
-		value[strlen(value) + offset] = '\0';
+		value[strlen(value) - 2] = '\0';
 
 		strcpy(meta->artist, value);
 	} else if (!(strcmp(key, "Version"))) {
-		value[strlen(value) + offset] = '\0';
+		value[strlen(value) - 2] = '\0';
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {
@@ -192,13 +199,13 @@ static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
 	}
 }
 
-// Note that this function is not thread safe. (TODO?)
+// TODO: This function is not thread safe.
 static int parse_hitobject_line(char *line, struct hitpoint *point)
 {
-	int end_time, secval = 0;
-	char *token, *ln = strdup(line), i = 0;
+	int end_time = 0, secval = 0, i = 0;
+	char *ln = strdup(line), *token = NULL;
 
-	// Line is expexted to follow the following format:
+	// Line is expected to follow the following format:
 	// x, y, time, type, hitSound, extras (= a:b:c:d:)
 	token = strtok(ln, ",");
 	while (token != NULL) {
