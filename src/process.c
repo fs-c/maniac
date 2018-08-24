@@ -91,6 +91,8 @@ unsigned long get_process_id(const char *name)
 	fclose(f);
 
 	proc_id = read ? atoi(cmd) : 0;
+
+	free(cmd);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
