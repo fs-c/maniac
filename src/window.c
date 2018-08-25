@@ -116,6 +116,8 @@ static int get_xwindow_title(Window window, char *title, int title_len)
 
 	strcpy(title, (char *)prop);
 
+	XFree((void *)prop);
+
 	return strlen(title);
 }
 
@@ -140,7 +142,7 @@ static void search_children(pid_t pid, Window window, Window *out)
 		Window child = children[i];
 
 		if (is_window_match(child, pid)) {
-			*out = child;			
+			*out = child;
 
 			return;
 		}
@@ -149,6 +151,8 @@ static void search_children(pid_t pid, Window window, Window *out)
 	for (size_t i = 0; i < num_children; i++) {
 		search_children(pid, children[i], out);
 	}
+
+	XFree(children);	
 }
 
 static int is_window_match(Window window, pid_t pid)
