@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 			break;
 		case 'p': game_proc_id = strtol(optarg, NULL, 10);
 			break;
-		case 'a': time_address = (void *)(uintptr_t)strtol(optarg, NULL, 0);
+		case 'a': time_address = (void *)strtol(optarg, NULL, 0);
 			break;
 		case 'l': delay = strtol(optarg, NULL, 10);
 			break;
@@ -106,6 +106,8 @@ int main(int argc, char **argv)
 			break;
 	}
 
+	free((void *)game_window);
+
 	return EXIT_SUCCESS;
 }
 
@@ -124,14 +126,14 @@ static int standby(char **map, int search)
 		find_beatmap(osu_path, title + 8, map);
 	}
 
+	free(title);
+
 	return 1;
 }
 
+// TODO: Implementation of replay functionality is very suboptimal.
 static int standby_loop(char *map, int *search, int replay)
 {
-	debug("standby_loop: %s (%#x, %d, %d)", map, (unsigned)(intptr_t)search,
-		*search, replay);
-
 	int status = play(map);
 	static int retries = 0;
 
@@ -236,7 +238,7 @@ static int play(char *map)
 		while ((cur_a = actions + cur_i)->time <= time) {
 			cur_i++;
 
-			send_keypress(cur_a->key, cur_a->down);		
+			send_keypress(cur_a->key, cur_a->down);
 		}
 
 		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
@@ -246,6 +248,7 @@ static int play(char *map)
 
 clean_exit:
 	free(meta);
+	free(title);
 	free(actions);
 
 	return PLAY_FINISH;
