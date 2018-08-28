@@ -235,7 +235,9 @@ static int play(char *map)
 
 		time = get_maptime();
 
-		while ((cur_a = actions + cur_i)->time <= time) {
+		while (cur_i < num_actions &&
+			(cur_a = actions + cur_i)->time < time)
+		{
 			cur_i++;
 
 			send_keypress(cur_a->key, cur_a->down);
