@@ -72,7 +72,7 @@
 extern void *time_address;
 extern pid_t game_proc_id;
 
-struct beatmap {
+struct beatmap_meta {
 	int set_id;
 	int map_id;
 	char title[256];
@@ -104,13 +104,15 @@ int find_beatmap(char *base, char *partial, char **map);
  * **points and a metadata struct.
  * Returns the number of points parsed and stored.
  */
-int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta);
+int parse_beatmap(char *file, struct hitpoint **points,
+	struct beatmap_meta **meta);
 
 /**
  * Parses a total of count hitmapts from **points into **actions.
  * Returns the number of actions parsed and stored, which should be count * 2.
  */
-int parse_hitpoints(int count, struct hitpoint **points, struct action **actions);
+int parse_hitpoints(int count, struct hitpoint **points,
+	struct	action **actions);
 
 /**
  * Sort the array of actions given through **actions by time.

@@ -9,12 +9,13 @@
  * Parses a raw metadata line into a beatmap struct pointed to by *meta.
  * Returns the number of tokens read.
  */
-static int parse_metadata_line(char *line, struct beatmap *meta);
+static int parse_metadata_line(char *line, struct beatmap_meta *meta);
 
 /**
  * Parses a key:value set into *meta.
  */
-static void parse_metadata_token(char *key, char *value, struct beatmap *meta);
+static void parse_metadata_token(char *key, char *value,
+	struct beatmap_meta *meta);
 
 /**
  * Parses a raw hitobject line into a hitpoint struct pointed to by *point.
@@ -87,9 +88,10 @@ int find_beatmap(char *base, char *partial, char **map)
 	return map_len;
 }
 
-// TODO: Inefficient as it calls realloc() for very parsed line. Allocate
+// TODO: Inefficient as it calls realloc() for every parsed line. Allocate
 // 	 memory in chunks and copy it to adequqtely sized buffer once done.
-int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
+int parse_beatmap(char *file, struct hitpoint **points,
+	struct beatmap_meta **meta)
 {
 	if (!points || !meta || !file) {
 		debug("received null pointer");
@@ -104,7 +106,7 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 	}
 
 	*points = NULL;
-	*meta = calloc(1, sizeof(struct beatmap));
+	*meta = calloc(1, sizeof(struct beatmap_meta));
 
 	const int line_len = 256;
 	char *line = malloc(line_len);
@@ -139,7 +141,7 @@ int parse_beatmap(char *file, struct hitpoint **points, struct beatmap **meta)
 }
 
 // TODO: This function is not thread safe.
-static int parse_metadata_line(char *line, struct beatmap *meta)
+static int parse_metadata_line(char *line, struct beatmap_meta *meta)
 {
 	int i = 0;
 	// strtok() modfies it's arguments, work with a copy.
@@ -163,15 +165,15 @@ static int parse_metadata_line(char *line, struct beatmap *meta)
 	}
 
 	free(ln);
-	free(token);
-
 	free(key);
+	free(token);
 	free(value);
 
 	return i;
 }
 
-static void parse_metadata_token(char *key, char *value, struct beatmap *meta)
+static void parse_metadata_token(char *key, char *value,
+	struct beatmap_meta *meta)
 {
 	if (!key || !value || !meta) {
 		debug("received null pointer");
