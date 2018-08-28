@@ -179,10 +179,10 @@ static int standby_loop(char *map, int *search, int replay)
 
 static int play(char *map)
 {
-	int num_points = 0;
-	struct beatmap *meta;
-	struct hitpoint *points;
-	if ((num_points = parse_beatmap(map, &points, &meta)) == 0 || !points) {
+	struct beatmap *meta = NULL;
+	struct hitpoint *points = NULL;
+	int num_points = num_points = parse_beatmap(map, &points, &meta);
+	if (!num_points || !points || !meta) {
 		printf("failed to parse beatmap (%s)\n", map);
 		return PLAY_ERROR;
 	}
@@ -194,7 +194,7 @@ static int play(char *map)
 
 	debug("humanized %d hitpoints with delay of %d", num_points, delay);
 
-	struct action *actions;
+	struct action *actions = NULL;
 	int num_actions = parse_hitpoints(num_points, &points, &actions);
 	if (!num_actions || !actions) {
 		printf("failed to parse hitpoints\n");
@@ -213,7 +213,7 @@ static int play(char *map)
 	debug("sorted %d actions", num_actions);
 
 	int cur_i = 0;				// Current action offset.
-	struct action *cur_a;			// Pointer to current action.
+	struct action *cur_a = NULL;		// Pointer to current action.
 	int32_t time = get_maptime();		// Current maptime.
 
 	const int title_len = 128;		// Max length of title.
