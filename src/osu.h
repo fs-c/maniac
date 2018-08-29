@@ -60,8 +60,7 @@
 
 #endif
 
-#define NUM_COLS 4
-#define COL_WIDTH 512
+#define COLS_WIDTH 512
 
 #define MAX_LINE_LENGTH 1024
 
@@ -75,6 +74,7 @@ extern pid_t game_proc_id;
 struct beatmap_meta {
 	int set_id;
 	int map_id;
+	int columns;
 	char title[256];
 	char artist[256];
 	char version[256];
@@ -111,8 +111,8 @@ int parse_beatmap(char *file, struct hitpoint **points,
  * Parses a total of count hitmapts from **points into **actions.
  * Returns the number of actions parsed and stored, which should be count * 2.
  */
-int parse_hitpoints(int count, struct hitpoint **points,
-	struct	action **actions);
+int parse_hitpoints(int count, int columns, struct hitpoint **points,
+	struct action **actions);
 
 /**
  * Sort the array of actions given through **actions by time.

@@ -195,7 +195,8 @@ static int play(char *map)
 	debug("humanized %d hitpoints with delay of %d", num_points, delay);
 
 	struct action *actions = NULL;
-	int num_actions = parse_hitpoints(num_points, &points, &actions);
+	int num_actions = parse_hitpoints(num_points, meta->columns, &points,
+		&actions);
 	if (!num_actions || !actions) {
 		printf("failed to parse hitpoints\n");
 		return PLAY_ERROR;

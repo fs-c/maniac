@@ -6,30 +6,33 @@
 #define RNG_BOUNDARY 0.5
 
 /**
- * Parses a raw metadata line into a beatmap struct pointed to by *meta.
+ * Parses a raw beatmap line into a beatmap_meta struct pointed to by *meta.
  * Returns the number of tokens read.
  */
-static int parse_metadata_line(char *line, struct beatmap_meta *meta);
+static int parse_beatmap_line(char *line, struct beatmap_meta *meta);
 
 /**
  * Parses a key:value set into *meta.
  */
-static void parse_metadata_token(char *key, char *value,
+static void parse_beatmap_token(char *key, char *value,
 	struct beatmap_meta *meta);
 
 /**
  * Parses a raw hitobject line into a hitpoint struct pointed to by *point.
  * Returns the number of tokens read.
  */
-static int parse_hitobject_line(char *line, struct hitpoint *point);
+static int parse_hitobject_line(char *line, int columns,
+	struct hitpoint *point);
 
 /**
  * Populates *start and *end with data from hitpoint *point.
  */
-static void hitpoint_to_action(struct hitpoint *point, struct action *start,
-	struct action *end);
+static void hitpoint_to_action(char *keys, struct hitpoint *point,
+	struct action *start, struct action *end);
 
-const char col_keys[] = { 'd', 'f', 'j', 'k' };
+// const char col_keys[] = { 'a', 's', 'd', 'f', ' ', 'j', 'k', 'l', ';' };
+// const char col_keys_odd[] = "asdf jkl[";
+const char col_keys[] = "asdfjkl[";
 
 int find_beatmap(char *base, char *partial, char **map)
 {
@@ -119,11 +122,13 @@ int parse_beatmap(char *file, struct hitpoint **points,
 		switch (cur_section) {
 		// [Metadata]
 		case 3:
-			parse_metadata_line(line, *meta);
+			parse_beatmap_line(line, *meta);
+			break;
+		case 4: parse_beatmap_line(line, *meta);
 			break;
 		// [HitObjects]
 		case 7:
-			parse_hitobject_line(line, &cur_point);
+			parse_hitobject_line(line, meta[0]->columns, &cur_point);
 
 			*points = realloc(*points, ++num_parsed * hp_size);
 			points[0][num_parsed - 1] = cur_point;
@@ -141,10 +146,10 @@ int parse_beatmap(char *file, struct hitpoint **points,
 }
 
 // TODO: This function is not thread safe.
-static int parse_metadata_line(char *line, struct beatmap_meta *meta)
+static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 {
 	int i = 0;
-	// strtok() modfies it's arguments, work with a copy.
+	// strtok() modfies its arguments, work with a copy.
 	char *ln = strdup(line);
 	char *token = NULL, *key = NULL, *value = NULL;
 
@@ -156,7 +161,7 @@ static int parse_metadata_line(char *line, struct beatmap_meta *meta)
 			break;
 		case 1: value = strdup(token);
 
-			parse_metadata_token(key, value, meta);
+			parse_beatmap_token(key, value, meta);
 
 			break;
 		}
@@ -172,7 +177,7 @@ static int parse_metadata_line(char *line, struct beatmap_meta *meta)
 	return i;
 }
 
-static void parse_metadata_token(char *key, char *value,
+static void parse_beatmap_token(char *key, char *value,
 	struct beatmap_meta *meta)
 {
 	if (!key || !value || !meta) {
@@ -198,11 +203,13 @@ static void parse_metadata_token(char *key, char *value,
 		meta->map_id = atoi(value);
 	} else if (!(strcmp(key, "BeatmapSetID"))) {
 		meta->set_id = atoi(value);
+	} else if (!(strcmp(key, "CircleSize"))) {
+		meta->columns = atoi(value);
 	}
 }
 
 // TODO: This function is not thread safe.
-static int parse_hitobject_line(char *line, struct hitpoint *point)
+static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
 	int end_time = 0, secval = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
@@ -215,7 +222,7 @@ static int parse_hitobject_line(char *line, struct hitpoint *point)
 
 		switch (i++) {
 		// X
-		case 0: point->column = secval / (COL_WIDTH / NUM_COLS);
+		case 0: point->column = secval / (COLS_WIDTH / columns);
 			break;
 		// Start time
 		case 2: point->start_time = secval;
@@ -240,7 +247,7 @@ static int parse_hitobject_line(char *line, struct hitpoint *point)
 	return i;
 }
 
-int parse_hitpoints(int count, struct hitpoint **points,
+int parse_hitpoints(int count, int columns, struct hitpoint **points,
 	struct action **actions)
 {
 	// Allocate enough memory for all actions at once.
@@ -249,6 +256,21 @@ int parse_hitpoints(int count, struct hitpoint **points,
 	int num_actions = 0, i = 0;
 	struct hitpoint *cur_point;
 
+	char *key_subset = malloc(columns + 1);
+	key_subset[columns] = '\0';
+
+	const int col_size = sizeof(col_keys) - 1;
+	const int subset_offset = (col_size / 2) - (columns / 2);
+
+	memmove(key_subset, col_keys + subset_offset,
+		col_size - (subset_offset * 2));
+
+	if (columns % 2) {
+		memmove(key_subset + columns / 2 + 1, key_subset + columns / 2,
+			columns / 2);
+		key_subset[columns / 2] = ' ';
+	}
+
 	while (i < count) {
 		cur_point = (*points) + i++;
 
@@ -256,16 +278,18 @@ int parse_hitpoints(int count, struct hitpoint **points,
 		struct action *end = *actions + num_actions++;
 		struct action *start = *actions + num_actions++;
 
-		hitpoint_to_action(cur_point, start, end);
+		hitpoint_to_action(key_subset, cur_point, start, end);
 	}
 
-	// TODO: Check if all memory was used and free() if applicable.
+	free(key_subset);
+
+	// TODO: Check if all *actions memory was used and free() if applicable.
 
 	return num_actions;
 }
 
-static void hitpoint_to_action(struct hitpoint *point, struct action *start,
-	struct action *end)
+static void hitpoint_to_action(char *keys, struct hitpoint *point,
+	struct action *start, struct action *end)
 {
 	end->time = point->end_time;
 	start->time = point->start_time;
@@ -273,7 +297,7 @@ static void hitpoint_to_action(struct hitpoint *point, struct action *start,
 	end->down = 0;		// Keyup.
 	start->down = 1;	// Keydown.
 
-	const char key = col_keys[point->column];
+	char key = keys[point->column];
 
 	end->key = key;
 	start->key = key;
