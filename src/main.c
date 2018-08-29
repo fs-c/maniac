@@ -32,10 +32,13 @@ int replay_delta = 0;
 void *time_address;
 pid_t game_proc_id;
 
-static int play(char *map);
 static void print_usage(char *path);
+
 static int standby(char **map, int search);
 static int standby_loop(char *map, int *search, int replay);
+
+static int play(char *map);
+static void play_loop(struct action *actions, int num_actions);
 
 int main(int argc, char **argv)
 {
@@ -213,6 +216,21 @@ static int play(char *map)
 
 	debug("sorted %d actions", num_actions);
 
+	play_loop(actions, num_actions);
+
+	nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
+
+	free(meta);
+	free(actions);
+
+	return PLAY_FINISH;
+}
+
+// TODO: The structure of play_loop and standby_loop are inconsistent:, one is
+// 	 looping and the other is called in a loop. Investigate a clean,
+//	 consistent solution.
+static void play_loop(struct action *actions, int num_actions)
+{
 	int cur_i = 0;				// Current action offset.
 	struct action *cur_a = NULL;		// Pointer to current action.
 	int32_t time = get_maptime();		// Current maptime.
@@ -247,14 +265,8 @@ static int play(char *map)
 		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
 	}
 
-	nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
-
 clean_exit:
-	free(meta);
-	free(title);
-	free(actions);
-
-	return PLAY_FINISH;
+	free(title);	
 }
 
 static void print_usage(char *path)
