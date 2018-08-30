@@ -220,6 +220,10 @@ int generate_number(int range, int rounds, float bound);
  */
 void *find_pattern(const unsigned char *signature, unsigned int sig_len);
 
+/**
+ * Finds the main window of a process with a given ID and stores the
+ * OS-appropiate handle to it in *out_window.
+ */
 int find_window(unsigned long process_id, void **out_window);
 
 #endif /* OSU_H */
