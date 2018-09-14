@@ -37,7 +37,7 @@ int find_window(unsigned long process_id, void **out_window)
 	EnumWindows((WNDENUMPROC)enum_windows_callback, (LPARAM)&data);
 
 	HWND handle = data.window_handle;
-	*out_window = malloc(sizoef(HWND));
+	*out_window = malloc(sizeof(HWND));
 
 	memcpy(out_window, &handle, sizeof(HWND));
 
