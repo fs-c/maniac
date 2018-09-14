@@ -71,7 +71,7 @@ static inline __hot ssize_t _read_game_memory(void *base, void *buffer,
 
 #ifdef ON_WINDOWS
 	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size,
-		(unsigned long long *)&read);
+		(SIZE_T *)&read);
 #endif /* ON_WINDOWS */
 
 	return read;
