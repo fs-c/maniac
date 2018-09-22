@@ -184,7 +184,7 @@ static int play(char *map)
 {
 	struct hitpoint *points = NULL;
 	struct beatmap_meta *meta = NULL;
-	int num_points = num_points = parse_beatmap(map, &points, &meta);
+	int num_points = parse_beatmap(map, &points, &meta);
 	if (!num_points || !points || !meta) {
 		printf("failed to parse beatmap (%s)\n", map);
 		return PLAY_ERROR;
