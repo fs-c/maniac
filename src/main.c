@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 			break;
 		case 'p': game_proc_id = strtol(optarg, NULL, 10);
 			break;
-		case 'a': time_address = (void *)strtol(optarg, NULL, 0);
+		case 'a': time_address = (void *)(intptr_t)strtol(optarg, NULL, 0);
 			break;
 		case 'l': delay = strtol(optarg, NULL, 10);
 			break;
