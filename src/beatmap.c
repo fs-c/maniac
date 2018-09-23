@@ -36,8 +36,6 @@ static int parse_hitobject_line(char *line, int columns,
 static void hitpoint_to_action(char *keys, struct hitpoint *point,
 	struct action *start, struct action *end);
 
-// const char col_keys[] = { 'a', 's', 'd', 'f', ' ', 'j', 'k', 'l', ';' };
-// const char col_keys_odd[] = "asdf jkl[";
 const char col_keys[] = "asdfjkl[";
 
 int find_beatmap(char *base, char *partial, char **map)
