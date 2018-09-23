@@ -56,7 +56,7 @@
 #elif !DEBUG
 
   #define debug(...)\
-      0;\
+      ;\
 
 #endif
 
