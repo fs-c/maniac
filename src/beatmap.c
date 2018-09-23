@@ -85,7 +85,7 @@ int find_beatmap(char *base, char *partial, char **map)
 	// Change block size to fit what we really need.
 	*map = realloc(*map, map_len + 1);
 
-	// Verify that the file we found is beatmap.
+	// Verify that the file we found is a beatmap.
 	if (strcmp(*map + map_len - 4, ".osu") != 0) {
 		debug("%s is not a beatmap", *map);
 		
@@ -141,11 +141,18 @@ int parse_beatmap(char *file, struct hitpoint **points,
 			break;
 		}
 
-		if (line[0] == '['
-			&& line[strlen(line) - BTMP_CLOSING_OFFST] == ']')
-		{
-			cur_section++;
+		char c;
+		int section_head = 0, i = 0;
+		while ((c = *(line + i++))) {
+			if (c == '[')
+				section_head = 1;
+			
+			if (section_head && c == ']')
+				section_head = 2;
 		}
+
+		if (section_head == 2)
+			cur_section++;
 	}
 
 	free(line);
