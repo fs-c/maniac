@@ -5,6 +5,12 @@
 #define RNG_ROUNDS 50
 #define RNG_BOUNDARY 0.5
 
+#ifdef ON_LINUX
+  #define BTMP_CLOSING_OFFST 3
+#else
+  #define BTMP_CLOSING_OFFST 2
+#endif
+
 /**
  * Parses a raw beatmap line into a beatmap_meta struct pointed to by *meta.
  * Returns the number of tokens read.
@@ -135,8 +141,11 @@ int parse_beatmap(char *file, struct hitpoint **points,
 			break;
 		}
 
-		if (line[0] == '[' && line[strlen(line) - 3] == ']')
+		if (line[0] == '['
+			&& line[strlen(line) - BTMP_CLOSING_OFFST] == ']')
+		{
 			cur_section++;
+		}
 	}
 
 	free(line);
