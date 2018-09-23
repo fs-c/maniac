@@ -134,7 +134,6 @@ static int standby(char **map, int search)
 	return 1;
 }
 
-// TODO: Implementation of replay functionality is very suboptimal.
 static int standby_loop(char *map, int *search, int replay)
 {
 	int status = play(map);
@@ -226,7 +225,7 @@ static int play(char *map)
 	return PLAY_FINISH;
 }
 
-// TODO: The structure of play_loop and standby_loop are inconsistent:, one is
+// TODO: The structure of play_loop and standby_loop are inconsistent, one is
 // 	 looping and the other is called in a loop. Investigate a clean,
 //	 consistent solution.
 static void play_loop(struct action *actions, int num_actions)
