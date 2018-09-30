@@ -5,6 +5,8 @@
 #define RNG_ROUNDS 50
 #define RNG_BOUNDARY 0.5
 
+#define TYPE_SLIDER 128
+
 /**
  * Parses a raw beatmap line into a beatmap_meta struct pointed to by *meta.
  * Returns the number of tokens read.
@@ -219,8 +221,8 @@ static void parse_beatmap_token(char *key, char *value,
 // TODO: This function is not thread safe.
 static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
-	int end_time = 0, secval = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
+	int end_time = 0, secval = 0, slider = 0, i = 0;
 
 	// Line is expected to follow the following format:
 	// x, y, time, type, hitSound, extras (= a:b:c:d:)
@@ -235,12 +237,14 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 		// Start time
 		case 2: point->start_time = secval;
 			break;
+		// Type
+		case 3: slider = secval & TYPE_SLIDER;
+			break;
 		// Extra string, first element is either 0 or end time
 		case 5:
 			end_time = strtol(strtok(token, ":"), NULL, 10);
 
-			// If end is 0 this is not a hold note, just tap.
-			point->end_time = end_time ? end_time :
+			point->end_time = slider ? end_time :
 				point->start_time + TAPTIME_MS;
 
 			break;
