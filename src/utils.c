@@ -100,27 +100,6 @@ void *get_time_address()
 #endif
 }
 
-// TODO: I'm certain there's a more elegant way to go about this.
-int partial_match(char *base, char *partial)
-{
-	int i = 0;
-	int m = 0;
-	while (*base) {
-		char c = partial[i];
-		if (c == '.') {
-			i++;
-			continue;
-		}
-
-		if (*base++ == c) {
-			i++;
-			m++;
-		}
-	}
-
-	return m;
-}
-
 void path_get_last(char *path, char **last)
 {
 	int i, l = 0;
@@ -130,24 +109,6 @@ void path_get_last(char *path, char **last)
 			l = i + 1;
 
 	*last += l;
-}
-
-int generate_number(int range, int rounds, float bound)
-{
-	int rn = rand() % range;
-
-	// Min and max percentage of the range we will use with our constraint.
-	float minr = 0.5 - (bound / 2);
-	float maxr = 0.5 + (bound / 2);
-
-	for (int i = 0; i < rounds; i++) {
-		int in = rn > (range * minr) && rn < (range * maxr);
-
-		rn += (in ? (rand() % (int)(range * minr)) : 0)
-			* (rn < (range * 0.5) ? -1 : 1);
-	}
-
-	return rn;
 }
 
 int get_env_var(char *name, char **out_var)
@@ -200,40 +161,4 @@ int get_osu_path(char **out_path)
 	free(home);
 
 	return path_len;
-}
-
-int find_partial_file(char *base, char *partial, char **out_file)
-{
-	if (!base || !partial || !out_file) {
-		debug("received null pointer");
-		return 0;
-	}
-
-	DIR *dp;
-	struct dirent *ep;
-
-	if (!(dp = opendir(base))) {
-		debug("couldn't open directory %s", base);
-		return 0;
-	}
-
-	const int file_len = 256;
-	*out_file = malloc(file_len);
-
-	int best_match = 0;
-
-	while((ep = readdir(dp))) {
-		char *name = ep->d_name;
-		int score = partial_match(name, partial);
-
-		if (score > best_match) {
-			best_match = score;
-
-			strcpy(*out_file, name);
-		}
-	}
-
-	closedir(dp);
-
-	return strlen(*out_file);
 }

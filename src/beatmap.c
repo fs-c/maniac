@@ -1,11 +1,4 @@
-#include "osu.h"
-
-#include <string.h>
-
-#define RNG_ROUNDS 50
-#define RNG_BOUNDARY 0.5
-
-#define TYPE_SLIDER 128
+#include "beatmap.h"
 
 /**
  * Parses a raw beatmap line into a beatmap_meta struct pointed to by *meta.
@@ -31,6 +24,26 @@ static int parse_hitobject_line(char *line, int columns,
  */
 static void hitpoint_to_action(char *keys, struct hitpoint *point,
 	struct action *start, struct action *end);
+
+/**
+ * Returns a randomly generated number in the range of [0, range], while
+ * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
+ * in a given number of rounds.
+ */
+static int generate_number(int range, int rounds, float bound);
+
+/**
+ * Searches for a file or folder in `base`, matching all directory entries
+ * against `partial`. The best match is returned through *out_file.
+ * Returns the length of the matched path or zero on failure.
+ */
+static int find_partial_file(char *base, char *partial, char **out_file);
+
+/**
+ * Given a base, returns the number of concurrent characters which match
+ * partial.
+ */
+static int partial_match(char *base, char *partial);
 
 const char col_keys[] = "asdfjkl[";
 
@@ -360,4 +373,79 @@ void humanize_hitpoints(int total, struct hitpoint **points, int level)
 		p->end_time += offset;
 		p->start_time += offset;
 	}
+}
+
+static int generate_number(int range, int rounds, float bound)
+{
+	int rn = rand() % range;
+
+	// Min and max percentage of the range we will use with our constraint.
+	float minr = 0.5 - (bound / 2);
+	float maxr = 0.5 + (bound / 2);
+
+	for (int i = 0; i < rounds; i++) {
+		int in = rn > (range * minr) && rn < (range * maxr);
+
+		rn += (in ? (rand() % (int)(range * minr)) : 0)
+			* (rn < (range * 0.5) ? -1 : 1);
+	}
+
+	return rn;
+}
+
+static int find_partial_file(char *base, char *partial, char **out_file)
+{
+	if (!base || !partial || !out_file) {
+		debug("received null pointer");
+		return 0;
+	}
+
+	DIR *dp;
+	struct dirent *ep;
+
+	if (!(dp = opendir(base))) {
+		debug("couldn't open directory %s", base);
+		return 0;
+	}
+
+	const int file_len = 256;
+	*out_file = malloc(file_len);
+
+	int best_match = 0;
+
+	while((ep = readdir(dp))) {
+		char *name = ep->d_name;
+		int score = partial_match(name, partial);
+
+		if (score > best_match) {
+			best_match = score;
+
+			strcpy(*out_file, name);
+		}
+	}
+
+	closedir(dp);
+
+	return strlen(*out_file);
+}
+
+// TODO: I'm certain there's a more elegant way to go about this.
+static int partial_match(char *base, char *partial)
+{
+	int i = 0;
+	int m = 0;
+	while (*base) {
+		char c = partial[i];
+		if (c == '.') {
+			i++;
+			continue;
+		}
+
+		if (*base++ == c) {
+			i++;
+			m++;
+		}
+	}
+
+	return m;
 }
