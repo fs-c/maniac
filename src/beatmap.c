@@ -105,7 +105,7 @@ int find_beatmap(char *base, char *partial, char **map)
 }
 
 // TODO: Inefficient as it calls realloc() for every parsed line. Allocate
-// 	 memory in chunks and copy it to adequqtely sized buffer once done.
+// 	 memory in chunks and copy it to adequately sized buffer once done.
 int parse_beatmap(char *file, struct hitpoint **points,
 	struct beatmap_meta **meta)
 {
@@ -127,27 +127,14 @@ int parse_beatmap(char *file, struct hitpoint **points,
 	const int line_len = 256;
 	char *line = malloc(line_len);
 
+	int num_parsed = 0;
 	struct hitpoint cur_point;
-	int num_parsed = 0, cur_section = 0;
 	size_t hp_size = sizeof(struct hitpoint);
 
+	char cur_section[128];
+
+	// TODO: This loop body is all kinds of messed up.
 	while (fgets(line, line_len, stream)) {
-		switch (cur_section) {
-		// [Metadata]
-		case 3:
-			parse_beatmap_line(line, *meta);
-			break;
-		case 4: parse_beatmap_line(line, *meta);
-			break;
-		// [HitObjects]
-		case 7:
-			parse_hitobject_line(line, meta[0]->columns, &cur_point);
-
-			*points = realloc(*points, ++num_parsed * hp_size);
-			points[0][num_parsed - 1] = cur_point;
-			break;
-		}
-
 		char c;
 		int section_head = 0, i = 0;
 		while ((c = *(line + i++))) {
@@ -158,8 +145,21 @@ int parse_beatmap(char *file, struct hitpoint **points,
 				section_head = 2;
 		}
 
-		if (section_head == 2)
-			cur_section++;
+		if (section_head == 2) {
+			strcpy(cur_section, line);
+		}
+
+		if (!(strcmp(cur_section, "[Metadata]\r\n"))) {
+			parse_beatmap_line(line, *meta);
+		} else if (!(strcmp(cur_section, "[Difficulty]\r\n"))) {
+			parse_beatmap_line(line, *meta);
+		} else if (!(strcmp(cur_section, "[HitObjects]\r\n"))) {
+			parse_hitobject_line(line, meta[0]->columns,
+				&cur_point);
+			
+			*points = realloc(*points, ++num_parsed * hp_size);
+			points[0][num_parsed - 1] = cur_point;
+		}
 	}
 
 	free(line);
