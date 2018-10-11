@@ -135,20 +135,6 @@ int parse_beatmap(char *file, struct hitpoint **points,
 
 	// TODO: This loop body is all kinds of messed up.
 	while (fgets(line, line_len, stream)) {
-		char c;
-		int section_head = 0, i = 0;
-		while ((c = *(line + i++))) {
-			if (c == '[')
-				section_head = 1;
-			
-			if (section_head && c == ']')
-				section_head = 2;
-		}
-
-		if (section_head == 2) {
-			strcpy(cur_section, line);
-		}
-
 		if (!(strcmp(cur_section, "[Metadata]\r\n"))) {
 			parse_beatmap_line(line, *meta);
 		} else if (!(strcmp(cur_section, "[Difficulty]\r\n"))) {
@@ -160,6 +146,9 @@ int parse_beatmap(char *file, struct hitpoint **points,
 			*points = realloc(*points, ++num_parsed * hp_size);
 			points[0][num_parsed - 1] = cur_point;
 		}
+	
+		if (line[0] == '[')
+			strcpy(cur_section, line);
 	}
 
 	free(line);
