@@ -5,6 +5,8 @@ void dbg_print_hitpoints(struct hitpoint *points, int from, int to);
 
 int main()
 {
+	/*
+
 	int osu_path_len = 0;
 	char *osu_path = NULL;
 
@@ -27,6 +29,10 @@ int main()
 
 	debug("found beatmap: %s (%d)", beatmap, beatmap_len);
 
+	*/
+
+	char beatmap[] = "./example.osu";
+
 	int total_points = 0;
 	struct hitpoint *points = NULL;
 	struct beatmap_meta *meta = NULL;
@@ -37,7 +43,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	debug("parsed %d points", total_points);
+	debug("got %d points", total_points);
 
 	debug("set: %d, map: %d, title: %s, artist: %s, version: %s, columns: %d",
 		meta->set_id, meta->map_id, meta->title, meta->artist,
@@ -54,15 +60,11 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	debug("got %d actions", total_actions);
+
 	int sort_sucess = !sort_actions(total_actions, &actions);
 
 	debug("sorting: %d", sort_sucess);
-
-	free(meta);
-	free(points);
-	free(actions);
-	free(beatmap);
-	free(osu_path);
 
 	return 0;
 }
