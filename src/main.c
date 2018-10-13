@@ -265,15 +265,14 @@ static void play_loop(struct action *actions, int num_actions)
 	}
 
 clean_exit:
-	free(title);	
+	free(title);
 }
 
 static void print_usage(char *path)
 {
 	char *name = NULL;
-	path_get_last(path, &name);
 
-	printf("  Usage: %s [options]\n\n", name);
+	printf("  Usage: ./maniac [options]\n\n");
 	printf("  Options: \n\n");
 
 	printf("    %-10s id of game process (optional)\n", "-p");
