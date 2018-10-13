@@ -1,4 +1,4 @@
-#include "osu.h"
+#include "window.h"
 
 #include <string.h>
 
@@ -109,9 +109,15 @@ static int get_xwindow_title(Window window, char *title, int title_len)
 		&num_items);
 
 	if (!num_items) {
-		prop = get_window_property(window, name_atom, &num_items);
-
 		debug("_NET_WM_NAME not set, falling back to WM_NAME");
+
+		prop = get_window_property(window, name_atom, &num_items);
+	}
+
+	if ((int)strlen((char *)prop) >= title_len) {
+		debug("window name exceeds max length of %d", title_len);
+
+		return 0;
 	}
 
 	strcpy(title, (char *)prop);

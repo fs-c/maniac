@@ -1,8 +1,16 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <inttypes.h>
+#include <sys/types.h>
+
 #ifdef _WIN32
   #define ON_WINDOWS
+
+  #include "windows.h"
 
   #define HOME_ENV "USERPROFILE"
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
@@ -16,6 +24,9 @@
 
 #ifdef __linux__
   #define ON_LINUX
+
+  #include <X11/Xlib.h>
+  #include <X11/extensions/XTest.h>
 
   #define HOME_ENV "HOME"
   #define LINUX_TIME_ADDRESS 0x36e5bf4

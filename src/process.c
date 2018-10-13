@@ -1,21 +1,7 @@
-#include "osu.h"
+#include "process.h"
 
-#ifdef ON_LINUX
-  // Enable GNU extensions (process_vm_readv).
-  // TODO: This is hacky and undocumented.
-  #define __USE_GNU
-
-  #include <sys/uio.h>
-#endif /* ON_LINUX */
-
-#ifdef ON_WINDOWS
-  #include <tlhelp32.h>
-
-  HANDLE game_proc;
-#endif /* ON_WINDOWS */
-
-void *time_address;
-pid_t game_proc_id;
+static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
+	unsigned char *buf, size_t buf_size);
 
 /**
  * Copies game memory at base for size bytes into buffer.
@@ -120,4 +106,67 @@ end:
 	debug("process ID for %s is %ld", name, proc_id);
 
 	return proc_id;
+}
+
+void *get_time_address()
+{
+#ifdef ON_WINDOWS
+	void *time_address = NULL;
+	void *time_ptr = find_pattern((unsigned char *)SIGNATURE,
+		sizeof(SIGNATURE) - 1);
+
+	if (!ReadProcessMemory(game_proc, (void *)time_ptr, &time_address,
+		sizeof(DWORD), NULL))
+	{
+		return NULL;
+	}
+
+	return time_address;
+#endif
+
+#ifdef ON_LINUX
+	return (void *)LINUX_TIME_ADDRESS;
+#endif
+}
+
+void *find_pattern(const unsigned char *signature, unsigned int sig_len)
+{
+	const size_t read_size = 4096;
+	unsigned char chunk[read_size];
+
+	// Get reasonably sized chunks of memory...
+	for (size_t off = 0; off < INT_MAX; off += read_size - sig_len) {
+		if (!(read_game_memory((void *)off, chunk, read_size))) {
+			continue;
+		}
+
+		// ...and check if they contain our signature.
+		void *hit = check_chunk(signature, sig_len, chunk, read_size);
+
+		if (hit)
+			return (void *)(off + (intptr_t)hit);
+	}
+
+	return NULL;
+}
+
+// TODO: Use a more efficient pattern matching algorithm.
+static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
+	unsigned char *buf, size_t buf_size)
+{
+	// Iterate over the buffer...
+	for (size_t i = 0; i < buf_size; i++) {
+		int hit = true;
+
+		// ...to check if it includes the pattern/sig.
+		for (size_t j = 0; j < sig_size && hit; j++) {
+			hit = buf[i + j] == sig[j];
+		}
+
+		if (hit) {
+			return (void *)(i + sig_size);
+		}
+	}
+
+	return NULL;
 }

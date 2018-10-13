@@ -1,5 +1,5 @@
 CC="gcc"
-FILES="main.c beatmap.c process.c utils.c pattern.c window.c"
+FILES="main.c beatmap.c process.c window.c game.c"
 
 PRE_FLAGS="-DDEBUG"
 # unused-parameter:	some functions which are stubs on some platforms would

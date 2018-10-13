@@ -65,4 +65,9 @@ int parse_hitpoints(int count, int columns, struct hitpoint **points,
  */
 int sort_actions(int count, struct action **actions);
 
+/**
+ * Add a randomized delay of magnitude level to the hitpoints.
+ */
+void humanize_hitpoints(int total, struct hitpoint **points, int level);
+
 #endif /* BEATMAP_H */
