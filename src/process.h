@@ -27,7 +27,7 @@ pid_t game_proc_id;
  * Gets and returns the runtime of the currently playing song, internally
  * referred to as `maptime`.
  */
-__hot int32_t get_maptime();
+hot int32_t get_maptime(void);
 
 /**
  * Returns the process id of the given process or zero if it was not found.
@@ -53,6 +53,6 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len);
  * Windows: Scans memory for the address using a signature.
  * Linux: Returns static address (LINUX_TIME_ADDRESS).
  */
-void *get_time_address();
+void *get_time_address(void);
 
 #endif /* PROCESS_H */

@@ -3,16 +3,16 @@
 #include <string.h>
 
 #ifdef ON_LINUX
-  Window window;
   Display *display;
+  Window game_window;
 
   static pid_t get_window_pid(Window window);
   static int is_window_visible(Window window);
   static int is_window_match(Window window, pid_t pid);
   static void search_children(pid_t pid, Window window, Window *out);
-  static int get_xwindow_title(Window window, char *title, int title_len);
   static unsigned char *get_window_property(Window window, Atom atom,
 	size_t *num_items);
+  static size_t get_xwindow_title(Window window, char *title, int title_len);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
@@ -61,7 +61,7 @@ int find_window(unsigned long process_id, void **out_window)
 #endif /* ON_LINUX */
 }
 
-__hot int get_window_title(char **title, int title_len)
+hot size_t get_window_title(char **title, int title_len)
 {
 #ifdef ON_WINDOWS
 	return GetWindowText(game_window, *title, title_len);
@@ -70,8 +70,6 @@ __hot int get_window_title(char **title, int title_len)
 #ifdef ON_LINUX
 	return get_xwindow_title(game_window, *title, title_len);
 #endif /* ON_LINUX */
-
-	return 0;
 }
 
 #ifdef ON_WINDOWS
@@ -91,9 +89,9 @@ __stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param)
 #endif /* ON_WINDOWS */
 
 #ifdef ON_LINUX
-static int get_xwindow_title(Window window, char *title, int title_len)
+static size_t get_xwindow_title(Window window, char *title, int title_len)
 {
-	static Atom net_name_atom = -1, name_atom = -1;
+	static Atom net_name_atom = -1UL, name_atom = -1UL;
 
 	if (name_atom == (Atom)-1)
 		name_atom = XInternAtom(display, "WM_NAME", 0);
@@ -177,7 +175,7 @@ static pid_t get_window_pid(Window window)
 	size_t num_items;
 	unsigned char *data;
 
-	static Atom pid_atom = -1;
+	static Atom pid_atom = -1UL;
 
 	if (pid_atom == (Atom)-1) {
 		pid_atom = XInternAtom(display, "_NET_WM_PID", 0);
@@ -185,7 +183,7 @@ static pid_t get_window_pid(Window window)
 
 	data = get_window_property(window, pid_atom, &num_items);
 
-	pid_t pid = (num_items > 0) ? ((pid_t) *((unsigned long *)data)) : 0;
+	pid_t pid = (num_items > 0) ? ((pid_t) *(data)) : 0;
 
 	XFree(data);
 	

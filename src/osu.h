@@ -8,6 +8,4 @@
 #include "beatmap.h"
 #include "process.h"
 
-
-
 #endif /* OSU_H */

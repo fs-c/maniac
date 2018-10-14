@@ -25,6 +25,6 @@ int find_window(unsigned long process_id, void **out_window);
  * Fetches the title of the game window. *title is expected to point to a
  * region of memory that is writable.
  */
-__hot int get_window_title(char **title, int title_len);
+hot size_t get_window_title(char **title, int title_len);
 
 #endif /* WINDOW_H */

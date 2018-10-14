@@ -8,10 +8,10 @@ static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
  * Inlined, hot version without argument validation.
  * Returns number of bytes read.
  */
-static inline __hot ssize_t _read_game_memory(void *base, void *buffer,
+static inline hot ssize_t _read_game_memory(void *base, void *buffer,
 	size_t size);
 
-__hot int32_t get_maptime()
+hot int32_t get_maptime()
 {
 	int32_t time = 0;
 	size_t size = sizeof(int32_t);
@@ -37,7 +37,7 @@ ssize_t read_game_memory(void *base, void *buffer, size_t size)
 	return read;
 }
 
-static inline __hot ssize_t _read_game_memory(void *base, void *buffer,
+static inline hot ssize_t _read_game_memory(void *base, void *buffer,
 	size_t size)
 {
 	ssize_t read = 0;
@@ -76,7 +76,7 @@ unsigned long get_process_id(const char *name)
 
 	fclose(f);
 
-	proc_id = read ? atoi(cmd) : 0;
+	proc_id = read ? (unsigned long)atoi(cmd) : 0;
 
 	free(cmd);
 #endif /* ON_LINUX */
@@ -144,7 +144,7 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len)
 		void *hit = check_chunk(signature, sig_len, chunk, read_size);
 
 		if (hit)
-			return (void *)(off + (intptr_t)hit);
+			return (void *)((intptr_t)off + (intptr_t)hit);
 	}
 
 	return NULL;

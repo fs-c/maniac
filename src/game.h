@@ -28,12 +28,12 @@ pid_t game_proc_id;
  * Windows: Open handle to game process.
  * Linux: Open X11 display. 
  */
-void do_setup();
+void do_setup(void);
 
 /**
  * Sends a keypress to the currently active window.
  */
-__hot void send_keypress(int key, int down);
+hot void send_keypress(int key, int down);
 
 /**
  * Convenience function to send a keydown and keyup event with a 10ms interval.
@@ -45,6 +45,6 @@ void tap_key(int key);
  * and DEFAULT_OSU_PATH, and returns it through *out_path.
  * Returns the length of the path stored or zero on failure.
  */
-int get_osu_path(char **out_path);
+size_t get_osu_path(char **out_path);
 
 #endif /* GAME_H */

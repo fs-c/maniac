@@ -1,17 +1,17 @@
 #include "game.h"
 
-static int get_env_var(char *name, char **out_var);
 static void path_get_last(char *path, char **last);
+static size_t get_env_var(char *name, char **out_var);
 
-__hot inline void send_keypress(int key, int down)
+hot inline void send_keypress(int key, int down)
 {
 #ifdef ON_LINUX
-	int keycode = XKeysymToKeycode(display, key);
+	KeyCode keycode = XKeysymToKeycode(display, key);
 
 	if (!keycode)
 		return;
 
-	XTestFakeKeyEvent(display, keycode, down, CurrentTime);
+	XTestFakeKeyEvent(display, (unsigned)keycode, down, CurrentTime);
 
 	XFlush(display);
 #endif /* ON_LINUX */
@@ -38,7 +38,7 @@ void tap_key(int key)
 	send_keypress(key, 0);
 }
 
-int get_osu_path(char **out_path)
+size_t get_osu_path(char **out_path)
 {
 	if (!out_path) {
 		debug("received null pointer");
@@ -46,7 +46,7 @@ int get_osu_path(char **out_path)
 	}
 
 	char *home;
-	int home_len;
+	size_t home_len;
 
 	if (!(home_len = get_env_var(HOME_ENV, &home))) {
 		debug("failed fetching home path");
@@ -54,7 +54,7 @@ int get_osu_path(char **out_path)
 	}
 
 	// Subtract one since sizeof includes the terminating null.
-	int path_len = home_len + (sizeof(DEFAULT_OSU_PATH) - 1);
+	size_t path_len = home_len + (sizeof(DEFAULT_OSU_PATH) - 1);
 	*out_path = malloc(path_len + 1);
 
 	strcpy(*out_path, home);
@@ -100,14 +100,14 @@ static void path_get_last(char *path, char **last)
 	*last += l;
 }
 
-static int get_env_var(char *name, char **out_var)
+static size_t get_env_var(char *name, char **out_var)
 {
 	if (!out_var || !name) {
 		debug("received null pointer");
 		return 0;
 	}
 
-	int var_len = 0;
+	size_t var_len = 0;
 	char *var = getenv(name);
 
 	// getenv() returns NULL if the variable could not be found.

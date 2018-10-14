@@ -47,12 +47,12 @@
       printf(__VA_ARGS__);\
       putchar('\n');\
 
-#elif !DEBUG
+#else
 
   #define debug(...)\
       ;\
 
-#endif
+#endif /* DEBUG */
 
 #define TAPTIME_MS 15
 
@@ -60,6 +60,6 @@
 
 #define MAX_LINE_LENGTH 1024
 
-#define __hot __attribute__((__hot__))
+#define hot __attribute__((__hot__))
 
 #endif /* COMMON_H */

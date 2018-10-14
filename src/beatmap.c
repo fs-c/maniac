@@ -30,14 +30,14 @@ static void hitpoint_to_action(char *keys, struct hitpoint *point,
  * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
  * in a given number of rounds.
  */
-static int generate_number(int range, int rounds, float bound);
+static int generate_number(int range, int rounds, double bound);
 
 /**
  * Searches for a file or folder in `base`, matching all directory entries
  * against `partial`. The best match is returned through *out_file.
  * Returns the length of the matched path or zero on failure.
  */
-static int find_partial_file(char *base, char *partial, char **out_file);
+static size_t find_partial_file(char *base, char *partial, char **out_file);
 
 /**
  * Given a base, returns the number of concurrent characters which match
@@ -45,24 +45,24 @@ static int find_partial_file(char *base, char *partial, char **out_file);
  */
 static int partial_match(char *base, char *partial);
 
-const char col_keys[] = "asdfjkl[";
+const char col_keys[9] = "asdfjkl[";
 
-int find_beatmap(char *base, char *partial, char **map)
+size_t find_beatmap(char *base, char *partial, char **map)
 {
 	if (!base || !partial || !map) {
 		debug("received null pointer");
 		return 0;
 	}
 
-	int folder_len = 0;
 	char *folder = NULL;
+	size_t folder_len = 0;
 
 	if (!(folder_len = find_partial_file(base, partial, &folder))) {
 		debug("couldn't find folder (%s)", partial);
 		return 0;
 	}
 
-	int map_len = 256, base_len = strlen(base);
+	size_t map_len = 256, base_len = strlen(base);
 	*map = malloc(map_len);
 
 	// Absolute path to our base.
@@ -74,8 +74,8 @@ int find_beatmap(char *base, char *partial, char **map)
 
 	free(folder);
 
-	int beatmap_len = 0;
 	char *beatmap = NULL;
+	size_t beatmap_len = 0;
 
 	if (!(beatmap_len = find_partial_file(*map, partial, &beatmap))) {
 		debug("couldn't find beatmap in %s", *map);
@@ -106,7 +106,7 @@ int find_beatmap(char *base, char *partial, char **map)
 
 // TODO: Inefficient as it calls realloc() for every parsed line. Allocate
 // 	 memory in chunks and copy it to adequately sized buffer once done.
-int parse_beatmap(char *file, struct hitpoint **points,
+size_t parse_beatmap(char *file, struct hitpoint **points,
 	struct beatmap_meta **meta)
 {
 	if (!points || !meta || !file) {
@@ -124,17 +124,16 @@ int parse_beatmap(char *file, struct hitpoint **points,
 	*points = NULL;
 	*meta = calloc(1, sizeof(struct beatmap_meta));
 
-	const int line_len = 256;
+	const size_t line_len = 256;
 	char *line = malloc(line_len);
 
-	int num_parsed = 0;
 	struct hitpoint cur_point;
-	size_t hp_size = sizeof(struct hitpoint);
+	size_t hp_size = sizeof(struct hitpoint), num_parsed = 0;
 
 	char cur_section[128];
 
 	// TODO: This loop body is all kinds of messed up.
-	while (fgets(line, line_len, stream)) {
+	while (fgets(line, (int)line_len, stream)) {
 		if (!(strcmp(cur_section, "[Metadata]\r\n"))) {
 			parse_beatmap_line(line, *meta);
 		} else if (!(strcmp(cur_section, "[Difficulty]\r\n"))) {
@@ -142,7 +141,7 @@ int parse_beatmap(char *file, struct hitpoint **points,
 		} else if (!(strcmp(cur_section, "[HitObjects]\r\n"))) {
 			parse_hitobject_line(line, meta[0]->columns,
 				&cur_point);
-			
+
 			*points = realloc(*points, ++num_parsed * hp_size);
 			points[0][num_parsed - 1] = cur_point;
 		}
@@ -223,14 +222,14 @@ static void parse_beatmap_token(char *key, char *value,
 // TODO: This function is not thread safe.
 static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
+	int secval = 0, end_time = 0, slider = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
-	int end_time = 0, secval = 0, slider = 0, i = 0;
 
 	// Line is expected to follow the following format:
 	// x, y, time, type, hitSound, extras (= a:b:c:d:)
 	token = strtok(ln, ",");
 	while (token != NULL) {
-		secval = strtol(token, NULL, 10);
+		secval = (int)strtol(token, NULL, 10);
 
 		switch (i++) {
 		// X
@@ -244,7 +243,7 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 			break;
 		// Extra string, first element is either 0 or end time
 		case 5:
-			end_time = strtol(strtok(token, ":"), NULL, 10);
+			end_time = (int)strtol(strtok(token, ":"), NULL, 10);
 
 			point->end_time = slider ? end_time :
 				point->start_time + TAPTIME_MS;
@@ -261,20 +260,20 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 	return i;
 }
 
-int parse_hitpoints(int count, int columns, struct hitpoint **points,
+int parse_hitpoints(size_t count, size_t columns, struct hitpoint **points,
 	struct action **actions)
 {
 	// Allocate enough memory for all actions at once.
 	*actions = malloc((2 * count) * sizeof(struct action));
 
-	int num_actions = 0, i = 0;
 	struct hitpoint *cur_point;
+	size_t num_actions = 0, i = 0;
 
 	char *key_subset = malloc(columns + 1);
 	key_subset[columns] = '\0';
 
-	const int col_size = sizeof(col_keys) - 1;
-	const int subset_offset = (col_size / 2) - (columns / 2);
+	const size_t col_size = sizeof(col_keys) - 1;
+	const size_t subset_offset = (col_size / 2) - (columns / 2);
 
 	memmove(key_subset, col_keys + subset_offset,
 		col_size - (subset_offset * 2));
@@ -364,13 +363,13 @@ void humanize_hitpoints(int total, struct hitpoint **points, int level)
 	}
 }
 
-static int generate_number(int range, int rounds, float bound)
+static int generate_number(int range, int rounds, double bound)
 {
 	int rn = rand() % range;
 
 	// Min and max percentage of the range we will use with our constraint.
-	float minr = 0.5 - (bound / 2);
-	float maxr = 0.5 + (bound / 2);
+	double minr = 0.5 - (bound / 2);
+	double maxr = 0.5 + (bound / 2);
 
 	for (int i = 0; i < rounds; i++) {
 		int in = rn > (range * minr) && rn < (range * maxr);
@@ -382,7 +381,7 @@ static int generate_number(int range, int rounds, float bound)
 	return rn;
 }
 
-static int find_partial_file(char *base, char *partial, char **out_file)
+static size_t find_partial_file(char *base, char *partial, char **out_file)
 {
 	if (!base || !partial || !out_file) {
 		debug("received null pointer");

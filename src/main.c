@@ -32,7 +32,7 @@ int replay_delta = 0;
 void *time_address;
 pid_t game_proc_id;
 
-static void print_usage(char *path);
+static void print_usage();
 
 static int standby(char **map, int search);
 static int standby_loop(char *map, int *search, int replay);
@@ -53,14 +53,14 @@ int main(int argc, char **argv)
 		switch (c) {
 		case 'm': map = optarg;
 			break;
-		case 'p': game_proc_id = strtol(optarg, NULL, 10);
+		case 'p': game_proc_id = (pid_t)strtol(optarg, NULL, 10);
 			break;
 		case 'a': time_address = (void *)(intptr_t)strtol(optarg, NULL, 0);
 			break;
 		case 'l': delay = strtol(optarg, NULL, 10);
 			break;
 		case 'r': replay = 1;
-			replay_delta = strtol(optarg, NULL, 10);
+			replay_delta = (int)strtol(optarg, NULL, 10);
 			break;
 		case 'e': exit_check = !exit_check;
 			break;
@@ -74,7 +74,9 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (!game_proc_id && !(game_proc_id = get_process_id("osu!.exe"))) {
+	if (!game_proc_id &&
+		!(game_proc_id = (pid_t)get_process_id("osu!.exe")))
+	{
 		printf("couldn't find game process ID\n");
 		return EXIT_FAILURE;
 	}
@@ -87,7 +89,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (!(find_window(game_proc_id, (void *)&game_window))) {
+	if (!(find_window((unsigned long)game_proc_id, (void *)&game_window))) {
 		printf("couldn't find game window\n");
 		return EXIT_FAILURE;
 	}
@@ -165,12 +167,12 @@ static int standby_loop(char *map, int *search, int replay)
 		tap_key(KEY_ESCAPE);
 		debug("pressed escape");
 
-		nanosleep((struct timespec[]){{ 4, 0 }}, NULL);
+		nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
 
 		tap_key(KEY_RETURN);
 		debug("pressed enter");
 
-		nanosleep((struct timespec[]){{ 1, 0 }}, NULL);
+		nanosleep((struct timespec[]){{ 2, 0 }}, NULL);
 
 		*search = 0;
 		delay -= replay_delta;
@@ -268,7 +270,7 @@ clean_exit:
 	free(title);
 }
 
-static void print_usage(char *path)
+static void print_usage()
 {
 	char *name = NULL;
 
