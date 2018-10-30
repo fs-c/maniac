@@ -29,7 +29,7 @@
   #include <X11/extensions/XTest.h>
 
   #define HOME_ENV "HOME"
-  #define LINUX_TIME_ADDRESS 0x36e5bf4
+  #define LINUX_TIME_ADDRESS 0x36e5ba4
   // Probably incorrect.
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"  
 
