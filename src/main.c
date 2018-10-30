@@ -217,6 +217,8 @@ static int play(char *map)
 
 	debug("sorted %d actions", num_actions);
 
+	printf("playing with delay of %d (delta: %d)\n", delay, replay_delta);
+
 	play_loop(actions, num_actions);
 
 	nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
