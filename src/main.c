@@ -274,8 +274,6 @@ clean_exit:
 
 static void print_usage()
 {
-	char *name = NULL;
-
 	printf("  Usage: ./maniac [options]\n\n");
 	printf("  Options: \n\n");
 
