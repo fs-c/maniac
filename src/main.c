@@ -106,7 +106,9 @@ int main(int argc, char **argv)
 	free(fetched_map);
 
 	int search = 1;
+	// Block while the user is not in a beatmap.
 	while (standby(&map, search)) {
+		// Play the beatmap, handle replay, handle stop.
 		if (standby_loop(map, &search, replay) == STANDBY_BREAK)
 			break;
 	}
@@ -148,7 +150,7 @@ static int standby_loop(char *map, int *search, int replay)
 			"there's likely additional error output above\n");
 
 		if (replay) {
-			int delay = 1000 * retries++;
+			int delay = 1000 * ++retries;
 			printf("retrying in %d ms\n", delay);
 
 			nanosleep((struct timespec[]){{
