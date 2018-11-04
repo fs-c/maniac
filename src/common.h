@@ -7,6 +7,9 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
+#define KEY_RETURN 0xFF0D
+#define KEY_ESCAPE 0xFF1B
+
 #ifdef _WIN32
   #define ON_WINDOWS
 
@@ -17,9 +20,6 @@
  
   #define SEPERATOR '\\'
   #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
-
-  #define KEY_RETURN 0xFF0D
-  #define KEY_ESCAPE 0xFF1B
 #endif /* _WIN32 */
 
 #ifdef __linux__
@@ -35,9 +35,6 @@
 
   #define SEPERATOR '/'
   #define DEFAULT_OSU_PATH "/osufolder/Songs/"
-
-  #define KEY_RETURN 0x0D
-  #define KEY_ESCAPE 0x1B
 #endif /* __linux__ */
 
 #ifdef DEBUG
