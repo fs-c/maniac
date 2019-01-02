@@ -1,6 +1,5 @@
 #include "game.h"
 
-static void path_get_last(char *path, char **last);
 static size_t get_env_var(char *name, char **out_var);
 
 hot inline void send_keypress(int key, int down)
@@ -87,17 +86,6 @@ void do_setup()
 	debug("got handle to game process with ID %d",
 		(int)game_proc_id);
 #endif /* ON_WINDOWS */
-}
-
-static void path_get_last(char *path, char **last)
-{
-	int i, l = 0;
-	*last = path;
-	for (i = 0; *path; path++, i++)
-		if (*path == SEPERATOR)
-			l = i + 1;
-
-	*last += l;
 }
 
 static size_t get_env_var(char *name, char **out_var)
