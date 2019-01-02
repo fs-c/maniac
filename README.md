@@ -21,6 +21,8 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 ### Humanization
 
+_Please note that this is very far from actual and effective humanization. This feature is in an early alpha stage, at best._
+
 The switch `-l` allows the passing of a range in which hitpoint time offsets will be generated.
 
 For further fine-tuning, refer to the `#define RNG_*` defines and the comments of the number generation function in `beatmap.c`.
@@ -37,7 +39,7 @@ The default osu! path on Windows is `C:\Users\<username>\AppData\local\osu!\Song
 
 The `-r` switch enables replays, meaning that, after the end of the current map has been reached, `maniac` will restart the current map and play it again.
 
-To simulate human progression, `-r` accepts a delta that will be subtracted from the current delay at every replay.
+To (very crudely) simulate human progression, `-r` accepts a value that will be subtracted from the current humanization level at every replay.
 
 ## Compilation
 
@@ -54,9 +56,9 @@ To enable debug logging, tell your compiler to add the `DEBUG` define (e.g. `-D 
 
 ## Scripts
 
-This is a relic from when `-m` was not yet implemented, but it can still be useful for when beatmap searching is failing (and it is, in some edge cases).
-
 `scripts/find.js` will search for beatmaps by a number of tags which will be matched against the individual maps names. The best match will be copied to `./map.osu`.
+
+This is a relic from when `-m` was not yet implemented, but it can still be useful for when beatmap searching is failing (and it is, in some edge cases).
 
 Usage is as follows, and requires [NodeJS](https://nodejs.org/en/).
 
