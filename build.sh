@@ -1,5 +1,5 @@
 CC="gcc"
-FILES="main.c beatmap.c process.c window.c game.c"
+FILES="maniac.c beatmap.c process.c window.c game.c"
 
 POST_FLAGS="-Ofast"
 

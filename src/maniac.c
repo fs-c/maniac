@@ -1,4 +1,4 @@
-#include "osu.h"
+#include "maniac.h"
 
 #include <time.h>
 #include <unistd.h>
