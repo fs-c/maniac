@@ -5,7 +5,18 @@
  * from the one I use to develop this. 
  */
 
-#include "../src/osu.h"
+#include "../src/maniac.h"
+
+#ifndef ON_WINDOWS
+
+int main()
+{
+	printf("this utility only works on machines running Windows\n");
+
+	return EXIT_FAILURE;
+}
+
+#else
 
 void fatal(char *message);
 
@@ -111,3 +122,5 @@ __stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param)
 	data->window_handle = handle;
 	return 0;
 }
+
+#endif
