@@ -35,6 +35,7 @@
 *.i*86
 *.x86_64
 *.hex
+*.out
 
 # Debug files
 *.dSYM/
@@ -52,16 +53,16 @@ Mkfile.old
 dkms.conf
 
 # Osu beatmap files
-*.out
-
-# Binaries
 *.osu
 
-# VSCode config
+# Editor config
+.vs
+.idea
 .vscode
-
-# Maniac binary
-maniac
 
 # Script config
 scripts/config.json
+
+# Build folder
+/build*
+/cmake-build*
