@@ -13,7 +13,7 @@
 #ifdef _WIN32
   #define ON_WINDOWS
 
-  #include "windows.h"
+  #include "Windows.h"
 
   #define HOME_ENV "USERPROFILE"
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
@@ -57,6 +57,10 @@
 
 #define MAX_LINE_LENGTH 1024
 
-#define hot __attribute__((__hot__))
+#ifdef __GNUC__
+	#define hot __attribute__((__hot__))
+#else
+	#define hot
+#endif /* __GNUC */
 
 #endif /* COMMON_H */
