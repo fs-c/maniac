@@ -15,15 +15,16 @@ target_include_directories(maniac
 )
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-	# unused-parameter:	some functions which are stubs on some platforms would
-	#			cause warnings
+	# unused-parameter:	some functions which are stubs on some platforms
+	#			would cause warnings
 	# frame-address:	debug functions call unsafe functions, this is
 	#			irrelevant for prod and acceptable for devel
 	target_compile_options(maniac PRIVATE
-		-Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-frame-address)
+			-Wall -Wextra -Wpedantic -Wno-unused-parameter 
+			-Wno-frame-address
+	)
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-	target_compile_options(maniac PRIVATE
-		/W4)
+	target_compile_options(maniac PRIVATE /W4)
 endif()
 
 # TODO: Is C11 really required?
