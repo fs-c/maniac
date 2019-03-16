@@ -21,7 +21,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 
 ### Humanization
 
-_Please note that this is very far from actual and effective humanization. This feature is in an early alpha stage, at best._
+_Please note that this is very far from actual and effective humanization. This feature is in an early alpha stage at best._
 
 The switch `-l` allows the passing of a range in which hitpoint time offsets will be generated.
 
@@ -37,9 +37,9 @@ The default osu! path on Windows is `C:\Users\<username>\AppData\local\osu!\Song
 
 ### Replay functionality
 
-The `-r` switch enables replays, meaning that, after the end of the current map has been reached, `maniac` will restart the current map and play it again.
+The `-r` switch enables replays. After the end of the current map has been reached, `maniac` will restart the current map and play it again.
 
-To (very crudely) simulate human progression, `-r` accepts a value that will be subtracted from the current humanization level at every replay.
+To (very crudely) simulate human progression, `-r` accepts a value which will be subtracted from the current humanization level at every replay.
 
 ## Compilation
 
@@ -50,6 +50,6 @@ $ cd maniac
 $ ./build.sh
 ```
 
-If you are on Windows, use [MinGW](http://www.mingw.org/) to compile.
+If you are on Windows, use [MinGW](http://www.mingw.org/) to compile. To enable debug logging, tell your compiler to add the `DEBUG` define (e.g. `-D DEBUG` for GCC).
 
-To enable debug logging, tell your compiler to add the `DEBUG` define (e.g. `-D DEBUG` for GCC).
+If you know what you're doing, a basic CMake file is also provided.
