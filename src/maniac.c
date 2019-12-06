@@ -150,11 +150,11 @@ static int standby_loop(char *map, int *search, int replay)
 			"there's likely additional error output above\n");
 
 		if (replay) {
-			int delay = 1000 * ++retries;
-			printf("retrying in %d ms\n", delay);
+			int retry_delay = 1000 * ++retries;
+			printf("retrying in %d ms\n", retry_delay);
 
 			nanosleep((struct timespec[]){{
-				0, (long)(delay * 1000)
+				0, (long)(retry_delay * 1000)
 			}}, NULL);
 
 			return STANDBY_CONTINUE;
