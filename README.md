@@ -2,7 +2,12 @@
 
 <p align="center">Cheating in osu!mania.</p>
 
-This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), more specifically for the [osu!mania](https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania) gamemode (where this project also got its name from). It attempts to be a __simple__, __lightweight__ and __portable__ application, and it can be compiled on many Linux distributions (where it depends on the X Window System) and Windows versions.
+This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), more specifically for the [osu!mania](https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania) gamemode (where this project also got its name from).
+
+It attemps to be
+- __simple__ to use through automation and reasonable defaults
+- __lightweight__, in the sense that the binaries are small and fast
+- __portable__ by offering equally functional binaries for many Linux distributions (where it depends on the X Window System) and Windows versions
 
 ```
   Usage: maniac [options]
