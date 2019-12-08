@@ -1,0 +1,36 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build-ubuntu:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: ./configure.sh && mkdir build && cd build && ..
+    - name: build
+      run: cmake --build build && mkdir artifact && mv build/maniac artifact
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: build-ubuntu-latest
+        path: artifact
+
+  build-windows:
+
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: mkdir build && cd build && cmake ..
+    - name: build
+      run: cmake --build build && mkdir artifact && mv build/maniac artifact
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: build-windoes-latest
+        path: artifact
