@@ -26,11 +26,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Configure
-      run:  export PATH=${PATH%:C:/Program Files/Git/usr/bin/sh.exe} && mkdir build && cd build && cmake .. -G "MinGW Makefiles"
-      shell: bash
+      run:  mkdir build && cd build && cmake .. -G "MinGW Makefiles"
     - name: Build
-      run: cmake --build build && mkdir artifact && mv build/maniac artifact
-      shell: bash
+      run: cmake --build build && mkdir artifact && move build/maniac.exe artifact
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
