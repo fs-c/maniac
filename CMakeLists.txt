@@ -57,5 +57,3 @@ endif()
 
 # TODO: Is C11 really required?
 target_compile_features(maniac PRIVATE c_std_11)
-
-# TODO: Import X11 on UNIX systems.
