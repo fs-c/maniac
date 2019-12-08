@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Configure
-      run: mkdir build && cd build && cmake .. -G "MinGW Makefiles"
+      run: mkdir build && cd build && cmake .. -G "MinGW Makefiles" && export PATH=${PATH%:C:/Program Files/Git/usr/bin/sh.exe}
       shell: bash
     - name: Build
       run: cmake --build build && mkdir artifact && mv build/maniac artifact
