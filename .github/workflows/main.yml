@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: CMake Build
 
 on: [push]
 
@@ -6,12 +6,12 @@ jobs:
   build-ubuntu:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
-    - name: configure
+    - name: Configure
       run: ./configure.sh && mkdir build && cd build && ..
-    - name: build
+    - name: Build
       run: cmake --build build && mkdir artifact && mv build/maniac artifact
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
@@ -25,10 +25,12 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: configure
+    - name: Configure
       run: mkdir build && cd build && cmake ..
-    - name: build
+      shell: bash
+    - name: Build
       run: cmake --build build && mkdir artifact && mv build/maniac artifact
+      shell: bash
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
