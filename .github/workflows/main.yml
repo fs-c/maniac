@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Configure
-      run: sudp apt install libxtst-dev && mkdir build && cd build && ..
+      run: sudo apt install libxtst-dev && mkdir build && cd build && ..
     - name: Build
       run: cmake --build build && mkdir artifact && mv build/maniac artifact
     - name: Upload artifact
