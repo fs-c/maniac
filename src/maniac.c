@@ -22,7 +22,7 @@
 int opterr;
 char *optarg = 0;
 
-char *osu_path;
+char *osu_path = NULL;
 char *default_map = "map.osu";
 
 int delay = 0;
@@ -236,11 +236,11 @@ static int play(char *map)
 //	 consistent solution.
 static void play_loop(struct action *actions, int num_actions)
 {
-	int cur_i = 0;				// Current action offset.
+	int cur_i = 0;						// Current action offset.
 	struct action *cur_a = NULL;		// Pointer to current action.
 	int32_t time = get_maptime();		// Current maptime.
 
-	const int title_len = 128;		// Max length of title.
+	const int title_len = 128;			// Max length of title.
 	char *title = malloc(title_len);	// Current window title.
 
 	// Discard all actions which come before our current maptime.
@@ -258,12 +258,14 @@ static void play_loop(struct action *actions, int num_actions)
 		}
 
 		time = get_maptime();
+		debug("time %i", time);
 
 		while (cur_i < num_actions &&
 			(cur_a = actions + cur_i)->time < time)
 		{
 			cur_i++;
 
+			debug("sending %i (%s)", cur_a->key, cur_a->down ? "down" : "up");
 			send_keypress(cur_a->key, cur_a->down);
 		}
 

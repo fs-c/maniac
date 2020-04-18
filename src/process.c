@@ -18,8 +18,10 @@ hot int32_t get_maptime()
 
 	// This function is called in tight loops, use the faster, insecure
 	// read_game_memory since we know our arguments are valid.
-	if (!(_read_game_memory(time_address, &time, size)))
+	if (_read_game_memory(time_address, &time, size) == -1) {
+		debug("failed reading memory (errno %i)", errno);
 		return 0;
+	}
 
 	return time;
 }
