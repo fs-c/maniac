@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <inttypes.h>
@@ -29,7 +30,7 @@
   #include <X11/extensions/XTest.h>
 
   #define HOME_ENV "HOME"
-  #define LINUX_TIME_ADDRESS 0x36e5ba4
+  #define LINUX_TIME_ADDRESS 0x61ebba9
   // Probably incorrect.
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"  
 
