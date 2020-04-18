@@ -46,7 +46,13 @@ The `-r` switch enables replays. After the end of the current map has been reach
 
 To (very crudely) simulate human progression, `-r` accepts a value which will be subtracted from the current humanization level at every replay.
 
-## Compilation
+## Usage
+
+1. Download the latest build for your operating system by navigating to [releases](https://github.com/LW2904/maniac/releases) and downloading `maniac-win64-static.exe`.
+
+2. In your terminal, run the executable you just downloaded. On Windows this most commonly means running `cmd`, navigating to the folder you downloaded the file to (usually `cd ../Downloads`) and running it through typing `maniac-win64-static.exe`.
+
+## Building from Source
 
 ```bash
 $ sudo apt-get install build-essential
