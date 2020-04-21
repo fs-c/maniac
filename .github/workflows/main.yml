@@ -1,4 +1,4 @@
-name: CMake Build
+name: build
 
 on:
   push:
@@ -6,18 +6,33 @@ on:
     - '*'
 
 jobs:
-  build-windows:
+  build-for-windows:
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v1
-    - name: Build
-      run:  |
+
+    - name: Run CMake and Make
+      run: |
         cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         mingw32-make
-        mkdir artifact && move maniac.exe artifact/maniac-win64.exe
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+
+    - name: Create release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: build-windows-latest
-        path: artifact
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./words.exe
+        asset_name: words-${{ github.ref }}.exe
+        asset_content_type: application/octet-stream
