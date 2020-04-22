@@ -31,6 +31,7 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      shell: bash
 
     - name: Upload release asset
       uses: actions/upload-release-asset@v1
