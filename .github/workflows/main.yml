@@ -8,6 +8,7 @@ on:
 jobs:
   build-for-windows:
     runs-on: windows-latest
+    shell: bash
 
     steps:
     - uses: actions/checkout@v1
