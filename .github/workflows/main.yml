@@ -16,8 +16,6 @@ jobs:
       run: |
         cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         mingw32-make
-        dir
-        cd
 
     - name: Create release
       id: create_release
@@ -36,6 +34,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: words.exe
-        asset_name: words-${{ github.ref }}.exe
+        asset_path: maniac.exe
+        asset_name: maniac-${{ github.ref }}.exe
         asset_content_type: application/octet-stream
