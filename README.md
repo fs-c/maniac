@@ -38,7 +38,7 @@ If no `-m` switch is passed, `maniac` will attempt to read the beatmap from the 
 
 Beatmaps are read from the `DEFAULT_OSU_PATH` defined in `osu.h`, and it is assumed that the folder structure has not been tampered with (eg that `Songs/` contains only folders, etc).
 
-The default osu! path on Windows is `C:\Users\<username>\AppData\local\osu!\Songs`, and on Linux it's `/home/<username>/osufolder/Songs`. Since you will likely have gone through some hoops to get osu! running on Linux, it's probably easiest to just symlink `~/osufolder` to wherever you keep your osu! files. 
+The default osu! path on Windows is `C:\Users\<username>\AppData\local\osu!\Songs`, and on Linux it's `/home/<username>/osufolder/Songs`. Since you will likely have gone through some hoops to get osu! running on Linux, it's probably easiest to just symlink `~/osufolder` to wherever you keep your osu! files.
 
 ### Replay functionality
 
@@ -50,7 +50,7 @@ To (very crudely) simulate human progression, `-r` accepts a value which will be
 
 1. Download the latest build for your operating system by navigating to [releases](https://github.com/LW2904/maniac/releases) and downloading `maniac-win64-static.exe`.
 
-2. In your terminal, run the executable you just downloaded. On Windows this most commonly means running `cmd`, navigating to the folder you downloaded the file to (usually `cd ../Downloads`) and running it through typing `maniac-win64-static.exe`.
+2. In your terminal, run the executable you just downloaded. On Windows this most commonly means running `cmd`, navigating to the folder you downloaded the file to (usually `cd ../Downloads`) and running it through typing `maniac-v*.exe`.
 
 ## Building from Source
 
