@@ -8,7 +8,6 @@ on:
 jobs:
   build-for-windows:
     runs-on: windows-latest
-    shell: bash
 
     steps:
     - uses: actions/checkout@v1
@@ -35,6 +34,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./words.exe
+        asset_path: words.exe
         asset_name: words-${{ github.ref }}.exe
         asset_content_type: application/octet-stream
