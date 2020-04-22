@@ -3,7 +3,7 @@ name: build
 on:
   push:
     tags:
-    - '*'
+    - 'v*'
 
 jobs:
   build-for-windows:
@@ -16,6 +16,8 @@ jobs:
       run: |
         cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         mingw32-make
+        dir
+        cd
 
     - name: Create release
       id: create_release
