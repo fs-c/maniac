@@ -53,7 +53,6 @@ target_include_directories(maniac
 target_compile_options(maniac PRIVATE
 		-Wall -Wextra -Wpedantic -Wno-unused-parameter
 		-Wno-frame-address
-		-static
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
