@@ -37,6 +37,10 @@ if (UNIX)
 	target_link_libraries(maniac ${XTEST_LIBRARIES})
 endif()
 
+target_link_libraries(maniac PUBLIC
+    -static -lwinpthread
+)
+
 target_include_directories(maniac
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -50,7 +54,6 @@ target_compile_options(maniac PRIVATE
 		-Wall -Wextra -Wpedantic -Wno-unused-parameter
 		-Wno-frame-address
 		-static
-        -l:libwinpthread
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
