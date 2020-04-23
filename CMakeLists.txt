@@ -47,9 +47,10 @@ target_include_directories(maniac
 # frame-address:	debug functions call unsafe functions, this is
 #			irrelevant for prod and acceptable for devel
 target_compile_options(maniac PRIVATE
-		-Wall -Wextra -Wpedantic -Wno-unused-parameter 
+		-Wall -Wextra -Wpedantic -Wno-unused-parameter
 		-Wno-frame-address
 		-static
+        -l:libwinpthread
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
