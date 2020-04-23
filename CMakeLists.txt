@@ -56,7 +56,13 @@ target_compile_options(maniac PRIVATE
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	add_compile_definitions(DEBUG)
+	# The additional / is important to remove the last character from the path.
+	# Note that it does not matter if the OS uses / or \, because we are only
+	# saving the path size.
+    # Thanks: https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
+	string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+
+	add_compile_definitions(DEBUG SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 endif()
 
 # TODO: Is C11 really required?

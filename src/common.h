@@ -40,10 +40,11 @@
 
 #ifdef DEBUG
 
+  #define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
   #define debug(...)\
-      printf("[debug] [%s:%s] ", __FILE__, __func__);\
-      printf(__VA_ARGS__);\
-      putchar('\n');\
+    printf("[debug] [%s:%s] ", __FILENAME__, __PRETTY_FUNCTION__);\
+    printf(__VA_ARGS__);\
+    putchar('\n');\
 
 #else
 
@@ -59,9 +60,9 @@
 #define MAX_LINE_LENGTH 1024
 
 #ifdef __GNUC__
-	#define hot __attribute__((__hot__))
+  #define hot __attribute__((__hot__))
 #else
-	#define hot
+  #define hot
 #endif /* __GNUC */
 
 #endif /* COMMON_H */
