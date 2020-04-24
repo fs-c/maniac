@@ -95,7 +95,7 @@ size_t find_beatmap(char *base, char *partial, char **map)
 	// Verify that the file we found is a beatmap.
 	if (strcmp(*map + map_len - 4, ".osu") != 0) {
 		debug("%s is not a beatmap", *map);
-		
+
 		free(*map);
 
 		return 0;
@@ -109,6 +109,8 @@ size_t find_beatmap(char *base, char *partial, char **map)
 size_t parse_beatmap(char *file, struct hitpoint **points,
 	struct beatmap_meta **meta)
 {
+	debug("parsing beatmap '%s'", file);
+
 	if (!points || !meta || !file) {
 		debug("received null pointer");
 		return 0;
@@ -150,7 +152,15 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 
 		if (line[0] == '[') {
 			strcpy(cur_section, line);
-			cur_section[strlen(cur_section) - 1] = '\0';
+
+			const int len = strlen(line);
+			for (int i = 0; i < len; i++) {
+				if (line[i] == ']') {
+					cur_section[i + 1] = '\0';
+				}
+			}
+
+			debug("cur section is now '%s'", cur_section);
 		}
 	}
 
@@ -358,7 +368,7 @@ void humanize_hitpoints(int total, struct hitpoint **points, int level)
 
 		// [0, level]
 		offset = generate_number(level, RNG_ROUNDS, RNG_BOUNDARY);
-		
+
 		// [-(level / 2), (level / 2)]
 		offset -= (level / 2);
 
