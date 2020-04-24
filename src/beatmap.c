@@ -160,7 +160,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 				}
 			}
 
-			debug("cur section is now '%s'", cur_section);
+			debug("current section is now '%s'", cur_section);
 		}
 	}
 
@@ -236,7 +236,7 @@ static void parse_beatmap_token(char *key, char *value,
 // TODO: This function is not thread safe.
 static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
-	int secval = 0, end_time = 0, slider = 0, i = 0;
+	int secval = 0, end_time = 0, hold = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
 
 	// Line is expected to follow the following format:
@@ -253,13 +253,13 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 		case 2: point->start_time = secval;
 			break;
 		// Type
-		case 3: slider = secval & TYPE_SLIDER;
+		case 3: hold = secval & TYPE_HOLD;
 			break;
 		// Extra string, first element is either 0 or end time
 		case 5:
 			end_time = (int)strtol(strtok(token, ":"), NULL, 10);
 
-			point->end_time = slider ? end_time :
+			point->end_time = hold ? end_time :
 				point->start_time + TAPTIME_MS;
 
 			break;
