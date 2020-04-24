@@ -3,7 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
-#include <signal.h> 
+#include <signal.h>
 
 #define PLAY_ERROR 0
 #define PLAY_FINISH 1
@@ -189,6 +189,9 @@ static int play(char *map)
 	struct beatmap_meta *meta = NULL;
 	int num_points = parse_beatmap(map, &points, &meta);
 	if (!num_points || !points || !meta) {
+		debug("num_points = %i, points = %p, meta = %p", num_points,
+			points, meta);
+
 		printf("failed to parse beatmap (%s)\n", map);
 		return PLAY_ERROR;
 	}
