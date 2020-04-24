@@ -187,7 +187,7 @@ static int play(char *map)
 {
 	struct hitpoint *points = NULL;
 	struct beatmap_meta *meta = NULL;
-	int num_points = parse_beatmap(map, &points, &meta);
+	int num_points = (int)parse_beatmap(map, &points, &meta);
 	if (!num_points || !points || !meta) {
 		debug("num_points = %i, points = %p, meta = %p", num_points,
 			(void *)points, (void *)meta);
@@ -198,6 +198,14 @@ static int play(char *map)
 
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
 		meta->title, meta->version, meta->map_id);
+
+#ifdef DEBUG
+	for (int i = 0; i < num_points; i++) {
+		struct hitpoint *point = &points[i];
+		debug("point %d: (col: %d, start: %d, end: %d)", i, point->column,
+				point->start_time, point->end_time);
+	}
+#endif /* DEBUG */
 
 	humanize_hitpoints(num_points, &points, delay);
 
