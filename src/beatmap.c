@@ -27,7 +27,7 @@ static void hitpoint_to_action(char *keys, struct hitpoint *point,
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
- * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
+ * attempting to constrain it outside of a bound(ary) given in percent (]0, 1[),
  * in a given number of rounds.
  */
 static int generate_number(int range, int rounds, double bound);
@@ -69,7 +69,7 @@ size_t find_beatmap(char *base, char *partial, char **map)
 	strcpy(*map, base);
 	// A.p. to the beatmap folder.
 	strcpy(*map + base_len, folder);
-	// Add a trailing seperator and terminating zero.
+	// Add a trailing separator and terminating zero.
 	strcpy(*map + base_len + folder_len, (char[2]){(char)SEPERATOR, '\0'});
 
 	free(folder);
@@ -128,7 +128,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 
 	// First line always contains version.
 	if (fgets(line, (int)line_len, stream)) {
-		short version = strtol(line + 17, NULL, 10);
+		short version = (short)strtol(line + 17, NULL, 10);
 
 		debug("beatmap version is %d", version);
 
@@ -165,7 +165,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 		if (line[0] == '[') {
 			strcpy(cur_section, line);
 
-			const int len = strlen(line);
+			const int len = (int)strlen(line);
 			for (int i = 0; i < len; i++) {
 				if (line[i] == ']') {
 					cur_section[i + 1] = '\0';
@@ -186,7 +186,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 {
 	int i = 0;
-	// strtok() modfies its arguments, work with a copy.
+	// strtok() modifies its arguments, work with a copy.
 	char *ln = strdup(line);
 	char *token = NULL, *key = NULL, *value = NULL;
 
@@ -262,7 +262,7 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 		case 0: point->column = secval / (COLS_WIDTH / columns);
 			break;
 		// Start time
-		case 2: point->start_time = secval;
+		case 2: point->start_time = secval - 15;
 			break;
 		// Type
 		case 3: hold = secval & TYPE_HOLD;
