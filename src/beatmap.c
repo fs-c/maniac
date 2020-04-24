@@ -222,18 +222,16 @@ static void parse_beatmap_token(char *key, char *value,
 		return;
 	}
 
-	// Always ignore last two characters since .osu files are CRLF by
-	// default.
 	if (!(strcmp(key, "Title"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value)] = '\0';
 
 		strcpy(meta->title, value);
 	} else if (!(strcmp(key, "Artist"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value)] = '\0';
 
 		strcpy(meta->artist, value);
 	} else if (!(strcmp(key, "Version"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value)] = '\0';
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {
