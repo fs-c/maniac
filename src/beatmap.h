@@ -14,7 +14,11 @@
 #define RNG_ROUNDS 50
 #define RNG_BOUNDARY 0.5
 
-#define TYPE_SLIDER 128
+// 7th bit in type is hold
+#define TYPE_HOLD 128
+
+#define MIN_VERSION 12
+#define MAX_VERSION 14
 
 struct beatmap_meta {
 	int set_id;
@@ -45,7 +49,7 @@ struct action {
 size_t find_beatmap(char *base, char *partial, char **map);
 
 /**
- * Parse a beatmap file (*.osu) into an array of hitpoint structs pointed to by 
+ * Parse a beatmap file (*.osu) into an array of hitpoint structs pointed to by
  * **points and a metadata struct.
  * Returns the number of points parsed and stored.
  */

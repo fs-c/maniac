@@ -187,17 +187,25 @@ static int play(char *map)
 {
 	struct hitpoint *points = NULL;
 	struct beatmap_meta *meta = NULL;
-	int num_points = parse_beatmap(map, &points, &meta);
+	int num_points = (int)parse_beatmap(map, &points, &meta);
 	if (!num_points || !points || !meta) {
 		debug("num_points = %i, points = %p, meta = %p", num_points,
-			points, meta);
-
+			(void *)points, (void *)meta);
 		printf("failed to parse beatmap (%s)\n", map);
+
 		return PLAY_ERROR;
 	}
 
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
 		meta->title, meta->version, meta->map_id);
+
+#ifdef DEBUG
+	for (int i = 0; i < num_points; i++) {
+		struct hitpoint *point = &points[i];
+		debug("point %d: (col: %d, start: %d, end: %d)", i, point->column,
+				point->start_time, point->end_time);
+	}
+#endif /* DEBUG */
 
 	humanize_hitpoints(num_points, &points, delay);
 
@@ -212,6 +220,14 @@ static int play(char *map)
 	}
 
 	debug("parsed %d actions", num_actions);
+
+#ifdef DEBUG
+	for (int i = 0; i < num_actions; i++) {
+		struct action *action = &actions[i];
+		debug("action %d: (t: %d, k: %c/%d, d: %d)", i, action->time,
+			action->key, action->key, action->down);
+	}
+#endif /* DEBUG */
 
 	free(points);
 
@@ -261,7 +277,7 @@ static void play_loop(struct action *actions, int num_actions)
 		}
 
 		time = get_maptime();
-		debug("time %i", time);
+		// debug("time %i", time);
 
 		while (cur_i < num_actions &&
 			(cur_a = actions + cur_i)->time < time)
