@@ -18,7 +18,7 @@
 
   #define HOME_ENV "USERPROFILE"
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
- 
+
   #define SEPERATOR '\\'
   #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
 #endif /* _WIN32 */
@@ -32,7 +32,7 @@
   #define HOME_ENV "HOME"
   #define LINUX_TIME_ADDRESS 0x61ebba9
   // Probably incorrect.
-  #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"  
+  #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
 
   #define SEPERATOR '/'
   #define DEFAULT_OSU_PATH "/osufolder/Songs/"
@@ -41,8 +41,9 @@
 #ifdef DEBUG
 
   #define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
+
   #define debug(...)\
-    printf("[debug] [%s:%s] ", __FILENAME__, __PRETTY_FUNCTION__);\
+    printf("[debug] [%s:%s] ", __FILENAME__, __func__);\
     printf(__VA_ARGS__);\
     putchar('\n');\
 
