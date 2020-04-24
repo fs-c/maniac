@@ -17,6 +17,9 @@
 // 7th bit in type is hold
 #define TYPE_HOLD 128
 
+#define MIN_VERSION 12
+#define MAX_VERSION 14
+
 struct beatmap_meta {
 	int set_id;
 	int map_id;

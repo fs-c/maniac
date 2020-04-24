@@ -123,11 +123,23 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 		return 0;
 	}
 
-	*points = NULL;
-	*meta = calloc(1, sizeof(struct beatmap_meta));
-
 	const size_t line_len = 256;
 	char *line = malloc(line_len);
+
+	// First line always contains version.
+	if (fgets(line, (int)line_len, stream)) {
+		short version = strtol(line + 17, NULL, 10);
+
+		debug("beatmap version is %d", version);
+
+		if (version < MIN_VERSION || version > MAX_VERSION) {
+			printf("parsing an unsupported beatmap (%d)",
+				version);
+		}
+	}
+
+	*points = NULL;
+	*meta = calloc(1, sizeof(struct beatmap_meta));
 
 	struct hitpoint cur_point;
 	size_t hp_size = sizeof(struct hitpoint), num_parsed = 0;
