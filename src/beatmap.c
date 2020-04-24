@@ -239,7 +239,9 @@ static void parse_beatmap_token(char *key, char *value,
 	} else if (!(strcmp(key, "BeatmapSetID"))) {
 		meta->set_id = atoi(value);
 	} else if (!(strcmp(key, "CircleSize"))) {
-		meta->columns = atoi(value);
+		// meta->columns = atoi(value);
+		// This worked with v12 and maybe also v13 but not with v14.
+		meta->columns = 4;
 	}
 }
 
