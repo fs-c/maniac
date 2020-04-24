@@ -190,7 +190,7 @@ static int play(char *map)
 	int num_points = parse_beatmap(map, &points, &meta);
 	if (!num_points || !points || !meta) {
 		debug("num_points = %i, points = %p, meta = %p", num_points,
-			points, meta);
+			(void *)points, (void *)meta);
 		printf("failed to parse beatmap (%s)\n", map);
 
 		return PLAY_ERROR;
