@@ -25,8 +25,13 @@ hot inline void send_keypress(int key, int down)
 	in.ki.dwExtraInfo = 0;
 	in.ki.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
 	in.ki.wVk = VkKeyScanEx(key, GetKeyboardLayout(0)) & 0xFF;
-
+# ifdef DEBUG
+	if (!SendInput(1, &in, sizeof(INPUT))) {
+		debug("failed sending input: %lu", GetLastError());
+	}
+# else
 	SendInput(1, &in, sizeof(INPUT));
+# endif /* DEBUG */
 #endif /* ON_WINDOWS */
 }
 
@@ -73,7 +78,7 @@ void do_setup()
 
 		return;
 	}
-	
+
 	debug("opened X display (%#x)", (unsigned)(intptr_t)display);
 #endif /* ON_LINUX */
 
@@ -82,7 +87,7 @@ void do_setup()
 		printf("failed to get handle to game process\n");
 		return;
 	}
-	
+
 	debug("got handle to game process with ID %d",
 		(int)game_proc_id);
 #endif /* ON_WINDOWS */
