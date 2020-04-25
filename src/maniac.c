@@ -244,11 +244,11 @@ static int play(char *map)
 //	 consistent solution.
 static void play_loop(struct action *actions, int num_actions)
 {
-	int cur_i = 0;						// Current action offset.
+	int cur_i = 0;				// Current action offset.
 	struct action *cur_a = NULL;		// Pointer to current action.
 	int32_t time = get_maptime();		// Current maptime.
 
-	const int title_len = 128;			// Max length of title.
+	const int title_len = 128;		// Max length of title.
 	char *title = malloc(title_len);	// Current window title.
 
 	// Discard all actions which come before our current maptime.
