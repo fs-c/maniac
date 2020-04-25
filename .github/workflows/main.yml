@@ -12,10 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Run CMake and Make
+    - name: Run release build
       run: |
-        cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
         mingw32-make
+        move maniac.exe maniac-prd.exe
+
+    - name: Run debug build
+      run: |
+        cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
+        mingw32-make
+        move maniac.exe maniac-dbg.exe
 
     - name: Create release
       id: create_release
@@ -33,12 +40,22 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       shell: bash
 
-    - name: Upload release asset
+    - name: Upload release build
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: maniac.exe
-        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}.exe
+        asset_path: maniac-prd.exe
+        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}-win64.exe
+        asset_content_type: application/octet-stream
+
+    - name: Upload debug build
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: maniac-dbg.exe
+        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}-win64-debug.exe
         asset_content_type: application/octet-stream
