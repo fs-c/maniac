@@ -204,14 +204,6 @@ static int play(char *map)
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
 		meta->title, meta->version, meta->map_id);
 
-#ifdef DEBUG
-	for (int i = 0; i < num_points; i++) {
-		struct hitpoint *point = &points[i];
-		debug("point %d: (col: %d, start: %d, end: %d)", i, point->column,
-				point->start_time, point->end_time);
-	}
-#endif /* DEBUG */
-
 	humanize_hitpoints(num_points, &points, delay);
 
 	debug("humanized %d hitpoints with delay of %d", num_points, delay);
@@ -225,14 +217,6 @@ static int play(char *map)
 	}
 
 	debug("parsed %d actions", num_actions);
-
-#ifdef DEBUG
-	for (int i = 0; i < num_actions; i++) {
-		struct action *action = &actions[i];
-		debug("action %d: (t: %d, k: %c/%d, d: %d)", i, action->time,
-			action->key, action->key, action->down);
-	}
-#endif /* DEBUG */
 
 	free(points);
 
