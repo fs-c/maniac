@@ -31,13 +31,13 @@ jobs:
     - name: Build debug executable
       run: |
         cmake . ${{ matrix.cmake_flags }} -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
-        ${{ make_name }}
+        ${{ matrix.make_name }}
         mv maniac${{ matrix.file_extension }} maniac-dbg${{ matrix.file_extension }}
 
     - name: Build release executable
       run: |
         cmake . ${{ matrix.cmake_flags }} -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
-        ${{ make_name }}
+        ${{ matrix.make_name }}
         mv maniac${{ matrix.file_extension }} maniac-prd${{ matrix.file_extension }}
 
     - name: Create and populate builds folder
