@@ -16,6 +16,8 @@
 
 #define TYPE_SLIDER 128
 
+#define ERROR_UNSUPPORTED_BEATMAP -1
+
 struct beatmap_meta {
 	int set_id;
 	int map_id;

@@ -9,7 +9,7 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta);
 /**
  * Parses a key:value set into *meta.
  */
-static void parse_beatmap_token(char *key, char *value,
+static int parse_beatmap_token(char *key, char *value,
 	struct beatmap_meta *meta);
 
 /**
@@ -95,7 +95,7 @@ size_t find_beatmap(char *base, char *partial, char **map)
 	// Verify that the file we found is a beatmap.
 	if (strcmp(*map + map_len - 4, ".osu") != 0) {
 		debug("%s is not a beatmap", *map);
-		
+
 		free(*map);
 
 		return 0;
@@ -136,7 +136,13 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 	while (fgets(line, (int)line_len, stream)) {
 		line[strlen(line) - 1] = '\0';
 
-		if (!(strcmp(cur_section, "[Metadata]"))) {
+		if (!(strcmp(cur_section, "[General]"))) {
+			int err = parse_beatmap_line(line, *meta);
+
+			if (err <= 0) {
+				return err;
+			}
+		} else if (!(strcmp(cur_section, "[Metadata]"))) {
 			parse_beatmap_line(line, *meta);
 		} else if (!(strcmp(cur_section, "[Difficulty]"))) {
 			parse_beatmap_line(line, *meta);
@@ -175,8 +181,11 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 		case 0: key = strdup(token);
 			break;
 		case 1: value = strdup(token);
+			int err = parse_beatmap_token(key, value, meta);
 
-			parse_beatmap_token(key, value, meta);
+			if (err <= 0) {
+				return err;
+			}
 
 			break;
 		}
@@ -192,18 +201,20 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 	return i;
 }
 
-static void parse_beatmap_token(char *key, char *value,
+static int parse_beatmap_token(char *key, char *value,
 	struct beatmap_meta *meta)
 {
 	if (!key || !value || !meta) {
 		debug("received null pointer");
-		return;
+		return 0;
 	}
 
-	// Always ignore last two characters since .osu files are CRLF by
-	// default.
-	if (!(strcmp(key, "Title"))) {
-		value[strlen(value) - 2] = '\0';
+	if (!(strcmp(key, "Mode"))) {
+		if (strtol(value, NULL, 10) != 3) {
+			return ERROR_UNSUPPORTED_BEATMAP;
+		}
+	} else if (!(strcmp(key, "Title"))) {
+		value[strlen(value)] = '\0';
 
 		strcpy(meta->title, value);
 	} else if (!(strcmp(key, "Artist"))) {
@@ -221,6 +232,8 @@ static void parse_beatmap_token(char *key, char *value,
 	} else if (!(strcmp(key, "CircleSize"))) {
 		meta->columns = atoi(value);
 	}
+
+	return 1;
 }
 
 // TODO: This function is not thread safe.
@@ -358,7 +371,7 @@ void humanize_hitpoints(int total, struct hitpoint **points, int level)
 
 		// [0, level]
 		offset = generate_number(level, RNG_ROUNDS, RNG_BOUNDARY);
-		
+
 		// [-(level / 2), (level / 2)]
 		offset -= (level / 2);
 

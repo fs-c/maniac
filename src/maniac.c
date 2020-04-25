@@ -187,12 +187,15 @@ static int play(char *map)
 {
 	struct hitpoint *points = NULL;
 	struct beatmap_meta *meta = NULL;
-	int num_points = parse_beatmap(map, &points, &meta);
-	if (!num_points || !points || !meta) {
-		debug("num_points = %i, points = %p, meta = %p", num_points,
-			points, meta);
+	int num_points = (int)parse_beatmap(map, &points, &meta);
 
+	if (num_points <= 0 || !points || !meta) {
 		printf("failed to parse beatmap (%s)\n", map);
+
+		if (num_points == ERROR_UNSUPPORTED_BEATMAP) {
+			printf("beatmap has unsupported format\n");
+		}
+
 		return PLAY_ERROR;
 	}
 
