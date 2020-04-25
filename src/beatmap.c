@@ -220,7 +220,7 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 	free(token);
 	free(value);
 
-	return i;
+	return 1;
 }
 
 static int parse_beatmap_token(char *key, char *value,
@@ -232,7 +232,11 @@ static int parse_beatmap_token(char *key, char *value,
 	}
 
 	if (!(strcmp(key, "Mode"))) {
-		if (strtol(value, NULL, 10) != 3) {
+		int mode = (int)strtol(value, NULL, 10);
+
+		debug("mode is %d", mode);
+
+		if (mode != 3) {
 			return ERROR_UNSUPPORTED_BEATMAP;
 		}
 	} else if (!(strcmp(key, "Title"))) {
