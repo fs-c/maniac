@@ -11,7 +11,7 @@ add_executable(maniac
 
 if (UNIX)
     find_package(X11 REQUIRED)
-	target_link_libraries(maniac ${X11_LIBRARIES})
+	target_link_libraries(maniac PUBLIC ${X11_LIBRARIES})
 
 	find_path(XTEST_INCLUDE_DIR NAMES X11/extensions/XTest.h
 		PATH_SUFFIXES X11/extensions
