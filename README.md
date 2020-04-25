@@ -7,7 +7,7 @@ This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), m
 It attemps to be
 - __simple__ to use through automation and reasonable defaults
 - __lightweight__, in the sense that the binaries are small and fast
-- __portable__ by offering equally functional binaries for many Linux distributions (where it depends on the X Window System) and Windows versions
+- __portable__ by offering binaries with equal functionality for Windows and many Linux distributions (where it depends on the X Window System)
 
 ```
   Usage: maniac [options]
