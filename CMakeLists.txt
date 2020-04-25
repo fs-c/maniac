@@ -37,9 +37,11 @@ if (UNIX)
 	target_link_libraries(maniac ${XTEST_LIBRARIES})
 endif()
 
-target_link_libraries(maniac PUBLIC
-    -static -lwinpthread
-)
+if (WIN32)
+    target_link_libraries(maniac PUBLIC
+        -static -lwinpthread
+    )
+endif()
 
 target_include_directories(maniac
 	PRIVATE
