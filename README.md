@@ -2,8 +2,6 @@
 
 <p align="center">Cheating in osu!mania.</p>
 
-![](https://github.com/LW2904/maniac/blob/master/maniac_showcase.gif)
-
 This is a very simple external cheat for the game [osu!](https://osu.ppy.sh/), more specifically for the [osu!mania](https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania) gamemode (where this project also got its name from).
 
 It attemps to be
