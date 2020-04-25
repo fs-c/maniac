@@ -277,6 +277,7 @@ static void play_loop(struct action *actions, int num_actions)
 			send_keypress(cur_a->key, cur_a->down);
 		}
 
+		// Sleep for 10ms (1 000 000 000ns == 1s).
 		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
 	}
 
