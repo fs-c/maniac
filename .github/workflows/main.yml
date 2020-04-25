@@ -28,6 +28,10 @@ jobs:
       with:
         fetch-depth: 1
 
+    - name: Install Linux dependencies
+      run: sudo apt-get install libxtst-dev libx11-dev
+      if: matrix.os == 'ubuntu-latest'
+
     - name: Build debug executable
       run: |
         cmake . ${{ matrix.cmake_flags }} -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
