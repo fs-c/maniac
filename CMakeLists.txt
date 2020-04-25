@@ -34,7 +34,7 @@ if (UNIX)
 
 	mark_as_advanced(XTEST_INCLUDE_DIR XTEST_LIBRARY)
 
-	target_link_libraries(maniac ${XTEST_LIBRARIES})
+	target_link_libraries(maniac PUBLIC ${XTEST_LIBRARIES})
 endif()
 
 if (WIN32)
