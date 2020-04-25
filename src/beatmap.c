@@ -27,7 +27,7 @@ static void hitpoint_to_action(char *keys, struct hitpoint *point,
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
- * attemting to constrain it outside of a bound(ary) given in percent (]0, 1[),
+ * attempting to constrain it outside of a bound(ary) given in percent (]0, 1[),
  * in a given number of rounds.
  */
 static int generate_number(int range, int rounds, double bound);
@@ -69,7 +69,7 @@ size_t find_beatmap(char *base, char *partial, char **map)
 	strcpy(*map, base);
 	// A.p. to the beatmap folder.
 	strcpy(*map + base_len, folder);
-	// Add a trailing seperator and terminating zero.
+	// Add a trailing separator and terminating zero.
 	strcpy(*map + base_len + folder_len, (char[2]){(char)SEPERATOR, '\0'});
 
 	free(folder);
@@ -109,6 +109,8 @@ size_t find_beatmap(char *base, char *partial, char **map)
 size_t parse_beatmap(char *file, struct hitpoint **points,
 	struct beatmap_meta **meta)
 {
+	debug("parsing beatmap '%s'", file);
+
 	if (!points || !meta || !file) {
 		debug("received null pointer");
 		return 0;
@@ -121,11 +123,23 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 		return 0;
 	}
 
-	*points = NULL;
-	*meta = calloc(1, sizeof(struct beatmap_meta));
-
 	const size_t line_len = 256;
 	char *line = malloc(line_len);
+
+	// First line always contains version.
+	if (fgets(line, (int)line_len, stream)) {
+		short version = (short)strtol(line + 17, NULL, 10);
+
+		debug("beatmap version is %d", version);
+
+		if (version < MIN_VERSION || version > MAX_VERSION) {
+			printf("parsing an unsupported beatmap (%d)",
+				version);
+		}
+	}
+
+	*points = NULL;
+	*meta = calloc(1, sizeof(struct beatmap_meta));
 
 	struct hitpoint cur_point;
 	size_t hp_size = sizeof(struct hitpoint), num_parsed = 0;
@@ -156,7 +170,15 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 
 		if (line[0] == '[') {
 			strcpy(cur_section, line);
-			cur_section[strlen(cur_section) - 1] = '\0';
+
+			const int len = (int)strlen(line);
+			for (int i = 0; i < len; i++) {
+				if (line[i] == ']') {
+					cur_section[i + 1] = '\0';
+				}
+			}
+
+			debug("current section is now '%s'", cur_section);
 		}
 	}
 
@@ -170,7 +192,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 {
 	int i = 0;
-	// strtok() modfies its arguments, work with a copy.
+	// strtok() modifies its arguments, work with a copy.
 	char *ln = strdup(line);
 	char *token = NULL, *key = NULL, *value = NULL;
 
@@ -218,11 +240,11 @@ static int parse_beatmap_token(char *key, char *value,
 
 		strcpy(meta->title, value);
 	} else if (!(strcmp(key, "Artist"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value)] = '\0';
 
 		strcpy(meta->artist, value);
 	} else if (!(strcmp(key, "Version"))) {
-		value[strlen(value) - 2] = '\0';
+		value[strlen(value)] = '\0';
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {
@@ -230,7 +252,9 @@ static int parse_beatmap_token(char *key, char *value,
 	} else if (!(strcmp(key, "BeatmapSetID"))) {
 		meta->set_id = atoi(value);
 	} else if (!(strcmp(key, "CircleSize"))) {
-		meta->columns = atoi(value);
+		// meta->columns = atoi(value);
+		// This worked with v12 and maybe also v13 but not with v14.
+		meta->columns = 4;
 	}
 
 	return 1;
@@ -239,7 +263,7 @@ static int parse_beatmap_token(char *key, char *value,
 // TODO: This function is not thread safe.
 static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
-	int secval = 0, end_time = 0, slider = 0, i = 0;
+	int secval = 0, end_time = 0, hold = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
 
 	// Line is expected to follow the following format:
@@ -253,16 +277,16 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 		case 0: point->column = secval / (COLS_WIDTH / columns);
 			break;
 		// Start time
-		case 2: point->start_time = secval;
+		case 2: point->start_time = secval - 15;
 			break;
 		// Type
-		case 3: slider = secval & TYPE_SLIDER;
+		case 3: hold = secval & TYPE_HOLD;
 			break;
 		// Extra string, first element is either 0 or end time
 		case 5:
 			end_time = (int)strtol(strtok(token, ":"), NULL, 10);
 
-			point->end_time = slider ? end_time :
+			point->end_time = hold ? end_time :
 				point->start_time + TAPTIME_MS;
 
 			break;
