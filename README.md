@@ -48,19 +48,28 @@ To (very crudely) simulate human progression, `-r` accepts a value which will be
 
 ## Usage
 
-1. Download the latest build for your operating system by navigating to [releases](https://github.com/LW2904/maniac/releases) and downloading `maniac-win64-static.exe`.
+1. Download the latest build for your operating system by navigating to [releases](https://github.com/LW2904/maniac/releases) and selecting the appropiate executable.
 
-2. In your terminal, run the executable you just downloaded. On Windows this most commonly means running `cmd`, navigating to the folder you downloaded the file to (usually `cd ../Downloads`) and running it through typing `maniac-v*.exe`.
+Builds postfixed with `debug` have significantly more verbose logging than regular builds but are do not perform as well as a result. They are useful to track down bugs that are hard to reproduce -- when opening an issue please include the output of the debug build.
+
+2. Open your terminal. On Windows this most commonly means running opening the default Command Prompt, which can be done by pressing the Windows button, typing `cmd` and pressing enter.
+
+3. In your terminal, run the executable you just downloaded.
+
+```bash
+cd Downloads ; or cd wherever/you/downloaded/it/to
+maniac-...   ; the full name of the executable goes here, on Linux prefix with ./
+             ; note that pressing tab will usually autocomplete lines
+```
 
 ## Building from Source
 
+On Linux, requires you to do `apt install build-essential libxtst-dev libx11-dev`. On Windows, requires `mingw-w64` and `cmake`.
+
 ```bash
-$ sudo apt-get install build-essential
-$ git clone https://github.com/LW2904/maniac.git
-$ cd maniac
-$ ./build.sh
+git clone https://github.com/LW2904/maniac.git
+cd maniac
+mkdir build && cd build
+cmake .. -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug" ; or "Release"
+make ; or mingw32-make, on Windows
 ```
-
-If you are on Windows, use [MinGW](http://www.mingw.org/) to compile. To enable debug logging, tell your compiler to add the `DEBUG` define (e.g. `-D DEBUG` for GCC).
-
-If you know what you're doing, a basic CMake file is also provided.
