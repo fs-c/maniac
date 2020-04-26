@@ -195,7 +195,7 @@ static int play(char *map)
 		if (num_points == ERROR_UNSUPPORTED_BEATMAP) {
 			printf("beatmap has unsupported format, only maps "
 			 	"which were created specifically for osu!mania "
-				"are supported at the moment\n");
+				"and are 1-9k are supported at the moment\n");
 		}
 
 		return PLAY_ERROR;

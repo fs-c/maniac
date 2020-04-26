@@ -258,12 +258,17 @@ static int parse_beatmap_token(char *key, char *value,
 	} else if (!(strcmp(key, "CircleSize"))) {
 		// This doesn't work for non-mania maps
 		meta->columns = atoi(value);
+
+		if (meta->columns > 9) {
+			return ERROR_UNSUPPORTED_BEATMAP;
+		}
 	}
 
 	return 1;
 }
 
 // TODO: This function is not thread safe.
+// This chokes on non-mania maps.
 static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
 	int secval = 0, end_time = 0, hold = 0, i = 0;
