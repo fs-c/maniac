@@ -48,18 +48,15 @@ To (very crudely) simulate human progression, `-r` accepts a value which will be
 
 ## Usage
 
-1. Download the latest build for your operating system by navigating to [releases](https://github.com/LW2904/maniac/releases) and selecting the appropiate executable.
-
-Builds postfixed with `debug` have significantly more verbose logging than regular builds but are do not perform as well as a result. They are useful to track down bugs that are hard to reproduce -- when opening an issue please include the output of the debug build.
+1. Download the latest build for your operating system by navigating to [releases](https://github.com/LW2904/maniac/releases) and selecting the appropiate executable. Builds postfixed with `debug` have significantly more verbose logging than regular builds but are do not perform as well as a result. They are useful to track down bugs that are hard to reproduce -- when opening an issue please include the output of the debug build.
 
 2. Open your terminal. On Windows this most commonly means running opening the default Command Prompt, which can be done by pressing the Windows button, typing `cmd` and pressing enter.
 
 3. In your terminal, run the executable you just downloaded.
-
 ```bash
-cd Downloads ; or cd wherever/you/downloaded/it/to
-maniac-...   ; the full name of the executable goes here, on Linux prefix with ./
-             ; note that pressing tab will usually autocomplete lines
+cd Downloads    # or cd wherever/you/downloaded/it/to
+maniac-...      # the full name of the executable goes here, on Linux prefix with ./
+                # note that pressing tab will usually autocomplete lines
 ```
 
 ## Building from Source
