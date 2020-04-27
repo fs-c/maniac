@@ -40,10 +40,14 @@ static int generate_number(int range, int rounds, double bound);
 static size_t find_partial_file(char *base, char *partial, char **out_file);
 
 /**
- * Given a base, returns the number of concurrent characters which match
- * partial.
+ * `levenshtein.c` - levenshtein
+ * MIT licensed.
+ * Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com>
+ * See https://github.com/wooorm/levenshtein.c
+ * Returns a size_t, depicting the difference between `a` and `b`.
  */
-static int partial_match(char *base, char *partial);
+size_t levenshtein_n(const char *a, const size_t length, const char *b, const size_t bLength);
+size_t levenshtein(const char *a, const char *b);
 
 const char col_keys[9] = "asdfjkl[";
 
@@ -177,8 +181,6 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 					cur_section[i + 1] = '\0';
 				}
 			}
-
-			debug("current section is now '%s'", cur_section);
 		}
 	}
 
@@ -448,14 +450,26 @@ static size_t find_partial_file(char *base, char *partial, char **out_file)
 	const int file_len = 256;
 	*out_file = malloc(file_len);
 
-	int best_match = 0;
+	size_t least_distance = SIZE_MAX;
+	size_t partial_len = strlen(partial);
 
 	while((ep = readdir(dp))) {
 		char *name = ep->d_name;
-		int score = partial_match(name, partial);
 
-		if (score > best_match) {
-			best_match = score;
+		if (name[0] == '.')
+			continue;
+
+		size_t last_dot = 0;
+		size_t name_len = strlen(name);
+		for (size_t i = 0; i < name_len; i++)
+			if (name[i] == '.')
+				last_dot = i;
+
+		size_t distance = levenshtein_n(partial, partial_len, name,
+			last_dot == 0 ? name_len : last_dot);
+
+		if (distance < least_distance) {
+			least_distance = distance;
 
 			strcpy(*out_file, name);
 		}
@@ -463,26 +477,65 @@ static size_t find_partial_file(char *base, char *partial, char **out_file)
 
 	closedir(dp);
 
+	debug("found file '%s'", *out_file);
+
 	return strlen(*out_file);
 }
 
-// TODO: I'm certain there's a more elegant way to go about this.
-static int partial_match(char *base, char *partial)
-{
-	int i = 0;
-	int m = 0;
-	while (*base) {
-		char c = partial[i];
-		if (c == '.') {
-			i++;
-			continue;
-		}
+size_t levenshtein_n(const char *a, const size_t length, const char *b, const size_t bLength) {
+	// Shortcut optimizations / degenerate cases.
+	if (a == b) {
+		return 0;
+	}
 
-		if (*base++ == c) {
-			i++;
-			m++;
+	if (length == 0) {
+		return bLength;
+	}
+
+	if (bLength == 0) {
+		return length;
+	}
+
+	size_t *cache = calloc(length, sizeof(size_t));
+	size_t index = 0;
+	size_t bIndex = 0;
+	size_t distance;
+	size_t bDistance;
+	size_t result;
+	char code;
+
+	while (index < length) {
+		cache[index] = index + 1;
+		index++;
+	}
+
+	while (bIndex < bLength) {
+		code = b[bIndex];
+		result = distance = bIndex++;
+		index = SIZE_MAX;
+
+		while (++index < length) {
+			bDistance = code == a[index] ? distance : distance + 1;
+			distance = cache[index];
+
+			cache[index] = result = distance > result
+				? bDistance > result
+					? result + 1
+					: bDistance
+				: bDistance > distance
+					? distance + 1
+					: bDistance;
 		}
 	}
 
-	return m;
+	free(cache);
+
+	return result;
+}
+
+size_t levenshtein(const char *a, const char *b) {
+	const size_t length = strlen(a);
+	const size_t bLength = strlen(b);
+
+	return levenshtein_n(a, length, b, bLength);
 }
