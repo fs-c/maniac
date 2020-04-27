@@ -273,7 +273,7 @@ static void play_loop(struct action *actions, int num_actions)
 		{
 			cur_i++;
 
-			debug("sending %i (%s)", cur_a->key, cur_a->down ? "down" : "up");
+			debug("sending %i / '%c' (%s)", cur_a->key, cur_a->key, cur_a->down ? "down" : "up");
 			send_keypress(cur_a->key, cur_a->down);
 		}
 
