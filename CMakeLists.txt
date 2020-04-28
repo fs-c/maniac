@@ -10,39 +10,39 @@ endif(NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 add_executable(maniac
-	src/beatmap.c
-	src/game.c
-	src/maniac.c
-	src/process.c
-	src/window.c
+    src/beatmap.c
+    src/game.c
+    src/maniac.c
+    src/process.c
+    src/window.c
 )
 
 if (UNIX)
     find_package(X11 REQUIRED)
-	target_link_libraries(maniac PUBLIC ${X11_LIBRARIES})
+    target_link_libraries(maniac PUBLIC ${X11_LIBRARIES})
 
-	find_path(XTEST_INCLUDE_DIR NAMES X11/extensions/XTest.h
-		PATH_SUFFIXES X11/extensions
-		PATHS /opt/X11/include
-		DOC "The XTest include directory"
-	)
+    find_path(XTEST_INCLUDE_DIR NAMES X11/extensions/XTest.h
+        PATH_SUFFIXES X11/extensions
+        PATHS /opt/X11/include
+        DOC "The XTest include directory"
+    )
 
-	find_library(XTEST_LIBRARY NAMES Xtst
-		PATHS /opt/X11/lib
-		DOC "The XTest library"
-	)
+    find_library(XTEST_LIBRARY NAMES Xtst
+        PATHS /opt/X11/lib
+        DOC "The XTest library"
+    )
 
-	include(FindPackageHandleStandardArgs)
-	FIND_PACKAGE_HANDLE_STANDARD_ARGS(XTest DEFAULT_MSG XTEST_LIBRARY XTEST_INCLUDE_DIR)
+    include(FindPackageHandleStandardArgs)
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(XTest DEFAULT_MSG XTEST_LIBRARY XTEST_INCLUDE_DIR)
 
-	if (XTEST_FOUND)
-		set( XTEST_LIBRARIES ${XTEST_LIBRARY} )
-		set( XTEST_INCLUDE_DIRS ${XTEST_INCLUDE_DIR} )
-	endif()
+    if (XTEST_FOUND)
+        set(XTEST_LIBRARIES ${XTEST_LIBRARY})
+        set(XTEST_INCLUDE_DIRS ${XTEST_INCLUDE_DIR})
+    endif()
 
-	mark_as_advanced(XTEST_INCLUDE_DIR XTEST_LIBRARY)
+    mark_as_advanced(XTEST_INCLUDE_DIR XTEST_LIBRARY)
 
-	target_link_libraries(maniac PUBLIC ${XTEST_LIBRARIES})
+    target_link_libraries(maniac PUBLIC ${XTEST_LIBRARIES})
 endif()
 
 if (WIN32)
@@ -51,28 +51,27 @@ if (WIN32)
     )
 endif()
 
-target_include_directories(maniac
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/src
+target_include_directories(maniac PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 # unused-parameter:	some functions which are stubs on some platforms
-#			would cause warnings
+#			        would cause warnings
 # frame-address:	debug functions call unsafe functions, this is
-#			irrelevant for prod and acceptable for devel
+#			        irrelevant for prod and acceptable for devel
 target_compile_options(maniac PRIVATE
-		-Wall -Wextra -Wpedantic -Wno-unused-parameter
-		-Wno-frame-address
+    -Wall -Wextra -Wpedantic -Wno-unused-parameter
+    -Wno-frame-address
 )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	# The additional / is important to remove the last character from the path.
-	# Note that it does not matter if the OS uses / or \, because we are only
-	# saving the path size.
+    # The additional / is important to remove the last character from the path.
+    # Note that it does not matter if the OS uses / or \, because we are only
+    # saving the path size.
     # Thanks: https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
-	string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+    string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
-	add_compile_definitions(DEBUG SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
+    add_compile_definitions(DEBUG SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 endif()
 
 # TODO: Is C11 really required?
