@@ -10,20 +10,20 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta);
  * Parses a key:value set into *meta.
  */
 static int parse_beatmap_token(char *key, char *value,
-	struct beatmap_meta *meta);
+			       struct beatmap_meta *meta);
 
 /**
  * Parses a raw hitobject line into a hitpoint struct pointed to by *point.
  * Returns the number of tokens read.
  */
 static int parse_hitobject_line(char *line, int columns,
-	struct hitpoint *point);
+				struct hitpoint *point);
 
 /**
  * Populates *start and *end with data from hitpoint *point.
  */
 static void hitpoint_to_action(char *keys, struct hitpoint *point,
-	struct action *start, struct action *end);
+			       struct action *start, struct action *end);
 
 /**
  * Returns a randomly generated number in the range of [0, range], while
@@ -50,8 +50,7 @@ size_t levenshtein_n(const char *a, size_t length, const char *b, size_t bLength
 
 const char col_keys[9] = "asdfjkl[";
 
-size_t find_beatmap(char *base, char *partial, char **map)
-{
+size_t find_beatmap(char *base, char *partial, char **map) {
 	if (!base || !partial || !map) {
 		debug("received null pointer");
 		return 0;
@@ -73,7 +72,9 @@ size_t find_beatmap(char *base, char *partial, char **map)
 	// A.p. to the beatmap folder.
 	strcpy(*map + base_len, folder);
 	// Add a trailing separator and terminating zero.
-	strcpy(*map + base_len + folder_len, (char[2]){(char)SEPERATOR, '\0'});
+	strcpy(*map + base_len + folder_len, (char[2]) {
+		(char) SEPERATOR, '\0'
+	});
 
 	free(folder);
 
@@ -110,8 +111,7 @@ size_t find_beatmap(char *base, char *partial, char **map)
 // TODO: Inefficient as it calls realloc() for every parsed line. Allocate
 // 	 memory in chunks and copy it to adequately sized buffer once done.
 size_t parse_beatmap(char *file, struct hitpoint **points,
-	struct beatmap_meta **meta)
-{
+		     struct beatmap_meta **meta) {
 	debug("parsing beatmap '%s'", file);
 
 	if (!points || !meta || !file) {
@@ -130,14 +130,14 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 	char *line = malloc(line_len);
 
 	// First line always contains version.
-	if (fgets(line, (int)line_len, stream)) {
-		short version = (short)strtol(line + 17, NULL, 10);
+	if (fgets(line, (int) line_len, stream)) {
+		short version = (short) strtol(line + 17, NULL, 10);
 
 		debug("beatmap version is %d", version);
 
 		if (version < MIN_VERSION || version > MAX_VERSION) {
 			printf("parsing an unsupported beatmap (%d)",
-				version);
+			       version);
 		}
 	}
 
@@ -150,7 +150,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 	char cur_section[128];
 
 	// TODO: This loop body is all kinds of messed up.
-	while (fgets(line, (int)line_len, stream)) {
+	while (fgets(line, (int) line_len, stream)) {
 		line[strlen(line) - 1] = '\0';
 
 		if (!(strcmp(cur_section, "[General]"))) {
@@ -160,12 +160,11 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 				return err;
 			}
 		} else if (!(strcmp(cur_section, "[Metadata]"))
-		    || !(strcmp(cur_section, "[Difficulty]")))
-		{
+			   || !(strcmp(cur_section, "[Difficulty]"))) {
 			parse_beatmap_line(line, *meta);
 		} else if (!(strcmp(cur_section, "[HitObjects]"))) {
 			parse_hitobject_line(line, meta[0]->columns,
-				&cur_point);
+					     &cur_point);
 
 			*points = realloc(*points, ++num_parsed * hp_size);
 			points[0][num_parsed - 1] = cur_point;
@@ -174,7 +173,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 		if (line[0] == '[') {
 			strcpy(cur_section, line);
 
-			const int len = (int)strlen(line);
+			const int len = (int) strlen(line);
 			for (int i = 0; i < len; i++) {
 				if (line[i] == ']') {
 					cur_section[i + 1] = '\0';
@@ -190,8 +189,7 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 }
 
 // TODO: This function is not thread safe.
-static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
-{
+static int parse_beatmap_line(char *line, struct beatmap_meta *meta) {
 	int i = 0;
 	// strtok() modifies its arguments, work with a copy.
 	char *ln = strdup(line);
@@ -201,9 +199,11 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 	token = strtok(ln, ":");
 	while (token != NULL) {
 		switch (i++) {
-		case 0: key = strdup(token);
+		case 0:
+			key = strdup(token);
 			break;
-		case 1: value = strdup(token);
+		case 1:
+			value = strdup(token);
 			int err = parse_beatmap_token(key, value, meta);
 
 			if (err <= 0) {
@@ -225,15 +225,14 @@ static int parse_beatmap_line(char *line, struct beatmap_meta *meta)
 }
 
 static int parse_beatmap_token(char *key, char *value,
-	struct beatmap_meta *meta)
-{
+			       struct beatmap_meta *meta) {
 	if (!key || !value || !meta) {
 		debug("received null pointer");
 		return 0;
 	}
 
 	if (!(strcmp(key, "Mode"))) {
-		int mode = (int)strtol(value, NULL, 10);
+		int mode = (int) strtol(value, NULL, 10);
 
 		debug("mode is %d", mode);
 
@@ -270,8 +269,7 @@ static int parse_beatmap_token(char *key, char *value,
 
 // TODO: This function is not thread safe.
 // This chokes on non-mania maps.
-static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
-{
+static int parse_hitobject_line(char *line, int columns, struct hitpoint *point) {
 	int secval, end_time, hold = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
 
@@ -279,24 +277,27 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 	// x, y, time, type, hitSound, extras (= a:b:c:d:)
 	token = strtok(ln, ",");
 	while (token != NULL) {
-		secval = (int)strtol(token, NULL, 10);
+		secval = (int) strtol(token, NULL, 10);
 
 		switch (i++) {
 		// X
-		case 0: point->column = secval / (COLS_WIDTH / columns);
+		case 0:
+			point->column = secval / (COLS_WIDTH / columns);
 			break;
-		// Start time
-		case 2: point->start_time = secval - 15;
+			// Start time
+		case 2:
+			point->start_time = secval - 15;
 			break;
-		// Type
-		case 3: hold = secval & TYPE_HOLD;
+			// Type
+		case 3:
+			hold = secval & TYPE_HOLD;
 			break;
-		// Extra string, first element is either 0 or end time
+			// Extra string, first element is either 0 or end time
 		case 5:
-			end_time = (int)strtol(strtok(token, ":"), NULL, 10);
+			end_time = (int) strtol(strtok(token, ":"), NULL, 10);
 
 			point->end_time = hold ? end_time :
-				point->start_time + TAPTIME_MS;
+					  point->start_time + TAPTIME_MS;
 
 			break;
 		}
@@ -311,8 +312,7 @@ static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 }
 
 int parse_hitpoints(size_t count, size_t columns, struct hitpoint **points,
-	struct action **actions)
-{
+		    struct action **actions) {
 	// Allocate enough memory for all actions at once.
 	*actions = malloc((2 * count) * sizeof(struct action));
 
@@ -352,8 +352,7 @@ int parse_hitpoints(size_t count, size_t columns, struct hitpoint **points,
 }
 
 static void hitpoint_to_action(char *const keys, struct hitpoint *point,
-	struct action *start, struct action *end)
-{
+			       struct action *start, struct action *end) {
 	end->time = point->end_time;
 	start->time = point->start_time;
 
@@ -367,8 +366,7 @@ static void hitpoint_to_action(char *const keys, struct hitpoint *point,
 }
 
 // TODO: Implement a more efficient sorting algorithm than selection sort.
-int sort_actions(int total, struct action **actions)
-{
+int sort_actions(int total, struct action **actions) {
 	int min, i, j;
 	struct action *act = *actions, tmp;
 
@@ -391,8 +389,7 @@ int sort_actions(int total, struct action **actions)
 }
 
 // TODO: This function is retarded, fix it and add actual humanization.
-void humanize_hitpoints(int total, struct hitpoint **points, int level)
-{
+void humanize_hitpoints(int total, struct hitpoint **points, int level) {
 	if (!level) {
 		return;
 	}
@@ -413,8 +410,7 @@ void humanize_hitpoints(int total, struct hitpoint **points, int level)
 	}
 }
 
-static int generate_number(int range, int rounds, double bound)
-{
+static int generate_number(int range, int rounds, double bound) {
 	int rn = rand() % range;
 
 	// Min and max percentage of the range we will use with our constraint.
@@ -424,15 +420,14 @@ static int generate_number(int range, int rounds, double bound)
 	for (int i = 0; i < rounds; i++) {
 		int in = rn > (range * minr) && rn < (range * maxr);
 
-		rn += (in ? (rand() % (int)(range * minr)) : 0)
-			* (rn < (range * 0.5) ? -1 : 1);
+		rn += (in ? (rand() % (int) (range * minr)) : 0)
+		      * (rn < (range * 0.5) ? -1 : 1);
 	}
 
 	return rn;
 }
 
-static size_t find_partial_file(char *base, char *partial, char **out_file)
-{
+static size_t find_partial_file(char *base, char *partial, char **out_file) {
 	if (!base || !partial || !out_file) {
 		debug("received null pointer");
 		return 0;
@@ -452,7 +447,7 @@ static size_t find_partial_file(char *base, char *partial, char **out_file)
 	size_t least_distance = SIZE_MAX;
 	size_t partial_len = strlen(partial);
 
-	while((ep = readdir(dp))) {
+	while ((ep = readdir(dp))) {
 		char *name = ep->d_name;
 
 		if (name[0] == '.')
@@ -465,7 +460,7 @@ static size_t find_partial_file(char *base, char *partial, char **out_file)
 				last_dot = i;
 
 		size_t distance = levenshtein_n(partial, partial_len, name,
-			last_dot == 0 ? name_len : last_dot);
+						last_dot == 0 ? name_len : last_dot);
 
 		if (distance < least_distance) {
 			least_distance = distance;
@@ -518,23 +513,16 @@ size_t levenshtein_n(const char *a, const size_t length, const char *b, const si
 			distance = cache[index];
 
 			cache[index] = result = distance > result
-				? bDistance > result
-					? result + 1
-					: bDistance
-				: bDistance > distance
-					? distance + 1
-					: bDistance;
+						? bDistance > result
+						  ? result + 1
+						  : bDistance
+						: bDistance > distance
+						  ? distance + 1
+						  : bDistance;
 		}
 	}
 
 	free(cache);
 
 	return result;
-}
-
-size_t levenshtein(const char *a, const char *b) {
-	const size_t length = strlen(a);
-	const size_t bLength = strlen(b);
-
-	return levenshtein_n(a, length, b, bLength);
 }

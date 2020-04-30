@@ -3,38 +3,39 @@
 #include <string.h>
 
 #ifdef ON_LINUX
-  Display *display;
-  Window game_window;
+Display *display;
+Window game_window;
 
-  static pid_t get_window_pid(Window window);
-  static int is_window_visible(Window window);
-  static int is_window_match(Window window, pid_t pid);
-  static void search_children(pid_t pid, Window window, Window *out);
-  static int get_xwindow_title(Window window, char *title, int title_len);
-  static unsigned char *get_window_property(Window window, Atom atom,
-	size_t *num_items);
+static pid_t get_window_pid(Window window);
+static int is_window_visible(Window window);
+static int is_window_match(Window window, pid_t pid);
+static void search_children(pid_t pid, Window window, Window *out);
+static int get_xwindow_title(Window window, char *title, int title_len);
+static unsigned char *get_window_property(Window window, Atom atom,
+      size_t *num_items);
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
+
   #include <windows.h>
   #include <tlhelp32.h>
 
-  HWND game_window;
-  HANDLE game_proc;
+HWND game_window;
+HANDLE game_proc;
 
-  struct handle_data {
+struct handle_data {
 	HWND window_handle;
 	unsigned long process_id;
-  };
+};
 
-  __stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param);
+__stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param);
+
 #endif /* ON_WINDOWS */
 
-int find_window(unsigned long process_id, void **out_window)
-{
+int find_window(unsigned long process_id, void **out_window) {
 #ifdef ON_WINDOWS
 	struct handle_data data = { 0, process_id };
-	EnumWindows((WNDENUMPROC)enum_windows_callback, (LPARAM)&data);
+	EnumWindows((WNDENUMPROC) enum_windows_callback, (LPARAM) &data);
 
 	HWND handle = data.window_handle;
 	*out_window = malloc(sizeof(HWND));
@@ -61,8 +62,7 @@ int find_window(unsigned long process_id, void **out_window)
 #endif /* ON_LINUX */
 }
 
-hot int get_window_title(char **title, int title_len)
-{
+hot int get_window_title(char **title, int title_len) {
 #ifdef ON_WINDOWS
 	return GetWindowText(game_window, *title, title_len);
 #endif /* ON_WINDOWS */
@@ -75,9 +75,8 @@ hot int get_window_title(char **title, int title_len)
 }
 
 #ifdef ON_WINDOWS
-__stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param)
-{
-	struct handle_data *data = (struct handle_data *)param;
+__stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param) {
+	struct handle_data *data = (struct handle_data *) param;
 
 	unsigned long process_id = 0;
 	GetWindowThreadProcessId(handle, &process_id);
@@ -88,6 +87,7 @@ __stdcall static WINBOOL enum_windows_callback(HWND handle, LPARAM param)
 	data->window_handle = handle;
 	return 0;
 }
+
 #endif /* ON_WINDOWS */
 
 #ifdef ON_LINUX

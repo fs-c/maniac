@@ -7,17 +7,18 @@
 #include <limits.h>
 
 #ifdef ON_LINUX
-  // Enable GNU extensions (process_vm_readv).
-  // TODO: This is hacky and undocumented.
-  #define __USE_GNU
+// Enable GNU extensions (process_vm_readv).
+// TODO: This is hacky and undocumented.
+#define __USE_GNU
 
   #include <sys/uio.h>
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
+
   #include <tlhelp32.h>
 
-  HANDLE game_proc;
+HANDLE game_proc;
 #endif /* ON_WINDOWS */
 
 void *time_address;

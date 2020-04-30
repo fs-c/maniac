@@ -9,15 +9,16 @@
 #include <dirent.h>
 
 #ifdef ON_LINUX
-  Display *display;
-  Window game_window;
+Display *display;
+Window game_window;
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
+
   #include <tlhelp32.h>
 
-  HWND game_window;
-  HANDLE game_proc;
+HWND game_window;
+HANDLE game_proc;
 #endif /* ON_WINDOWS */
 
 void *time_address;

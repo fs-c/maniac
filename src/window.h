@@ -6,13 +6,13 @@
 #include <stdlib.h>
 
 #ifdef ON_WINDOWS
-  extern HWND game_window;
-  extern HANDLE game_proc;
+extern HWND game_window;
+extern HANDLE game_proc;
 #endif /* ON_WINDOWS */
 
 #ifdef ON_LINUX
-  extern Display *display;
-  extern Window game_window;
+extern Display *display;
+extern Window game_window;
 #endif /* ON_LINUX */
 
 /**

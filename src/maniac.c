@@ -1,8 +1,8 @@
 #include "maniac.h"
 
 #include <time.h>
-#include <unistd.h>
 #include <string.h>
+#include <getopt.h>
 
 #define PLAY_ERROR 0
 #define PLAY_FINISH 1
@@ -11,11 +11,11 @@
 #define STANDBY_CONTINUE 1
 
 #ifdef ON_LINUX
-  Window game_window;
+Window game_window;
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-  HWND game_window;
+HWND game_window;
 #endif /* ON_WINDOWS */
 
 char *optarg = 0;
@@ -33,13 +33,14 @@ pid_t game_proc_id;
 static void print_usage();
 
 static int standby(char **map, int search);
+
 static int standby_loop(char *map, int *search, int replay);
 
 static int play(char *map);
+
 static void play_loop(struct action *actions, int num_actions);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
 
 	char *map = NULL;
@@ -47,25 +48,42 @@ int main(int argc, char **argv)
 
 	time_address = 0;
 
+	static struct option long_options[] = {
+		{ "add",    no_argument,       0, 'a' },
+		{ "append", no_argument,       0, 'b' },
+		{ "delete", required_argument, 0, 'd' },
+		{ "create", required_argument, 0, 'c' },
+		{ "file",   required_argument, 0, 'f' },
+		{ 0,        0,                 0, 0 }
+	};
+
 	while ((c = getopt(argc, argv, "m:p:a:l:r:he")) != -1) {
-		switch (c) {
-		case 'm': map = optarg;
+	switch (c) {
+		case 'm':
+			map = optarg;
 			break;
-		case 'p': game_proc_id = (pid_t)strtol(optarg, NULL, 10);
+		case 'p':
+			game_proc_id = (pid_t) strtol(optarg, NULL, 10);
 			break;
-		case 'a': time_address = (void *)(intptr_t)strtol(optarg, NULL, 0);
+		case 'a':
+			time_address = (void *) (intptr_t) strtol(
+				optarg, NULL, 0);
 			break;
-		case 'l': delay = strtol(optarg, NULL, 10);
+		case 'l':
+			delay = strtol(optarg, NULL, 10);
 			break;
-		case 'r': replay = 1;
-			replay_delta = (int)strtol(optarg, NULL, 10);
+		case 'r':
+			replay = 1;
+			replay_delta = (int) strtol(optarg, NULL, 10);
 			break;
-		case 'e': exit_check = !exit_check;
+		case 'e':
+			exit_check = !exit_check;
 			break;
-		case 'h': print_usage(argv[0]);
+		case 'h':
+			print_usage(argv[0]);
 			exit(EXIT_SUCCESS);
 		default:
-		    printf("ignored unknown option %c", c);
+			printf("ignored unknown option %c", c);
 		}
 	}
 
@@ -75,8 +93,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!game_proc_id &&
-		!(game_proc_id = (pid_t)get_process_id("osu!.exe")))
-	{
+	    !(game_proc_id = (pid_t) get_process_id("osu!.exe"))) {
 		printf("couldn't find game process ID\n");
 		return EXIT_FAILURE;
 	}
@@ -89,7 +106,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (!(find_window((unsigned long)game_proc_id, (void *)&game_window))) {
+	if (!(find_window((unsigned long) game_proc_id,
+			  (void *) &game_window))) {
 		printf("couldn't find game window\n");
 		return EXIT_FAILURE;
 	}
@@ -113,20 +131,19 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	free((void *)game_window);
+	free((void *) game_window);
 
 	return EXIT_SUCCESS;
 }
 
-static int standby(char **map, int search)
-{
+static int standby(char **map, int search) {
 	debug("in standby mode");
 
 	const int title_len = 128;
 	char *title = malloc(title_len);
 	// Idle while we're in menus.
 	while (get_window_title(&title, title_len) && !strcmp(title, "osu!")) {
-		nanosleep((struct timespec[]){{ 0, 500000000L }}, NULL);
+		nanosleep((struct timespec[]) {{ 0, 500000000L }}, NULL);
 	}
 
 	if (search) {
@@ -138,8 +155,7 @@ static int standby(char **map, int search)
 	return 1;
 }
 
-static int standby_loop(char *map, int *search, int replay)
-{
+static int standby_loop(char *map, int *search, int replay) {
 	int status = play(map);
 	static int retries = 0;
 
@@ -147,14 +163,14 @@ static int standby_loop(char *map, int *search, int replay)
 
 	if (status == PLAY_ERROR) {
 		printf("an error occurred while playing, "
-			"there's likely additional error output above\n");
+		       "there's likely additional error output above\n");
 
 		if (replay) {
 			int retry_delay = 1000 * ++retries;
 			printf("retrying in %d ms\n", retry_delay);
 
-			nanosleep((struct timespec[]){{
-				0, (long)(retry_delay * 1000)
+			nanosleep((struct timespec[]) {{
+				0, (long) (retry_delay * 1000)
 			}}, NULL);
 
 			return STANDBY_CONTINUE;
@@ -169,12 +185,12 @@ static int standby_loop(char *map, int *search, int replay)
 		tap_key(KEY_ESCAPE);
 		debug("pressed escape");
 
-		nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
+		nanosleep((struct timespec[]) {{ 8, 0 }}, NULL);
 
 		tap_key(KEY_RETURN);
 		debug("pressed enter");
 
-		nanosleep((struct timespec[]){{ 2, 0 }}, NULL);
+		nanosleep((struct timespec[]) {{ 2, 0 }}, NULL);
 
 		*search = 0;
 		delay -= replay_delta;
@@ -183,26 +199,25 @@ static int standby_loop(char *map, int *search, int replay)
 	return STANDBY_CONTINUE;
 }
 
-static int play(char *map)
-{
+static int play(char *map) {
 	struct hitpoint *points = NULL;
 	struct beatmap_meta *meta = NULL;
-	int num_points = (int)parse_beatmap(map, &points, &meta);
+	int num_points = (int) parse_beatmap(map, &points, &meta);
 
 	if (num_points <= 0 || !points || !meta) {
 		printf("failed to parse beatmap (%s)\n", map);
 
 		if (num_points == ERROR_UNSUPPORTED_BEATMAP) {
 			printf("beatmap has unsupported format, only maps "
-			 	"which were created specifically for osu!mania "
-				"and are 1-9k are supported at the moment\n");
+			       "which were created specifically for osu!mania "
+			       "and are 1-9k are supported at the moment\n");
 		}
 
 		return PLAY_ERROR;
 	}
 
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
-		meta->title, meta->version, meta->map_id);
+	       meta->title, meta->version, meta->map_id);
 
 	humanize_hitpoints(num_points, &points, delay);
 
@@ -210,7 +225,7 @@ static int play(char *map)
 
 	struct action *actions = NULL;
 	int num_actions = parse_hitpoints(num_points, meta->columns, &points,
-		&actions);
+					  &actions);
 	if (!num_actions || !actions) {
 		printf("failed to parse hitpoints\n");
 		return PLAY_ERROR;
@@ -231,7 +246,7 @@ static int play(char *map)
 
 	play_loop(actions, num_actions);
 
-	nanosleep((struct timespec[]){{ 8, 0 }}, NULL);
+	nanosleep((struct timespec[]) {{ 8, 0 }}, NULL);
 
 	free(meta);
 	free(actions);
@@ -242,8 +257,7 @@ static int play(char *map)
 // TODO: The structure of play_loop and standby_loop are inconsistent, one is
 // 	 looping and the other is called in a loop. Investigate a clean,
 //	 consistent solution.
-static void play_loop(struct action *actions, int num_actions)
-{
+static void play_loop(struct action *actions, int num_actions) {
 	int cur_i = 0;				// Current action offset.
 	struct action *cur_a = NULL;		// Pointer to current action.
 	int32_t time = get_maptime();		// Current maptime.
@@ -262,31 +276,30 @@ static void play_loop(struct action *actions, int num_actions)
 		if (exit_check) {
 			// If the user exited the map...
 			if (get_window_title(&title, title_len)
-				&& !strcmp(title, "osu!")) goto clean_exit;
+			    && !strcmp(title, "osu!"))
+				goto clean_exit;
 		}
 
 		time = get_maptime();
-		// debug("time %i", time);
 
 		while (cur_i < num_actions &&
-			(cur_a = actions + cur_i)->time < time)
-		{
+		       (cur_a = actions + cur_i)->time < time) {
 			cur_i++;
 
-			debug("sending %i / '%c' (%s)", cur_a->key, cur_a->key, cur_a->down ? "down" : "up");
+			debug("sending %i / '%c' (%s)", cur_a->key, cur_a->key,
+			      cur_a->down ? "down" : "up");
 			send_keypress(cur_a->key, cur_a->down);
 		}
 
 		// Sleep for 10ms (1 000 000 000ns == 1s).
-		nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
+		nanosleep((struct timespec[]) {{ 0, 10000000L }}, NULL);
 	}
 
 clean_exit:
 	free(title);
 }
 
-static void print_usage()
-{
+static void print_usage() {
 	printf("  Usage: ./maniac [options]\n\n");
 	printf("  Options: \n\n");
 
@@ -295,6 +308,7 @@ static void print_usage()
 	printf("    %-10s address to read time from (optional)\n", "-a");
 	printf("    %-10s path to beatmap (optional)\n", "-m");
 	printf("    %-10s replay humanization level delta (optional)\n", "-r");
-	printf("    %-10s toggle exit checks in game loop (default: on)\n", "-e");
+	printf("    %-10s toggle exit checks in game loop (default: on)\n",
+	       "-e");
 	printf("    %-10s print this message\n", "-h");
 }

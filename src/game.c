@@ -2,8 +2,7 @@
 
 static size_t get_env_var(char *name, char **out_var);
 
-hot inline void send_keypress(int key, int down)
-{
+hot inline void send_keypress(int key, int down) {
 #ifdef ON_LINUX
 	KeyCode keycode = XKeysymToKeycode(display, key);
 
@@ -35,15 +34,13 @@ hot inline void send_keypress(int key, int down)
 #endif /* ON_WINDOWS */
 }
 
-void tap_key(int key)
-{
+void tap_key(int key) {
 	send_keypress(key, 1);
-	nanosleep((struct timespec[]){{ 0, 10000000L }}, NULL);
+	nanosleep((struct timespec[]) {{ 0, 10000000L }}, NULL);
 	send_keypress(key, 0);
 }
 
-size_t get_osu_path(char **out_path)
-{
+size_t get_osu_path(char **out_path) {
 	if (!out_path) {
 		debug("received null pointer");
 		return 0;
@@ -70,8 +67,7 @@ size_t get_osu_path(char **out_path)
 	return path_len;
 }
 
-void do_setup()
-{
+void do_setup() {
 #ifdef ON_LINUX
 	if (!(display = XOpenDisplay(NULL))) {
 		printf("failed to open X display\n");
@@ -89,12 +85,11 @@ void do_setup()
 	}
 
 	debug("got handle to game process with ID %d",
-		(int)game_proc_id);
+	      (int) game_proc_id);
 #endif /* ON_WINDOWS */
 }
 
-static size_t get_env_var(char *name, char **out_var)
-{
+static size_t get_env_var(char *name, char **out_var) {
 	if (!out_var || !name) {
 		debug("received null pointer");
 		return 0;
