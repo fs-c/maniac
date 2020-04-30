@@ -48,42 +48,47 @@ int main(int argc, char **argv) {
 
 	time_address = 0;
 
-	static struct option long_options[] = {
-		{ "add",    no_argument,       0, 'a' },
-		{ "append", no_argument,       0, 'b' },
-		{ "delete", required_argument, 0, 'd' },
-		{ "create", required_argument, 0, 'c' },
-		{ "file",   required_argument, 0, 'f' },
-		{ 0,        0,                 0, 0 }
+	int option_index = 0;
+	struct option long_options[] = {
+		{ "map",        required_argument, 0, 'm' },
+		{ "process",    required_argument, 0, 'p' },
+		{ "address",    required_argument, 0, 'a' },
+		{ "delay",      required_argument, 0, 'l' },
+		{ "replay",     required_argument, 0, 'r' },
+		{ "exit-check", no_argument,       0, 'e' },
+		{ "help",       no_argument,       0, 'h' },
 	};
 
-	while ((c = getopt(argc, argv, "m:p:a:l:r:he")) != -1) {
-	switch (c) {
-		case 'm':
-			map = optarg;
-			break;
-		case 'p':
-			game_proc_id = (pid_t) strtol(optarg, NULL, 10);
-			break;
-		case 'a':
-			time_address = (void *) (intptr_t) strtol(
-				optarg, NULL, 0);
-			break;
-		case 'l':
-			delay = strtol(optarg, NULL, 10);
-			break;
-		case 'r':
-			replay = 1;
-			replay_delta = (int) strtol(optarg, NULL, 10);
-			break;
-		case 'e':
-			exit_check = !exit_check;
-			break;
-		case 'h':
-			print_usage(argv[0]);
-			exit(EXIT_SUCCESS);
-		default:
-			printf("ignored unknown option %c", c);
+	while ((c = getopt_long(argc, argv, "m:p:a:l:r:he", long_options, &option_index)) != -1) {
+		switch (c) {
+			case 0:
+				break;
+			case 'm':
+				map = optarg;
+				break;
+			case 'p':
+				game_proc_id = (pid_t) strtol(optarg, NULL, 10);
+				break;
+			case 'a':
+				time_address = (void *) (intptr_t) strtol(
+					optarg, NULL, 0);
+				break;
+			case 'l':
+				delay = strtol(optarg, NULL, 10);
+				break;
+			case 'r':
+				replay = 1;
+				replay_delta = (int) strtol(optarg, NULL, 10);
+				break;
+			case 'e':
+				exit_check = !exit_check;
+				break;
+			case 'h':
+				print_usage(argv[0]);
+				exit(EXIT_SUCCESS);
+			case '?':
+				printf("ignored unknown option");
+				break;
 		}
 	}
 
@@ -170,8 +175,8 @@ static int standby_loop(char *map, int *search, int replay) {
 			printf("retrying in %d ms\n", retry_delay);
 
 			nanosleep((struct timespec[]) {{
-				0, (long) (retry_delay * 1000)
-			}}, NULL);
+							       0, (long) (retry_delay * 1000)
+						       }}, NULL);
 
 			return STANDBY_CONTINUE;
 		}
@@ -258,12 +263,12 @@ static int play(char *map) {
 // 	 looping and the other is called in a loop. Investigate a clean,
 //	 consistent solution.
 static void play_loop(struct action *actions, int num_actions) {
-	int cur_i = 0;				// Current action offset.
-	struct action *cur_a = NULL;		// Pointer to current action.
-	int32_t time = get_maptime();		// Current maptime.
+	int cur_i = 0;                                // Current action offset.
+	struct action *cur_a = NULL;                // Pointer to current action.
+	int32_t time = get_maptime();                // Current maptime.
 
-	const int title_len = 128;		// Max length of title.
-	char *title = malloc(title_len);	// Current window title.
+	const int title_len = 128;                // Max length of title.
+	char *title = malloc(title_len);        // Current window title.
 
 	// Discard all actions which come before our current maptime.
 	for (; cur_i < num_actions; cur_i++)
