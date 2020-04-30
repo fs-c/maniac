@@ -46,8 +46,7 @@ static size_t find_partial_file(char *base, char *partial, char **out_file);
  * See https://github.com/wooorm/levenshtein.c
  * Returns a size_t, depicting the difference between `a` and `b`.
  */
-size_t levenshtein_n(const char *a, const size_t length, const char *b, const size_t bLength);
-size_t levenshtein(const char *a, const char *b);
+size_t levenshtein_n(const char *a, size_t length, const char *b, size_t bLength);
 
 const char col_keys[9] = "asdfjkl[";
 
@@ -160,9 +159,9 @@ size_t parse_beatmap(char *file, struct hitpoint **points,
 			if (err <= 0) {
 				return err;
 			}
-		} else if (!(strcmp(cur_section, "[Metadata]"))) {
-			parse_beatmap_line(line, *meta);
-		} else if (!(strcmp(cur_section, "[Difficulty]"))) {
+		} else if (!(strcmp(cur_section, "[Metadata]"))
+		    || !(strcmp(cur_section, "[Difficulty]")))
+		{
 			parse_beatmap_line(line, *meta);
 		} else if (!(strcmp(cur_section, "[HitObjects]"))) {
 			parse_hitobject_line(line, meta[0]->columns,
@@ -254,12 +253,12 @@ static int parse_beatmap_token(char *key, char *value,
 
 		strcpy(meta->version, value);
 	} else if (!(strcmp(key, "BeatmapID"))) {
-		meta->map_id = atoi(value);
+		meta->map_id = strtol(value, NULL, 10);
 	} else if (!(strcmp(key, "BeatmapSetID"))) {
-		meta->set_id = atoi(value);
+		meta->set_id = strtol(value, NULL, 10);
 	} else if (!(strcmp(key, "CircleSize"))) {
 		// This doesn't work for non-mania maps
-		meta->columns = atoi(value);
+		meta->columns = strtol(value, NULL, 10);
 
 		if (meta->columns > 9) {
 			return ERROR_UNSUPPORTED_BEATMAP;
@@ -273,7 +272,7 @@ static int parse_beatmap_token(char *key, char *value,
 // This chokes on non-mania maps.
 static int parse_hitobject_line(char *line, int columns, struct hitpoint *point)
 {
-	int secval = 0, end_time = 0, hold = 0, i = 0;
+	int secval, end_time, hold = 0, i = 0;
 	char *ln = strdup(line), *token = NULL;
 
 	// Line is expected to follow the following format:
@@ -352,7 +351,7 @@ int parse_hitpoints(size_t count, size_t columns, struct hitpoint **points,
 	return num_actions;
 }
 
-static void hitpoint_to_action(char *keys, struct hitpoint *point,
+static void hitpoint_to_action(char *const keys, struct hitpoint *point,
 	struct action *start, struct action *end)
 {
 	end->time = point->end_time;

@@ -113,17 +113,17 @@ end:
 void *get_time_address()
 {
 #ifdef ON_WINDOWS
-	void *time_address = NULL;
+	void *addr = NULL;
 	void *time_ptr = find_pattern((unsigned char *)SIGNATURE,
 		sizeof(SIGNATURE) - 1);
 
-	if (!ReadProcessMemory(game_proc, (void *)time_ptr, &time_address,
+	if (!ReadProcessMemory(game_proc, (void *)time_ptr, &addr,
 		sizeof(DWORD), NULL))
 	{
 		return NULL;
 	}
 
-	return time_address;
+	return addr;
 #endif
 
 #ifdef ON_LINUX
@@ -154,7 +154,7 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len)
 
 // TODO: Use a more efficient pattern matching algorithm.
 static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
-	unsigned char *buf, size_t buf_size)
+	unsigned char *const buf, size_t buf_size)
 {
 	// Iterate over the buffer...
 	for (size_t i = 0; i < buf_size; i++) {

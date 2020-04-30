@@ -15,7 +15,7 @@
 #define RNG_BOUNDARY 0.5
 
 // 7th bit in type is hold
-#define TYPE_HOLD 128
+#define TYPE_HOLD 128u
 
 #define MIN_VERSION 12
 #define MAX_VERSION 14

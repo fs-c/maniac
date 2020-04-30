@@ -4,7 +4,7 @@ project(maniac VERSION 1.0.0 LANGUAGES C)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
+    set(CMAKE_BUILD_TYPE "Debug")
 endif(NOT CMAKE_BUILD_TYPE)
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")

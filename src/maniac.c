@@ -3,7 +3,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
-#include <signal.h>
 
 #define PLAY_ERROR 0
 #define PLAY_FINISH 1
@@ -19,7 +18,6 @@
   HWND game_window;
 #endif /* ON_WINDOWS */
 
-int opterr;
 char *optarg = 0;
 
 char *osu_path = NULL;
@@ -45,7 +43,7 @@ int main(int argc, char **argv)
 	setbuf(stdout, NULL);
 
 	char *map = NULL;
-	int replay = 0, c = 0;
+	int replay = 0, c;
 
 	time_address = 0;
 
@@ -66,6 +64,8 @@ int main(int argc, char **argv)
 			break;
 		case 'h': print_usage(argv[0]);
 			exit(EXIT_SUCCESS);
+		default:
+		    printf("ignored unknown option %c", c);
 		}
 	}
 
@@ -146,7 +146,7 @@ static int standby_loop(char *map, int *search, int replay)
 	debug("play returned status %d", status);
 
 	if (status == PLAY_ERROR) {
-		printf("an error occured while playing, "
+		printf("an error occurred while playing, "
 			"there's likely additional error output above\n");
 
 		if (replay) {
