@@ -61,7 +61,15 @@ maniac-...      # the full name of the executable goes here, on Linux prefix wit
 
 ## Building from Source
 
-On Linux, requires you to do `apt install build-essential libxtst-dev libx11-dev`. On Windows, requires `mingw-w64` and `cmake`.
+On Linux, requires you to do `apt install build-essential libxtst-dev libx11-dev`.
+
+On Windows, requires `make` (or `mingw32-make`), `cmake` and `mingw-w64` (mostly for their `libwinpthread` implementation). Install
+
+- [CMake](https://cmake.org/), no manual steps required after following the installer.
+- [MinGW32](http://www.mingw.org/wiki/Getting_Started), and make sure to add the `bin` directory to your `Path`.
+- [MinGW-W64](http://mingw-w64.org/doku.php/download), you'll want the "MingW-W64-builds" option, again don't forget to add the `bin` directory to your `Path`.
+
+Make sure that calling `gcc` results in MinGW-W64's implementation being called.
 
 ```bash
 git clone https://github.com/LW2904/maniac.git
