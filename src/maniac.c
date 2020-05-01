@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 		{ "address",    	required_argument, NULL, 'a' },
 		{ "humanization",      	required_argument, NULL, 'l' },
 		{ "replay",		optional_argument, NULL, 'r' },
-		{ "exit-check", 	no_argument,       NULL, 'e' },
+		{ "exit-checks", 	no_argument,       NULL, 'e' },
 		{ "help",       	no_argument,       NULL, 'h' },
 		{ NULL, 		0, 		   NULL, 0   },
 	};
@@ -278,12 +278,12 @@ static int play(char *map) {
 // 	 looping and the other is called in a loop. Investigate a clean,
 //	 consistent solution.
 static void play_loop(struct action *actions, int num_actions) {
-	int cur_i = 0;                                // Current action offset.
-	struct action *cur_a = NULL;                // Pointer to current action.
-	int32_t time = get_maptime();                // Current maptime.
+	int cur_i = 0;				// Current action offset.
+	struct action *cur_a = NULL;		// Pointer to current action.
+	int32_t time = get_maptime();		// Current maptime.
 
-	const int title_len = 128;                // Max length of title.
-	char *title = malloc(title_len);        // Current window title.
+	const int title_len = 128;		// Max length of title.
+	char *title = malloc(title_len);	// Current window title.
 
 	// Discard all actions which come before our current maptime.
 	for (; cur_i < num_actions; cur_i++)
@@ -323,12 +323,18 @@ static void print_usage() {
 	printf("  Usage: ./maniac [options]\n\n");
 	printf("  Options: \n\n");
 
-	printf("    %-10s id of game process (optional)\n", "-p");
-	printf("    %-10s humanization level (default: 0)\n", "-l");
-	printf("    %-10s address to read time from (optional)\n", "-a");
-	printf("    %-10s path to beatmap (optional)\n", "-m");
-	printf("    %-10s replay humanization level delta (optional)\n", "-r");
-	printf("    %-10s toggle exit checks in game loop (default: on)\n",
-	       "-e");
-	printf("    %-10s print this message\n", "-h");
+	printf("    %s / %-15s id of game process (optional)\n",
+	       "-p", "--process");
+	printf("    %s / %-15s humanization level (default: 0)\n",
+	       "-l", "--humanization");
+	printf("    %s / %-15s address to read time from (optional)\n",
+	       "-a", "--address");
+	printf("    %s / %-15s path to beatmap (optional)\n",
+	       "-m", "--map");
+	printf("    %s / %-15s replay humanization level delta (optional)\n",
+	       "-r", "--replay");
+	printf("    %s / %-15s toggle exit checks in game loop (default: on)\n",
+	       "-e", "--exit-checks");
+	printf("    %s / %-15s print this message\n",
+	       "-h", "--help");
 }

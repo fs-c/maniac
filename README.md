@@ -14,13 +14,14 @@ It attemps to be
 
   Options:
 
-    -p         id of game process (optional)
-    -l         humanization level (default: 0)
-    -a         address to read time from (optional)
-    -m         path to beatmap (optional)
-    -r         replay humanization level delta (optional)
-    -e         toggle exit checks in game loop (default: on)
-    -h         print this message
+    -p / --process       id of game process (optional)  
+    -l / --humanization  humanization level (default: 0)
+    -a / --address       address to read time from (optional)
+    -m / --map           path to beatmap (optional)
+    -r / --replay        replay humanization level delta (optional)   
+    -e / --exit-checks   toggle exit checks in game loop (default: on)
+    -h / --help          print this message
+
 
 ```
 
