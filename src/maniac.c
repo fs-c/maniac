@@ -18,6 +18,7 @@ Window game_window;
 HWND game_window;
 #endif /* ON_WINDOWS */
 
+int opterr;
 char *optarg = 0;
 
 char *osu_path = NULL;
@@ -50,45 +51,59 @@ int main(int argc, char **argv) {
 
 	int option_index = 0;
 	struct option long_options[] = {
-		{ "map",        required_argument, 0, 'm' },
-		{ "process",    required_argument, 0, 'p' },
-		{ "address",    required_argument, 0, 'a' },
-		{ "delay",      required_argument, 0, 'l' },
-		{ "replay",     required_argument, 0, 'r' },
-		{ "exit-check", no_argument,       0, 'e' },
-		{ "help",       no_argument,       0, 'h' },
+		{ "map",        	required_argument, NULL, 'm' },
+		{ "process",    	required_argument, NULL, 'p' },
+		{ "address",    	required_argument, NULL, 'a' },
+		{ "humanization",      	required_argument, NULL, 'l' },
+		{ "replay",		optional_argument, NULL, 'r' },
+		{ "exit-check", 	no_argument,       NULL, 'e' },
+		{ "help",       	no_argument,       NULL, 'h' },
+		{ NULL, 		0, 		   NULL, 0   },
 	};
 
-	while ((c = getopt_long(argc, argv, "m:p:a:l:r:he", long_options, &option_index)) != -1) {
+	opterr = 0;
+	while (true) {
+		c = getopt_long(argc, argv, ":m:p:a:l:r:he", long_options,
+			&option_index);
+
+		if (c == -1)
+			break;
+
 		switch (c) {
-			case 0:
-				break;
-			case 'm':
-				map = optarg;
-				break;
-			case 'p':
-				game_proc_id = (pid_t) strtol(optarg, NULL, 10);
-				break;
-			case 'a':
-				time_address = (void *) (intptr_t) strtol(
-					optarg, NULL, 0);
-				break;
-			case 'l':
-				delay = strtol(optarg, NULL, 10);
-				break;
-			case 'r':
-				replay = 1;
-				replay_delta = (int) strtol(optarg, NULL, 10);
-				break;
-			case 'e':
-				exit_check = !exit_check;
-				break;
-			case 'h':
-				print_usage(argv[0]);
-				exit(EXIT_SUCCESS);
-			case '?':
-				printf("ignored unknown option");
-				break;
+		case 0:
+			break;
+		case 'm':
+			map = optarg;
+			break;
+		case 'p':
+			game_proc_id = (pid_t) strtol(optarg, NULL, 10);
+			break;
+		case 'a':
+			time_address = (void *) (intptr_t) strtol(
+				optarg, NULL, 0);
+			break;
+		case 'l':
+			delay = strtol(optarg, NULL, 10);
+			break;
+		case 'r':
+			replay = 1;
+			replay_delta = (int) strtol(optarg, NULL, 10);
+			break;
+		case 'e':
+			exit_check = !exit_check;
+			break;
+		case 'h':
+			print_usage(argv[0]);
+			exit(EXIT_SUCCESS);
+		case '?':
+			if (optopt == 0) {
+				printf("ignoring unknown option '%s'\n", argv[optind - 1]);
+			} else {
+				printf("error parsing option '%c'\n", optopt);
+				return EXIT_FAILURE;
+			}
+
+			break;
 		}
 	}
 
