@@ -15,6 +15,7 @@ add_executable(maniac
     src/maniac.c
     src/process.c
     src/window.c
+    src/humanization.c
 )
 
 if (UNIX)
