@@ -256,9 +256,7 @@ static int play(char *map) {
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
 	       meta->title, meta->version, meta->map_id);
 
-	if (delay) {
-		humanize_hitpoints(num_points, &points, delay);
-	}
+	humanize_hitpoints(num_points, &points, delay);
 
 	debug("humanized %d hitpoints with delay of %d", num_points, delay);
 
@@ -281,9 +279,7 @@ static int play(char *map) {
 
 	debug("sorted %d actions", num_actions);
 
-	if (exp_delay) {
-		humanize_actions_exp(num_actions, &actions, exp_regen, exp_delay);
-	}
+	humanize_actions_exp(num_actions, &actions, exp_regen, exp_delay);
 
 	printf("playing with delay of %d (delta: %d)\n", delay, replay_delta);
 
