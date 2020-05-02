@@ -72,5 +72,7 @@ void humanize_actions_exp(int total, struct action **actions, int regen_time,
 		}
 
 		offset += delta;
+
+		cur_action->time += offset;
 	}
 }
