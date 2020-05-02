@@ -14,11 +14,11 @@ It attemps to be
 
   Options:
 
-    -p / --process       id of game process (optional)  
+    -p / --process       id of game process (optional)
     -l / --humanization  humanization level (default: 0)
     -a / --address       address to read time from (optional)
     -m / --map           path to beatmap (optional)
-    -r / --replay        replay humanization level delta (optional)   
+    -r / --replay        replay humanization level delta (optional)
     -e / --exit-checks   toggle exit checks in game loop (default: on)
     -h / --help          print this message
 
@@ -62,7 +62,9 @@ maniac-...      # the full name of the executable goes here, on Linux prefix wit
 
 ## Building from Source
 
-On Linux, requires you to do `apt install build-essential libxtst-dev libx11-dev`.
+_Remember that you do not have to build `maniac` from source -- for most users the binaries in the [releases](https://github.com/LW2904/maniac/releases) section will be sufficient._
+
+On Ubuntu, requires you to do `apt install build-essential libxtst-dev libx11-dev`.
 
 On Windows, requires `make` (or `mingw32-make`), `cmake` and `mingw-w64` (mostly for their `libwinpthread` implementation). Install
 
