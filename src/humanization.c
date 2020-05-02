@@ -45,3 +45,32 @@ static int generate_number(int range, int rounds, double bound) {
 
 	return rn;
 }
+
+void humanize_actions_exp(int total, struct action **actions, int regen_time,
+			  int delta) {
+	if (!delta || !regen_time) {
+		return;
+	}
+
+	int offset = 0, passed_time = 0;
+	struct action *cur_action = NULL;
+	for (int i = 1; i < total; i++) {
+		cur_action = *actions + i;
+
+		int cur_t = cur_action->time;
+		int prev_t = (*actions + i - 1)->time;
+		passed_time += cur_t - prev_t;
+
+		while (passed_time > regen_time) {
+			offset -= delta * 4;
+
+			passed_time -= regen_time;
+		}
+
+		if (offset < 0) {
+			offset = 0;
+		}
+
+		offset += delta;
+	}
+}

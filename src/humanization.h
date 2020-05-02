@@ -12,4 +12,9 @@
  */
 void humanize_hitpoints(int total, struct hitpoint **points, int level);
 
+/**
+ */
+void humanize_actions_exp(int total, struct action **actions, int regen_time,
+			  int delta);
+
 #endif /* HUMANIZATION_H */

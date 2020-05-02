@@ -28,6 +28,9 @@ int delay = 0;
 int exit_check = 1;
 int replay_delta = 0;
 
+int exp_delay = 0;
+int exp_regen = 0;
+
 void *time_address;
 pid_t game_proc_id;
 
@@ -40,6 +43,8 @@ static int standby_loop(char *map, int *search, int replay);
 static int play(char *map);
 
 static void play_loop(struct action *actions, int num_actions);
+
+static int parse_key_value(char *string, char **key, char **value);
 
 int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
@@ -58,12 +63,14 @@ int main(int argc, char **argv) {
 		{ "replay",		optional_argument, NULL, 'r' },
 		{ "exit-checks", 	no_argument,       NULL, 'e' },
 		{ "help",       	no_argument,       NULL, 'h' },
+		{ "exp-humanization",	required_argument, NULL, 'x' },
 		{ NULL, 		0, 		   NULL, 0   },
 	};
 
 	opterr = 0;
+	char *v1, *v2;
 	while (true) {
-		c = getopt_long(argc, argv, ":m:p:a:l:r:he", long_options,
+		c = getopt_long(argc, argv, ":m:p:a:l:r:x:he", long_options,
 			&option_index);
 
 		if (c == -1)
@@ -84,6 +91,16 @@ int main(int argc, char **argv) {
 			break;
 		case 'l':
 			delay = strtol(optarg, NULL, 10);
+			break;
+		case 'x':
+			parse_key_value(optarg, &v1, &v2);
+
+			exp_delay = strtol(v1, NULL, 10);
+			exp_regen = strtol(v2, NULL, 10);
+
+			printf("enabled experimental humanization with delay = %d"
+	 		       " and regen = %d\n", exp_delay, exp_regen);
+
 			break;
 		case 'r':
 			replay = 1;
@@ -190,8 +207,8 @@ static int standby_loop(char *map, int *search, int replay) {
 			printf("retrying in %d ms\n", retry_delay);
 
 			nanosleep((struct timespec[]) {{
-							       0, (long) (retry_delay * 1000)
-						       }}, NULL);
+				0, (long) (retry_delay * 1000)
+			}}, NULL);
 
 			return STANDBY_CONTINUE;
 		}
@@ -239,7 +256,9 @@ static int play(char *map) {
 	printf("parsed %d hitpoints of map '%s' ('%s', %d)\n", num_points,
 	       meta->title, meta->version, meta->map_id);
 
-	humanize_hitpoints(num_points, &points, delay);
+	if (delay) {
+		humanize_hitpoints(num_points, &points, delay);
+	}
 
 	debug("humanized %d hitpoints with delay of %d", num_points, delay);
 
@@ -261,6 +280,10 @@ static int play(char *map) {
 	}
 
 	debug("sorted %d actions", num_actions);
+
+	if (exp_delay) {
+		humanize_actions_exp(num_actions, &actions, exp_regen, exp_delay);
+	}
 
 	printf("playing with delay of %d (delta: %d)\n", delay, replay_delta);
 
@@ -317,6 +340,25 @@ static void play_loop(struct action *actions, int num_actions) {
 
 clean_exit:
 	free(title);
+}
+
+static int parse_key_value(char *string, char **key, char **value) {
+	int i = 0;
+	char *token = strtok(string, ":");
+	while (token != NULL) {
+		switch (i++) {
+		case 0:
+			*key = token;
+			break;
+		case 1:
+			*value = token;
+			break;
+		}
+
+		token = strtok(NULL, ":");
+	}
+
+	return i;
 }
 
 static void print_usage() {
