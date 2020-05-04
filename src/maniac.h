@@ -7,5 +7,6 @@
 #include "window.h"
 #include "beatmap.h"
 #include "process.h"
+#include "humanization.h"
 
 #endif /* OSU_H */

@@ -11,9 +11,6 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-#define RNG_ROUNDS 50
-#define RNG_BOUNDARY 0.5
-
 // 7th bit in type is hold
 #define TYPE_HOLD 128u
 
@@ -70,10 +67,5 @@ int parse_hitpoints(size_t count, size_t columns, struct hitpoint **points,
  * Returns nonzero on failure.
  */
 int sort_actions(int count, struct action **actions);
-
-/**
- * Add a randomized delay of magnitude level to the hitpoints.
- */
-void humanize_hitpoints(int total, struct hitpoint **points, int level);
 
 #endif /* BEATMAP_H */
