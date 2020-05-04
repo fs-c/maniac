@@ -54,11 +54,11 @@ int main(int argc, char **argv) {
 		{ "map",        	required_argument, NULL, 'm' },
 		{ "process",    	required_argument, NULL, 'p' },
 		{ "address",    	required_argument, NULL, 'a' },
-		{ "humanization",      	required_argument, NULL, 'l' },
+		{ "humanization",	required_argument, NULL, 'l' },
 		{ "replay",		optional_argument, NULL, 'r' },
 		{ "exit-checks", 	no_argument,       NULL, 'e' },
 		{ "help",       	no_argument,       NULL, 'h' },
-		{ NULL, 		0, 		   NULL, 0   },
+		{ NULL, 		0,		   NULL, 0   },
 	};
 
 	opterr = 0;
@@ -97,7 +97,8 @@ int main(int argc, char **argv) {
 			exit(EXIT_SUCCESS);
 		case '?':
 			if (optopt == 0) {
-				printf("ignoring unknown option '%s'\n", argv[optind - 1]);
+				printf("ignoring unknown option '%s'\n",
+				       argv[optind - 1]);
 			} else {
 				printf("error parsing option '%c'\n", optopt);
 				return EXIT_FAILURE;
@@ -119,6 +120,14 @@ int main(int argc, char **argv) {
 	}
 
 	do_setup();
+
+	char *path;
+	if (!(get_osu_path_exp(&path))) {
+		printf("couldn't get osu path\n");
+		return EXIT_FAILURE;
+	}
+
+	debug("osu path: %s", path);
 
 	// We can only fetch time address after setup has been done.
 	if (!(time_address = get_time_address())) {

@@ -109,9 +109,10 @@ end:
 void *get_time_address() {
 #ifdef ON_WINDOWS
 	void *addr = NULL;
-	void *time_ptr = find_pattern((unsigned char *) SIGNATURE,
-				      sizeof(SIGNATURE) - 1);
+	void *time_ptr = find_pattern((unsigned char *)TIME_SIG,
+				      sizeof(TIME_SIG) - 1);
 
+	// TODO: Convert to read_game_memory
 	if (!ReadProcessMemory(game_proc, (void *) time_ptr, &addr,
 			       sizeof(DWORD), NULL)) {
 		return NULL;
@@ -123,6 +124,21 @@ void *get_time_address() {
 #ifdef ON_LINUX
 	return (void *)LINUX_TIME_ADDRESS;
 #endif
+}
+
+size_t get_osu_path_exp(char **path) {
+	const size_t max_size = 256;
+	void *buf = malloc(max_size);
+	void *path_ptr = find_pattern((unsigned char*)OSU_PATH_SIG,
+				      sizeof(OSU_PATH_SIG) - 1);
+	
+	if (!(read_game_memory((void *)path_ptr, buf, max_size))) {
+		return NULL;
+	}
+
+	*path = buf;
+
+	return 1;
 }
 
 void *find_pattern(const unsigned char *signature, unsigned int sig_len) {

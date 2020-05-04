@@ -18,6 +18,9 @@
 
   #include <tlhelp32.h>
 
+  #define TIME_SIG "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
+  #define OSU_PATH_SIG "\xF3\x11\x89\xDF\x87\x00\x0E"
+
 HANDLE game_proc;
 #endif /* ON_WINDOWS */
 
@@ -55,5 +58,9 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len);
  * Linux: Returns static address (LINUX_TIME_ADDRESS).
  */
 void *get_time_address(void);
+
+/**
+ */
+size_t get_osu_path_exp(char **path);
 
 #endif /* PROCESS_H */
