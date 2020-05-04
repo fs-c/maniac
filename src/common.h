@@ -10,14 +10,12 @@
 
 #define KEY_RETURN 0xFF0D
 #define KEY_ESCAPE 0xFF1B
-
 #ifdef _WIN32
   #define ON_WINDOWS
 
   #include "Windows.h"
 
   #define HOME_ENV "USERPROFILE"
-  #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
 
   #define SEPERATOR '\\'
   #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
