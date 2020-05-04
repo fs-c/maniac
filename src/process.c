@@ -131,10 +131,15 @@ size_t get_osu_path_exp(char **path) {
 	void *buf = malloc(max_size);
 	void *path_ptr = find_pattern((unsigned char*)OSU_PATH_SIG,
 				      sizeof(OSU_PATH_SIG) - 1);
-	
+
+	debug("address: %x", path_ptr);
+
 	if (!(read_game_memory((void *)path_ptr, buf, max_size))) {
+		debug("failed reading");
 		return NULL;
 	}
+
+	debug("buf = %s", buf);
 
 	*path = buf;
 

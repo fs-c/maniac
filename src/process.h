@@ -18,8 +18,8 @@
 
   #include <tlhelp32.h>
 
-  #define TIME_SIG "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
-  #define OSU_PATH_SIG "\xF3\x11\x89\xDF\x87\x00\x0E"
+  #define TIME_SIG      "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
+  #define OSU_PATH_SIG  "\xF2\x60\x28\xB8\x00\x0C\x22"
 
 HANDLE game_proc;
 #endif /* ON_WINDOWS */
