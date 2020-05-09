@@ -40,7 +40,7 @@ void tap_key(int key) {
 	send_keypress(key, 0);
 }
 
-size_t get_osu_path(char **out_path) {
+size_t get_songs_path(char **out_path) {
 	if (!out_path) {
 		debug("received null pointer");
 		return 0;
@@ -55,12 +55,12 @@ size_t get_osu_path(char **out_path) {
 	}
 
 	// Subtract one since sizeof includes the terminating null.
-	size_t path_len = home_len + (sizeof(DEFAULT_OSU_PATH) - 1);
+	size_t path_len = home_len + (sizeof(DEFAULT_SONGS_PATH) - 1);
 	*out_path = malloc(path_len + 1);
 
 	strcpy(*out_path, home);
 	// We overwrite the old terminating null here.
-	strcpy(*out_path + home_len, DEFAULT_OSU_PATH);
+	strcpy(*out_path + home_len, DEFAULT_SONGS_PATH);
 
 	free(home);
 

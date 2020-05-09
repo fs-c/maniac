@@ -18,7 +18,7 @@
   #define HOME_ENV "USERPROFILE"
 
   #define SEPERATOR '\\'
-  #define DEFAULT_OSU_PATH "\\AppData\\Local\\osu!\\Songs\\"
+  #define DEFAULT_SONGS_PATH "\\AppData\\Local\\osu!\\Songs\\"
 #endif /* _WIN32 */
 
 #ifdef __linux__
@@ -33,7 +33,7 @@
   #define SIGNATURE "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
 
   #define SEPERATOR '/'
-  #define DEFAULT_OSU_PATH "/osufolder/Songs/"
+  #define DEFAULT_SONGS_PATH "/osufolder/Songs/"
 #endif /* __linux__ */
 
 #ifdef DEBUG
@@ -56,6 +56,7 @@
 
 #define COLS_WIDTH 512
 
+#define MAX_PATH_LENGTH 260
 #define MAX_LINE_LENGTH 1024
 
 #ifdef __GNUC__

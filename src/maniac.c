@@ -21,7 +21,7 @@ HWND game_window;
 int opterr;
 char *optarg = 0;
 
-char *osu_path = NULL;
+char *songs_path = NULL;
 char *default_map = "map.osu";
 
 int delay = 0;
@@ -64,13 +64,14 @@ int main(int argc, char **argv) {
 		{ "exit-checks", 	no_argument,       NULL, 'e' },
 		{ "help",       	no_argument,       NULL, 'h' },
 		{ "exp-humanization",	required_argument, NULL, 'x' },
+		{ "songs-path",		required_argument, NULL, 's' },
 		{ NULL, 		0, 		   NULL, 0   },
 	};
 
 	opterr = 0;
 	char *v1, *v2;
 	while (true) {
-		c = getopt_long(argc, argv, ":m:p:a:l:r:x:he", long_options,
+		c = getopt_long(argc, argv, ":m:p:a:l:r:x:s:he", long_options,
 			&option_index);
 
 		if (c == -1)
@@ -79,7 +80,12 @@ int main(int argc, char **argv) {
 		switch (c) {
 		case 0:
 			break;
+		case 's':
+			songs_path = malloc(MAX_PATH_LENGTH);
+			strcpy(songs_path, optarg);
+			break;
 		case 'm':
+			// TODO: That's not how pointers work.
 			map = optarg;
 			break;
 		case 'p':
@@ -112,23 +118,22 @@ int main(int argc, char **argv) {
 		case 'h':
 			print_usage(argv[0]);
 			exit(EXIT_SUCCESS);
-		case '?':
-			if (optopt == 0) {
-				printf("ignoring unknown option '%s'\n",
-				       argv[optind - 1]);
-			} else {
-				printf("error parsing option '%c'\n", optopt);
-				return EXIT_FAILURE;
-			}
-
 			break;
+		case '?':
+			printf("ignoring unknown option '%c'\n",
+				optopt);
+			break;
+		case ':':
+			printf("missing argument for option '%d'", optopt);
 		}
 	}
 
-	if (!(get_osu_path(&osu_path))) {
+	if (!songs_path && !(get_songs_path(&songs_path))) {
 		printf("couldn't get osu! path\n");
 		return EXIT_FAILURE;
 	}
+
+	debug("songs path is '%s'", songs_path);
 
 	if (!game_proc_id &&
 	    !(game_proc_id = (pid_t) get_process_id("osu!.exe"))) {
@@ -169,6 +174,7 @@ int main(int argc, char **argv) {
 			break;
 	}
 
+	free(songs_path);
 	free((void *) game_window);
 
 	return EXIT_SUCCESS;
@@ -185,7 +191,7 @@ static int standby(char **map, int search) {
 	}
 
 	if (search) {
-		find_beatmap(osu_path, title + 8, map);
+		find_beatmap(songs_path, title + 8, map);
 	}
 
 	free(title);
@@ -374,6 +380,8 @@ static void print_usage() {
 	       "-r", "--replay");
 	printf("    %s / %-15s toggle exit checks in game loop (default: on)\n",
 	       "-e", "--exit-checks");
-	printf("    %s / %-15s print this message\n",
+	printf("    %s / %-15s set the path where songs are stored (optional)\n",
+	       "-s", "--songs-path");
+	printf("    %s / %-15s print this message and quit\n",
 	       "-h", "--help");
 }

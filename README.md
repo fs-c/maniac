@@ -20,8 +20,8 @@ It attemps to be
     -m / --map           path to beatmap (optional)
     -r / --replay        replay humanization level delta (optional)
     -e / --exit-checks   toggle exit checks in game loop (default: on)
+    -s / --songs-path    set the path where songs are stored
     -h / --help          print this message
-
 
 ```
 

@@ -42,10 +42,10 @@ hot void send_keypress(int key, int down);
 void tap_key(int key);
 
 /**
- * Fetches the absolute path to the main osu! directory, using HOME_ENV
+ * Fetches the absolute path to the osu! Songs directory, using HOME_ENV
  * and DEFAULT_OSU_PATH, and returns it through *out_path.
  * Returns the length of the path stored or zero on failure.
  */
-size_t get_osu_path(char **out_path);
+size_t get_songs_path(char **out_path);
 
 #endif /* GAME_H */
