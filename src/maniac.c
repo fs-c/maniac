@@ -138,14 +138,6 @@ int main(int argc, char **argv) {
 
 	do_setup();
 
-	char *path;
-	if (!(get_osu_path_exp(&path))) {
-		printf("couldn't get osu path\n");
-		return EXIT_FAILURE;
-	}
-
-	debug("osu path: %s", path);
-
 	// We can only fetch time address after setup has been done.
 	if (!(time_address = get_time_address())) {
 		printf("couldn't find time address\n");
