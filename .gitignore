@@ -66,3 +66,7 @@ scripts/config.json
 # Build folder
 /build*
 /cmake-build*
+
+# clangd
+compile_commands.json
+.clangd
