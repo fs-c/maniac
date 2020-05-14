@@ -75,6 +75,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_compile_definitions(DEBUG SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
     add_compile_options(-g)
 else ()
+    message(STATUS "Adding release compile options")
     add_compile_options(-s -O3 -fvisibility=hidden -fvisibility-inlines-hidden)
 endif ()
 
