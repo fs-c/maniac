@@ -18,7 +18,8 @@
 
   #include <tlhelp32.h>
 
-  #define TIME_SIG      "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
+  // #define TIME_SIG   "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
+  #define TIME_SIG	"\x24\x34\x8B\x44\x24\x34\xA3"
 
 HANDLE game_proc;
 #endif /* ON_WINDOWS */
@@ -44,11 +45,6 @@ unsigned long get_process_id(const char *name);
  */
 ssize_t read_game_memory(void *base, void *buffer, size_t size);
 
-/**
- * Searches for a signature (sequence of bytes) in the process, returning the
- * address of the end (!) of the first occurence.
- */
-void *find_pattern(const unsigned char *signature, unsigned int sig_len);
 
 /**
  * Returns the address of the playback time in the address space of the game

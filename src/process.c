@@ -1,15 +1,21 @@
 #include "process.h"
 
+/**
+ * Searches for a signature (sequence of bytes) in the process, returning the
+ * address of the end of the first occurrence.
+ */
+void *find_pattern(const unsigned char *signature, unsigned int sig_len);
+
 static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
-				unsigned char *buf, size_t buf_size);
+				const unsigned char *buf, size_t buf_size);
 
 /**
  * Copies game memory at base for size bytes into buffer.
  * Inlined, hot version without argument validation.
  * Returns number of bytes read.
  */
-static inline hot ssize_t _read_game_memory(void *base, void *buffer,
-					    size_t size);
+static inline hot ssize_t inl_read_game_memory(void *base, void *buffer,
+	size_t size);
 
 hot int32_t get_maptime() {
 	int32_t time = 0;
@@ -17,7 +23,7 @@ hot int32_t get_maptime() {
 
 	// This function is called in tight loops, use the faster, insecure
 	// read_game_memory since we know our arguments are valid.
-	if (_read_game_memory(time_address, &time, size) == -1) {
+	if (inl_read_game_memory(time_address, &time, size) == -1) {
 		debug("failed reading memory (errno %i)", errno);
 		return 0;
 	}
@@ -31,14 +37,14 @@ ssize_t read_game_memory(void *base, void *buffer, size_t size) {
 
 	ssize_t read = 0;
 
-	if (!(read = _read_game_memory(base, buffer, size)))
+	if (!(read = inl_read_game_memory(base, buffer, size)))
 		return 0;
 
 	return read;
 }
 
-static inline hot ssize_t _read_game_memory(void *base, void *buffer,
-					    size_t size) {
+static inline hot ssize_t inl_read_game_memory(void *base, void *buffer,
+	size_t size) {
 	ssize_t read = 0;
 
 #ifdef ON_LINUX
@@ -55,8 +61,8 @@ static inline hot ssize_t _read_game_memory(void *base, void *buffer,
 #endif /* ON_LINUX */
 
 #ifdef ON_WINDOWS
-	ReadProcessMemory(game_proc, (LPCVOID) base, buffer, size,
-			  (SIZE_T *) &read);
+	ReadProcessMemory(game_proc, (LPCVOID)base, buffer, size,
+		(SIZE_T *)&read);
 #endif /* ON_WINDOWS */
 
 	return read;
@@ -90,8 +96,8 @@ unsigned long get_process_id(const char *name) {
 	}
 
 	while (Process32Next(proc_list, &entry)) {
-		if (_stricmp((char *) entry.szExeFile, name) == 0) {
-			proc_id = (unsigned long) entry.th32ProcessID;
+		if (_stricmp((char *)entry.szExeFile, name) == 0) {
+			proc_id = (unsigned long)entry.th32ProcessID;
 
 			goto end;
 		}
@@ -110,11 +116,11 @@ void *get_time_address() {
 #ifdef ON_WINDOWS
 	void *addr = NULL;
 	void *time_ptr = find_pattern((unsigned char *)TIME_SIG,
-				      sizeof(TIME_SIG) - 1);
+		sizeof(TIME_SIG) - 1);
 
 	// TODO: Convert to read_game_memory
-	if (!ReadProcessMemory(game_proc, (void *) time_ptr, &addr,
-			       sizeof(DWORD), NULL)) {
+	if (!ReadProcessMemory(game_proc, (void *)time_ptr, &addr,
+		sizeof(DWORD), NULL)) {
 		return NULL;
 	}
 
@@ -132,7 +138,7 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len) {
 
 	// Get reasonably sized chunks of memory...
 	for (size_t off = 0; off < INT_MAX; off += read_size - sig_len) {
-		if (!(read_game_memory((void *) off, chunk, read_size))) {
+		if (!(read_game_memory((void *)off, chunk, read_size))) {
 			continue;
 		}
 
@@ -140,15 +146,15 @@ void *find_pattern(const unsigned char *signature, unsigned int sig_len) {
 		void *hit = check_chunk(signature, sig_len, chunk, read_size);
 
 		if (hit)
-			return (void *) ((intptr_t) off + (intptr_t) hit);
+			return (void *)((intptr_t)off + (intptr_t)hit);
 	}
 
 	return NULL;
 }
 
 // TODO: Use a more efficient pattern matching algorithm.
-static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
-				unsigned char *const buf, size_t buf_size) {
+static inline void *check_chunk(const unsigned char *const sig, size_t sig_size,
+				const unsigned char *const buf, size_t buf_size) {
 	// Iterate over the buffer...
 	for (size_t i = 0; i < buf_size; i++) {
 		int hit = true;
@@ -159,7 +165,7 @@ static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
 		}
 
 		if (hit) {
-			return (void *) (i + sig_size);
+			return (void *)(i + sig_size);
 		}
 	}
 
