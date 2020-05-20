@@ -76,7 +76,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_compile_options(-g)
 else ()
     message(STATUS "Adding release compile options")
-    add_compile_options(-s -O3 -fvisibility=hidden -fvisibility-inlines-hidden)
+    add_compile_options(-s -O3 -g0)
 endif ()
 
 # TODO: Is C11 really required?
