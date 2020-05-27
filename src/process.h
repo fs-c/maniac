@@ -18,8 +18,8 @@
 
   #include <tlhelp32.h>
 
-  // #define TIME_SIG   "\xDB\x5D\xE8\x8B\x45\xE8\xA3"
-  #define TIME_SIG	"\x24\x34\x8B\x44\x24\x34\xA3"
+  #define TIME_SIG_OFF	3
+  #define TIME_SIG	"EB 0A A1 ? ? ? ? A3"
 
 HANDLE game_proc;
 #endif /* ON_WINDOWS */
