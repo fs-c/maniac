@@ -143,9 +143,15 @@ int main(int argc, char **argv) {
 
 	do_setup();
 
-	// We can only fetch time address after setup has been done.
+	// We can only fetch addresses after setup has been done.
+
 	if (!(time_address = get_time_address())) {
 		printf("couldn't find time address\n");
+		return EXIT_FAILURE;
+	}
+
+	if (!(state_address = get_state_address())) {
+		printf("couldn't find state address\n");
 		return EXIT_FAILURE;
 	}
 
@@ -158,9 +164,8 @@ int main(int argc, char **argv) {
 	const int fetch_len = 128;
 	char *fetched_map = malloc(fetch_len);
 	// If the user passed a map, play it.
-	// If they didn't and window fetching is failing, use the default map.
-	if (map || !(get_window_title(&fetched_map, fetch_len))) {
-		play(map ? map : default_map);
+	if (map) {
+		play(map);
 		return EXIT_SUCCESS;
 	}
 
@@ -185,10 +190,17 @@ static int standby(char **map, int search) {
 
 	const int title_len = 128;
 	char *title = malloc(title_len);
+
 	// Idle while we're in menus.
-	while (get_window_title(&title, title_len) && !strcmp(title, "osu!")) {
-		nanosleep((struct timespec[]) {{ 0, 500000000L }}, NULL);
+	while (get_game_state() != STATE_PLAY) {
+		nanosleep((struct timespec[]) {{ 0, 50000000L }}, NULL);
 	}
+
+	// Have to wait a bit for the window title to be populated.
+	nanosleep((struct timespec[]) {{ 1, 0 }}, NULL);
+	get_window_title(&title, title_len);
+
+	debug("read window title '%s'", title);
 
 	if (search) {
 		find_beatmap(songs_path, title + 8, map);
@@ -308,9 +320,6 @@ static void play_loop(struct action *actions, int num_actions) {
 	struct action *cur_a = NULL;		// Pointer to current action.
 	int32_t time = get_maptime();		// Current maptime.
 
-	const int title_len = 128;		// Max length of title.
-	char *title = malloc(title_len);	// Current window title.
-
 	// Discard all actions which come before our current maptime.
 	for (; cur_i < num_actions; cur_i++)
 		if (actions[cur_i].time >= time)
@@ -321,9 +330,8 @@ static void play_loop(struct action *actions, int num_actions) {
 	while (cur_i < num_actions) {
 		if (exit_check) {
 			// If the user exited the map...
-			if (get_window_title(&title, title_len)
-			    && !strcmp(title, "osu!"))
-				goto clean_exit;
+			if (get_game_state() != STATE_PLAY)
+				return;
 		}
 
 		time = get_maptime();
@@ -340,9 +348,6 @@ static void play_loop(struct action *actions, int num_actions) {
 		// Sleep for 10ms (1 000 000 000ns == 1s).
 		nanosleep((struct timespec[]) {{ 0, 10000000L }}, NULL);
 	}
-
-clean_exit:
-	free(title);
 }
 
 static int parse_key_value(char *string, char **key, char **value) {

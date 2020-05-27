@@ -19,16 +19,23 @@ static inline hot ssize_t inl_read_game_memory(void *base, void *buffer,
 
 hot int32_t get_maptime() {
 	int32_t time = 0;
-	size_t size = sizeof(int32_t);
 
 	// This function is called in tight loops, use the faster, insecure
 	// read_game_memory since we know our arguments are valid.
-	if (inl_read_game_memory(time_address, &time, size) == -1) {
+	if (inl_read_game_memory(time_address, &time, sizeof(int32_t)) <= 0) {
 		debug("failed reading memory (errno %i)", errno);
 		return 0;
 	}
 
 	return time;
+}
+
+int32_t get_game_state() {
+	int32_t state = -1;
+
+	read_game_memory(state_address, &state, sizeof(int32_t));
+
+	return state;
 }
 
 ssize_t read_game_memory(void *base, void *buffer, size_t size) {
@@ -43,6 +50,8 @@ ssize_t read_game_memory(void *base, void *buffer, size_t size) {
 	return read;
 }
 
+// TODO: Check if manually inlining this does anything at all when compiling with
+// 	 optimization enabled.
 static inline hot ssize_t inl_read_game_memory(void *base, void *buffer,
 	size_t size) {
 	ssize_t read = 0;
@@ -129,6 +138,25 @@ void *get_time_address() {
 #ifdef ON_LINUX
 	return (void *)LINUX_TIME_ADDRESS;
 #endif
+}
+
+void *get_state_address() {
+#ifdef ON_LINUX
+	// TODO: This function breaks Linux support, shit.
+	printf("error, get_state_address is not implemented for linux systems\n");
+	printf("if you encountered this error, please create an issue on ");
+	printf("'https://github.com/LW2904/maniac/issues'\n");
+	return NULL;
+#endif
+
+	void *addr = NULL;
+	void *state_ptr = find_pattern((unsigned char *)STATE_SIG, STATE_SIG_OFF);
+
+	if (!read_game_memory(state_ptr, &addr, sizeof(int32_t))) {
+		return NULL;
+	}
+
+	return addr;
 }
 
 void *find_pattern(const unsigned char *sig, const int offset) {
