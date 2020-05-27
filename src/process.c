@@ -4,9 +4,9 @@
  * Searches for a signature (sequence of bytes) in the process, returning the
  * address of the end of the first occurrence.
  */
-void *find_pattern(const unsigned char *signature, unsigned int sig_len);
+void *find_pattern(const unsigned char *sig, int offset);
 
-static inline void *check_chunk(const unsigned char *sig, size_t sig_size,
+static inline void *check_chunk(const int *sig, size_t sig_size,
 				const unsigned char *buf, size_t buf_size);
 
 /**
@@ -115,8 +115,7 @@ end:
 void *get_time_address() {
 #ifdef ON_WINDOWS
 	void *addr = NULL;
-	void *time_ptr = find_pattern((unsigned char *)TIME_SIG,
-		sizeof(TIME_SIG) - 1);
+	void *time_ptr = find_pattern((unsigned char *)TIME_SIG, TIME_SIG_OFF);
 
 	// TODO: Convert to read_game_memory
 	if (!ReadProcessMemory(game_proc, (void *)time_ptr, &addr,
@@ -132,40 +131,84 @@ void *get_time_address() {
 #endif
 }
 
-void *find_pattern(const unsigned char *signature, unsigned int sig_len) {
-	const size_t read_size = 4096;
-	unsigned char chunk[read_size];
+void *find_pattern(const unsigned char *sig, const int offset) {
+	if (!sig) {
+		return NULL;
+	}
+
+	int sig_bytes[256];
+	size_t sig_len = 0;
+
+	unsigned char temp[3];
+	temp[2] = '\0';
+
+	// TODO: Might be a good idea to move this into a separate function.
+	do {
+		switch (*sig) {
+		case ' ':
+			continue;
+		case '?':
+			sig_bytes[sig_len] = -1;
+			break;
+		case '\0':
+			continue;
+		default:
+			temp[0] = *sig;
+			temp[1] = *(++sig);
+
+			sig_bytes[sig_len] = (int)strtol((char *)temp, NULL, 16);
+			break;
+		}
+
+		sig_len++;
+	} while (*++sig);
+
+	const size_t chunk_size = 4096;
+	unsigned char chunk[chunk_size];
 
 	// Get reasonably sized chunks of memory...
-	for (size_t off = 0; off < INT_MAX; off += read_size - sig_len) {
-		if (!(read_game_memory((void *)off, chunk, read_size))) {
+	for (size_t off = 0; off < INT_MAX; off += chunk_size - sig_len) {
+		if (!(read_game_memory((void *)off, chunk, chunk_size))) {
 			continue;
 		}
 
 		// ...and check if they contain our signature.
-		void *hit = check_chunk(signature, sig_len, chunk, read_size);
+		void *hit = check_chunk(sig_bytes, sig_len, chunk, chunk_size);
 
 		if (hit)
-			return (void *)((intptr_t)off + (intptr_t)hit);
+			return (void *)((intptr_t)off + (intptr_t)hit + offset);
 	}
 
 	return NULL;
 }
 
 // TODO: Use a more efficient pattern matching algorithm.
-static inline void *check_chunk(const unsigned char *const sig, size_t sig_size,
+static inline void *check_chunk(const int *const sig, size_t sig_size,
 				const unsigned char *const buf, size_t buf_size) {
+
+	unsigned char temp;
+
 	// Iterate over the buffer...
 	for (size_t i = 0; i < buf_size; i++) {
 		int hit = true;
 
 		// ...to check if it includes the pattern/sig.
-		for (size_t j = 0; j < sig_size && hit; j++) {
-			hit = buf[i + j] == sig[j];
+		for (size_t j = 0; j < sig_size; j++) {
+			if (sig[j] == -1)
+				continue;
+
+			temp = sig[j];
+
+			if (buf[i + j] == temp) {
+				hit = true;
+			} else {
+				hit = false;
+				break;
+			}
 		}
 
 		if (hit) {
-			return (void *)(i + sig_size);
+			return (void *)i;
 		}
 	}
 
