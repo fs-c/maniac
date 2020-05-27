@@ -1,12 +1,4 @@
-#ifndef OSU_H
-#define OSU_H
+#pragma once
 
-#include "common.h"
-
-#include "game.h"
-#include "window.h"
-#include "beatmap.h"
-#include "process.h"
-#include "humanization.h"
-
-#endif /* OSU_H */
+#include <stdio.h>
+#include <cstdlib>
