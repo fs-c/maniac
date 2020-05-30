@@ -4,7 +4,6 @@
 #include "../process/process.h"
 
 class Osu : public Process {
-public:
 	static constexpr auto TIME_SIG_OFFSET = 1;
 	static constexpr auto TIME_SIG = "EB 0A A1 ? ? ? ? A3\0";
 
@@ -16,6 +15,7 @@ public:
 	int32_t *time_address = nullptr;
 	int32_t *state_address = nullptr;
 
+public:
 	Osu();
 
 	~Osu();
