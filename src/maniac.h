@@ -1,4 +1,9 @@
 #pragma once
 
-#include <stdio.h>
+#include "common.h"
+#include "osu/osu.h"
+
+#include <cstdio>
+#include <thread>
+#include <chrono>
 #include <cstdlib>

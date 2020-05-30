@@ -10,7 +10,9 @@ endif (NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 add_executable(maniac
-        src/maniac.cpp)
+        src/maniac.cpp
+        src/process/process.cpp
+        src/osu/osu.cpp)
 
 if (UNIX)
     message(FATAL_ERROR "UNIX systems are currently not supported")
@@ -19,13 +21,7 @@ endif ()
 target_include_directories(maniac PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# unused-parameter:	some functions which are stubs on some platforms
-#			        would cause warnings
-# frame-address:	debug functions call unsafe functions, this is
-#			        irrelevant for prod and acceptable for devel
-target_compile_options(maniac PRIVATE
-        -Wall -Wextra -Wpedantic -Wno-unused-parameter
-        -Wno-frame-address)
+target_compile_options(maniac PRIVATE)
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     # The additional / is important to remove the last character from the path.
@@ -35,10 +31,9 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
     add_compile_definitions(DEBUG SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
-    add_compile_options(-g)
+    add_compile_options(/W4 /WX /DDEBUG)
 else ()
-    message(STATUS "Adding release compile options")
-    add_compile_options(-s -O3 -g0)
+    add_compile_options()
 endif ()
 
 target_compile_features(maniac PRIVATE cxx_std_17)
