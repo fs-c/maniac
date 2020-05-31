@@ -5,11 +5,32 @@
 #include "signatures.h"
 
 #include <future>
+#include <vector>
 #include <functional>
 
-class Osu : public Process {
-	static constexpr auto STATE_PLAY = 2;
+struct HitObject {
+	enum Type {
+		HIT_CIRCLE = 1 << 0,
+		SLIDER = 1 << 1,
+		SPINNER = 1 << 3,
+		MANIA_HOLD = 1 << 7
+	};
 
+	int32_t type;
+
+	int32_t start_time;
+	int32_t end_time;
+
+	int32_t position_x;
+	int32_t position_y;
+
+	// For sliders only
+	int32_t repeats;
+	int32_t pixel_length;
+	int32_t curve_type;
+};
+
+class Osu : public Process {
 	int32_t *time_address = nullptr;
 	int32_t *state_address = nullptr;
 
@@ -21,6 +42,8 @@ class Osu : public Process {
 	T *get_pointer_to(const char *name, const char *pattern, int offset);
 
 public:
+	static constexpr auto STATE_PLAY = 2;
+
 	Osu();
 
 	~Osu();
@@ -28,6 +51,8 @@ public:
 	int32_t get_game_time();
 
 	int32_t get_game_state();
+
+	std::vector<HitObject> get_hit_objects();
 };
 
 inline int32_t Osu::get_game_time() {
@@ -40,9 +65,19 @@ inline int32_t Osu::get_game_time() {
 	return time;
 }
 
+inline int32_t Osu::get_game_state() {
+	int32_t state = -1;
+
+	if (!read_memory<int32_t>(state_address, &state)) {
+		debug("%s %#x", "failed getting game state at", (unsigned int)state_address);
+	}
+
+	return state;
+}
+
 template<typename T>
 T *Osu::get_pointer_to(const char *name, const char *pattern, int offset) {
-	auto ptr = reinterpret_cast<std::byte *>(find_pattern(pattern));
+	auto ptr = find_pattern(pattern);
 
 	if (!ptr) {
 		// TODO: Replace this once std::format is a thing in MSVC.
