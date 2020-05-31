@@ -5,9 +5,12 @@ int main() {
 		auto osu = Osu();
 
 		while (true) {
-			printf("%d\n", osu.get_game_state());
+			if (osu.get_game_state() != Osu::STATE_PLAY) {
+				debug("standby");
+			} else {
+			}
 
-			std::this_thread::sleep_for(std::chrono::seconds(1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	} catch (std::exception &err) {
 		printf("%s %s\n", "unhandled exception:", err.what());
