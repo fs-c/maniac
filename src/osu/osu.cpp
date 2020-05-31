@@ -4,6 +4,8 @@ Osu::Osu() : Process("osu!.exe") {
 	// TODO: Some kind of address manager would be good, this isn't particularly nice
 	//	 to maintain.
 
+	using namespace signatures;
+
 	auto time_addr_ft = std::async(std::launch::async, &Osu::get_pointer_to<int32_t>,
 	        this, "time address", TIME_SIG, TIME_SIG_OFFSET);
 	auto state_addr_ft = std::async(std::launch::async, &Osu::get_pointer_to<int32_t>,

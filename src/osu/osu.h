@@ -2,20 +2,13 @@
 
 #include "common.h"
 #include "../process/process.h"
+#include "signatures.h"
 
 #include <future>
 #include <functional>
 
 class Osu : public Process {
-	static constexpr auto TIME_SIG_OFFSET = 3;
-	static constexpr auto TIME_SIG = "EB 0A A1 ? ? ? ? A3\0";
-
-	static constexpr auto STATE_SIG_OFFSET = 1;
-	static constexpr auto STATE_SIG = "A1 ? ? ? ? A3 ? ? ? ? A1 ? ? ? ? A3 ? ? ? ? 83 3D ? ? ? ? 00 0F 84 ? ? ? ? B9 ? ? ? ? E8\0";
 	static constexpr auto STATE_PLAY = 2;
-
-	static constexpr auto PLAYER_SIG_OFFSET = 7;
-	static constexpr auto PLAYER_SIG = "FF 50 0C 8B D8 8B 15\0";
 
 	int32_t *time_address = nullptr;
 	int32_t *state_address = nullptr;
@@ -45,16 +38,6 @@ inline int32_t Osu::get_game_time() {
 	}
 
 	return time;
-}
-
-inline int32_t Osu::get_game_state() {
-	int32_t state = -1;
-
-	if (!read_memory<int32_t>(state_address, &state)) {
-		debug("%s %#x", "failed getting game state at", (unsigned int)state_address);
-	}
-
-	return state;
 }
 
 template<typename T>
