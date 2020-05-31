@@ -4,7 +4,6 @@
 
 #include <string>
 #include <vector>
-#include <cstdlib>
 #include <stdexcept>
 #include <tlhelp32.h>
 
