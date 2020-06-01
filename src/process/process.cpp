@@ -52,10 +52,6 @@ HANDLE Process::get_handle(const std::string &name) {
 	return handle;
 }
 
-/**
- * Expects `pattern` to be in "IDA-Style", i.e. to group bytes in pairs of two and to denote
- * wildcards by a single question mark.
- */
 uintptr_t Process::find_pattern(const char *pattern) {
 	auto pattern_bytes = std::vector<int>{ };
 
@@ -79,9 +75,8 @@ uintptr_t Process::find_pattern(const char *pattern) {
 	const size_t chunk_size = 4096;
 	std::byte chunk_bytes[chunk_size];
 
-	for (size_t i = 1; i < INT_MAX; i += chunk_size - pattern_size) {
-		auto chunk_offset = reinterpret_cast<std::byte *>(i);
-		if (!read_memory<std::byte>(chunk_offset, chunk_bytes, chunk_size)) {
+	for (uintptr_t i = 1; i < INT_MAX; i += chunk_size - pattern_size) {
+		if (!read_memory<std::byte>(i, chunk_bytes, chunk_size)) {
 			continue;
 		}
 
@@ -93,7 +88,8 @@ uintptr_t Process::find_pattern(const char *pattern) {
 					continue;
 				}
 
-				if (chunk_bytes[j + k] != static_cast<std::byte>(pattern_bytes[k])) {
+				if (chunk_bytes[j + k] !=
+					static_cast<std::byte>(pattern_bytes[k])) {
 					hit = false;
 					break;
 				}
