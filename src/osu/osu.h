@@ -4,8 +4,8 @@
 #include "../process/process.h"
 #include "signatures.h"
 
+#include <set>
 #include <future>
-#include <vector>
 #include <functional>
 
 struct HitObject {
@@ -17,42 +17,48 @@ struct HitObject {
 	};
 
 	int32_t type;
+	int32_t column;
 
 	int32_t start_time;
 	int32_t end_time;
 
-	int32_t position_x;
-	int32_t position_y;
+	bool operator<(const HitObject &hit_object) const {
+		return start_time < hit_object.start_time;
+	};
 
-	// For sliders only
-	int32_t repeats;
-	int32_t pixel_length;
-	int32_t curve_type;
+	// Only used for debugging
+	void log() const;
+};
+
+struct Action {
+	char key;
+	bool down;
+	int32_t time;
+
+	Action(char key, bool down, int32_t time) : key(key), down(down), time(time) { };
+
+	bool operator<(const Action &action) const { return time < action.time; };
 };
 
 class Osu : public Process {
-	int32_t *time_address = nullptr;
-	int32_t *state_address = nullptr;
+	int32_t tap_time = 10;
 
-	// TODO: Generic pointers are bad.
-	void *player_address = nullptr;
-	void *hit_object_manager_address = nullptr;
+	// TODO: Generic pointers are bad in the long run.
+	uintptr_t time_address = 0;
+	uintptr_t player_pointer = 0;
 
-	template<typename T>
-	T *get_pointer_to(const char *name, const char *pattern, int offset);
+	static std::string get_key_subset(int column_count);
 
 public:
-	static constexpr auto STATE_PLAY = 2;
-
 	Osu();
 
 	~Osu();
 
 	int32_t get_game_time();
 
-	int32_t get_game_state();
+	bool is_playing();
 
-	std::vector<HitObject> get_hit_objects();
+	std::set<Action> get_actions();
 };
 
 inline int32_t Osu::get_game_time() {
@@ -65,42 +71,9 @@ inline int32_t Osu::get_game_time() {
 	return time;
 }
 
-inline int32_t Osu::get_game_state() {
-	int32_t state = -1;
+inline bool Osu::is_playing() {
+	uintptr_t address;
+	read_memory<uintptr_t>(player_pointer, &address);
 
-	if (!read_memory<int32_t>(state_address, &state)) {
-		debug("%s %#x", "failed getting game state at", (unsigned int)state_address);
-	}
-
-	return state;
-}
-
-template<typename T>
-T *Osu::get_pointer_to(const char *name, const char *pattern, int offset) {
-	auto ptr = find_pattern(pattern);
-
-	if (!ptr) {
-		// TODO: Replace this once std::format is a thing in MSVC.
-		char buffer[128];
-		sprintf(buffer, "%s %s %s", "couldn't find the", name, "pointer");
-
-		throw std::runtime_error(buffer);
-	}
-
-	auto address_ptr = reinterpret_cast<T **>(ptr + offset);
-
-	debug("%s %s %s %#x", "found", name, "pointer at", (uintptr_t)address_ptr);
-
-	T *address;
-	read_memory<T *>(address_ptr, &address);
-
-	if (!address) {
-		// TODO: See above.
-		char buffer[128];
-		sprintf(buffer, "%s %s %s", "found invalid", name, "pointer");
-
-		throw std::runtime_error(buffer);
-	}
-
-	return address;
+	return address != 0;
 }
