@@ -4,9 +4,7 @@
 #include "../process/process.h"
 #include "signatures.h"
 
-#include <set>
-#include <future>
-#include <functional>
+#include <algorithm>
 
 struct HitObject {
 	enum Type {
@@ -39,6 +37,10 @@ struct Action {
 
 	bool operator<(const Action &action) const { return time < action.time; };
 
+	bool operator==(const Action &action) const {
+		return action.key == key && action.down == down && action.time == time;
+	};
+
 	// Only used for debugging
 	void log() const;
 };
@@ -64,8 +66,6 @@ public:
 
 	std::vector<Action> get_actions();
 
-	static void execute_action(Action *action);
-
 	static void execute_actions(Action *action, size_t count);
 };
 
@@ -84,10 +84,6 @@ inline bool Osu::is_playing() {
 	read_memory<uintptr_t>(player_pointer, &address);
 
 	return address != 0;
-}
-
-inline void Osu::execute_action(Action *action) {
-	Process::send_keypress(action->key, action->down);
 }
 
 inline void Osu::execute_actions(Action *action, size_t count) {

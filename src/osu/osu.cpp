@@ -81,6 +81,9 @@ std::vector<Action> Osu::get_actions() {
 	debug("%s %d %s %d %s %d %s", "parsed", i, "out of", list_size, "hit objects into",
 		actions.size(), "actions");
 
+	std::sort(actions.begin(), actions.end());
+	actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
+
 	return actions;
 }
 
