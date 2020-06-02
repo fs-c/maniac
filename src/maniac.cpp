@@ -26,7 +26,6 @@ void run(Osu &osu) {
 	printf("[+] parsed %d actions (discarded %d)\n", actions.size(), discarded);
 
 	auto cur_i = 0;
-	Action *cur_action;
 	auto raw_actions = actions.data();
 	auto total_actions = actions.size();
 
@@ -34,19 +33,12 @@ void run(Osu &osu) {
 		if (!osu.is_playing())
 			return;
 
-		auto old_i = cur_i;
-
 		cur_time = osu.get_game_time();
 		while (cur_i < total_actions && (raw_actions + cur_i)->time <= cur_time) {
 			Osu::execute_actions(raw_actions + cur_i, 1);
 
 			cur_i++;
 		}
-
-		// auto diff = cur_i - old_i;
-		// if (diff) {
-		//	Osu::execute_actions(raw_actions + old_i, diff);
-		// }
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
