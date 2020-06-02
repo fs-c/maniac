@@ -11,6 +11,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.0
+      
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
@@ -23,7 +26,7 @@ jobs:
 
     - name: Build release executable
       run: |
-        cmake . -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
+        cmake . -G "MinGW Makefiles" -D CMAKE_C_COMPILER=cl -D CMAKE_CXX_COMPILER=cl -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
         mingw32-make
         mv maniac.exe maniac-prd.exe
 
