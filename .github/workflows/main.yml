@@ -11,9 +11,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.0
-      
+    - uses: ilammy/msvc-dev-cmd@v1
+
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
