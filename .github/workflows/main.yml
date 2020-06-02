@@ -17,7 +17,7 @@ jobs:
 
     - name: Build debug executable
       run: |
-        cmake . -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
+        cmake . -G "MinGW Makefiles" -D CMAKE_C_COMPILER=cl -D CMAKE_CXX_COMPILER=cl -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
         mingw32-make
         mv maniac.exe maniac-dbg.exe
 
