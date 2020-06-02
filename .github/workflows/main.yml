@@ -8,17 +8,7 @@ on:
 jobs:
   build:
     name: Build for Windows
-    strategy:
-      matrix:
-        os: [windows-latest]
-        include:
-          - os: windows-latest
-            file_extension: .exe
-            os_shorthand: win64
-            make_name: mingw32-make
-            cmake_flags: -G "MinGW Makefiles"
-
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v1
@@ -41,8 +31,8 @@ jobs:
     - name: Create and populate builds folder
       run: |
         mkdir builds
-        mv maniac-dbg-${{ matrix.os_shorthand }}${{ matrix.file_extension }} builds
-        mv maniac-prd-${{ matrix.os_shorthand }}${{ matrix.file_extension }} builds
+        mv maniac-dbg.exe builds
+        mv maniac-prd.exe builds
 
     - name: Upload builds folder as artifact
       uses: actions/upload-artifact@v1
@@ -84,8 +74,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: builds/maniac-prd-win64.exe
-        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}-win64.exe
+        asset_path: builds/maniac-prd.exe
+        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}.exe
         asset_content_type: application/octet-stream
 
     - name: Upload Windows debug build
@@ -94,6 +84,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: builds/maniac-dbg-win64.exe
-        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}-win64-debug.exe
+        asset_path: builds/maniac-dbg.exe
+        asset_name: maniac-${{ steps.get_version.outputs.VERSION }}-debug.exe
         asset_content_type: application/octet-stream
