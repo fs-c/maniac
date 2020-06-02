@@ -39,8 +39,6 @@ public:
 	 * wildcards by a single question mark. Returns 0 if the pattern couldn't be found.
 	 */
 	uintptr_t find_pattern(const char *pattern);
-
-	void send_keypress(int key, bool down);
 };
 
 template<typename T>
@@ -63,8 +61,4 @@ inline T Process::read_memory(uintptr_t address) {
 	}
 
 	return out;
-}
-
-inline void Process::send_keypress(int key, bool down) {
-	debug("stub");
 }

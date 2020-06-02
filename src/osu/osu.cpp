@@ -41,7 +41,7 @@ std::string Osu::get_key_subset(int column_count) {
 	return out_string;
 }
 
-std::set<Action> Osu::get_actions() {
+std::vector<Action> Osu::get_actions() {
 	auto player_address = read_memory<uintptr_t>(player_pointer);
 	auto manager_address = read_memory<uintptr_t>(player_address + 0x40);
 	debug("got hit object manager address: %#x", player_address);
@@ -58,7 +58,7 @@ std::set<Action> Osu::get_actions() {
 	auto list_size = read_memory<size_t>(list_pointer + 0xC);
 	debug("got hit object list at %#x", list_address);
 
-	std::set<Action> actions;
+	std::vector<Action> actions;
 
 	size_t i;
 	for (i = 0; i < list_size; i++) {
@@ -74,8 +74,8 @@ std::set<Action> Osu::get_actions() {
 			end_time += tap_time;
 		}
 
-		actions.insert(Action(keys[column], true, start_time));
-		actions.insert(Action(keys[column], false, end_time));
+		actions.emplace_back(keys[column], true, start_time + default_delay);
+		actions.emplace_back(keys[column], false, end_time + default_delay);
 	}
 
 	debug("%s %d %s %d %s %d %s", "parsed", i, "out of", list_size, "hit objects into",
@@ -91,6 +91,17 @@ void HitObject::log() const {
 	debug("    end: %d", end_time);
 	debug("    type: %d", type);
 	debug("    col: %d", column)
+#else
+	return;
+#endif
+}
+
+void Action::log() const {
+#ifdef DEBUG
+	debug("action:");
+	debug("    time: %d", time);
+	debug("    key: %c", key);
+	debug("    down: %d", down);
 #else
 	return;
 #endif

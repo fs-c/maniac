@@ -38,10 +38,14 @@ struct Action {
 	Action(char key, bool down, int32_t time) : key(key), down(down), time(time) { };
 
 	bool operator<(const Action &action) const { return time < action.time; };
+
+	// Only used for debugging
+	void log() const;
 };
 
 class Osu : public Process {
-	int32_t tap_time = 10;
+	int tap_time = 50;
+	int default_delay = -20;
 
 	// TODO: Generic pointers are bad in the long run.
 	uintptr_t time_address = 0;
@@ -58,7 +62,11 @@ public:
 
 	bool is_playing();
 
-	std::set<Action> get_actions();
+	std::vector<Action> get_actions();
+
+	static void execute_action(Action *action);
+
+	static void execute_actions(Action *action, size_t count);
 };
 
 inline int32_t Osu::get_game_time() {
@@ -76,4 +84,33 @@ inline bool Osu::is_playing() {
 	read_memory<uintptr_t>(player_pointer, &address);
 
 	return address != 0;
+}
+
+inline void Osu::execute_action(Action *action) {
+	Process::send_keypress(action->key, action->down);
+}
+
+inline void Osu::execute_actions(Action *action, size_t count) {
+	// TODO: Look into KEYEVENTF_SCANCODE (see esp. KEYBDINPUT remarks section).
+
+	static auto layout = GetKeyboardLayout(0);
+
+	debug("sending %d", count);
+
+	// TODO: Magic numbers are a bad idea.
+	INPUT in[10];
+
+	for (size_t i = 0; i < count; i++) {
+		in[i].type = INPUT_KEYBOARD;
+
+		in[i].ki.time = 0;
+		in[i].ki.wScan = 0;
+		in[i].ki.dwExtraInfo = 0;
+		in[i].ki.dwFlags = (action + i)->down ? 0 : KEYEVENTF_KEYUP;
+		in[i].ki.wVk = VkKeyScanEx((action + i)->key, layout) & 0xFF;
+	}
+
+	if (!SendInput(count, in, sizeof(INPUT))) {
+		debug("failed sending %d inputs: %lu", count, GetLastError());
+	}
 }
