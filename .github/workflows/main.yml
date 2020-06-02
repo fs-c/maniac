@@ -17,16 +17,15 @@ jobs:
 
     - name: Build debug executable
       run: |
-        cmake . ${{ matrix.cmake_flags }} -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
-        ${{ matrix.make_name }}
-        mv maniac${{ matrix.file_extension }} maniac-dbg-${{ matrix.os_shorthand }}${{ matrix.file_extension }}
+        cmake . -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
+        mingw32-make
+        mv maniac.exe maniac-dbg.exe
 
     - name: Build release executable
       run: |
-        cmake . ${{ matrix.cmake_flags }} -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
-        ${{ matrix.make_name }}
-        strip maniac${{ matrix.file_extension }}
-        mv maniac${{ matrix.file_extension }} maniac-prd-${{ matrix.os_shorthand }}${{ matrix.file_extension }}
+        cmake . -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
+        mingw32-make
+        mv maniac.exe maniac-prd.exe
 
     - name: Create and populate builds folder
       run: |
