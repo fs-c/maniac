@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "osu/osu.h"
+#include "config.h"
 
 #include <cstdio>
 #include <thread>

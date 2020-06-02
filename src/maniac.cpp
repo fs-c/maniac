@@ -44,8 +44,16 @@ void run(Osu &osu) {
 	}
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	try {
+		config::parse(argc, argv);
+
+		if (config::should_exit) {
+			return EXIT_FAILURE;
+		}
+
+		debug("humanization: %d", config::humanization);
+
 		auto osu = Osu();
 
 		while (true) {
