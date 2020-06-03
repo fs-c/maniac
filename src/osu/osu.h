@@ -91,8 +91,6 @@ inline void Osu::execute_actions(Action *action, size_t count) {
 
 	static auto layout = GetKeyboardLayout(0);
 
-	debug("sending %d", count);
-
 	// TODO: Magic numbers are a bad idea.
 	INPUT in[10];
 

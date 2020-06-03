@@ -13,7 +13,7 @@ HANDLE Process::get_handle(const std::string &name) {
 		PROCESSENTRY32 processInfo;
 		processInfo.dwSize = sizeof(PROCESSENTRY32);
 
-		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (!snapshot || snapshot == INVALID_HANDLE_VALUE) {
 			throw std::runtime_error("failed to get process list");
 		}
