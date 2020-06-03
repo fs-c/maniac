@@ -35,6 +35,13 @@ public:
 	inline T read_memory(uintptr_t address);
 
 	/**
+	 * See `T read_memory`, except that it throws an exception with the given name included in the
+	 * error message.
+	 */
+	template<typename T>
+	inline T read_memory(const char *name, uintptr_t address);
+
+	/**
 	 * Expects `pattern` to be in "IDA-Style", i.e. to group bytes in pairs of two and to denote
 	 * wildcards by a single question mark. Returns 0 if the pattern couldn't be found.
 	 */
@@ -58,6 +65,22 @@ inline T Process::read_memory(uintptr_t address) {
 
 	if (!read_memory(address, &out, 1)) {
 		throw std::runtime_error("failed reading memory");
+	}
+
+	return out;
+}
+
+template<typename T>
+inline T Process::read_memory(const char *name, uintptr_t address) {
+	T out;
+
+	if (!read_memory(address, &out, 1)) {
+		char msg[128];
+		msg[127] = '\0';
+
+		sprintf(msg, "failed reading %s at %#x", name, address);
+
+		throw std::runtime_error(msg);
 	}
 
 	return out;
