@@ -1,12 +1,18 @@
 <h2 align="center">maniac</h2>
 
-<p align="center">Cheating in osu!mania.</p>
+<p align="center">
+  Simple external cheat for <a href="https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania">osu!mania</a>.<br>
+</p>
 
-This is a simple external cheat for the [osu!mania](https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania) 
-mode of the game [osu!](https://osu.ppy.sh/).
+Please note that maniac is __currently being rewritten__ as it transitions into the 1.0.0 release, this branch reflects the state of the rewrite. As it is now in a usable state, release candidates (`v1.0.0-rcx`) will be provided -- I am grateful for bug reports and feedback.
 
-__This is the version 1.x branch of maniac, which is the new default. [Looking for older
- versions?](https://github.com/LW2904/maniac/tags)__
+## Usage
+
+1. Download the latest build from the [releases tab](https://github.com/LW2904/maniac/releases).
+2. Start osu!.
+3. Open a terminal and run maniac (e.g. by dragging-and-dropping the executable onto `cmd.exe`).
+
+Maniac will now automatically play any beatmap you open in osu.
 
 ## Thanks
  
