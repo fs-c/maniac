@@ -9,7 +9,7 @@ Please note that maniac is __currently being rewritten__ as it transitions into 
 ## Usage
 
 1. Download the latest build from the [releases tab](https://github.com/LW2904/maniac/releases).
-2. Start osu!.
+2. Start osu, start playing any beatmap for a couple of seconds and then either exit or pause. (Doesn't matter which map or mode, you only have to do this once for every time you start osu.)
 3. Open a terminal and run maniac (e.g. by dragging-and-dropping the executable onto `cmd.exe`).
 
 Maniac will now automatically play any beatmap you open in osu.
