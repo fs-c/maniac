@@ -35,11 +35,11 @@ public:
 	inline T read_memory(uintptr_t address);
 
 	/**
-	 * See `T read_memory`, except that it throws an exception with the given name included in the
+	 * See `T read_memory`, except that it throws exceptions with the given name included in the
 	 * error message.
 	 */
 	template<typename T>
-	inline T read_memory(const char *name, uintptr_t address);
+	T read_memory_safe(const char *name, uintptr_t address);
 
 	/**
 	 * Expects `pattern` to be in "IDA-Style", i.e. to group bytes in pairs of two and to denote
@@ -71,7 +71,16 @@ inline T Process::read_memory(uintptr_t address) {
 }
 
 template<typename T>
-inline T Process::read_memory(const char *name, uintptr_t address) {
+T Process::read_memory_safe(const char *name, uintptr_t address) {
+	if (!address) {
+		char msg[128];
+		msg[127] = '\0';
+
+		sprintf(msg, "pointer to %s was invalid", name);
+
+		throw std::runtime_error(msg);
+	}
+
 	T out;
 
 	if (!read_memory(address, &out, 1)) {

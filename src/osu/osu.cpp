@@ -42,21 +42,29 @@ std::string Osu::get_key_subset(int column_count) {
 }
 
 std::vector<Action> Osu::get_actions() {
-	auto player_address = read_memory<uintptr_t>("player address", player_pointer);
-	auto manager_address = read_memory<uintptr_t>("manager address", player_address + 0x40);
+	auto player_address = read_memory_safe<uintptr_t>("player address", player_pointer);
+	auto manager_address = read_memory_safe<uintptr_t>("manager address", player_address + 0x40);
 	debug("got hit object manager address: %#x", player_address);
 
-	auto headers_address = read_memory<uintptr_t>("headers address", manager_address + 0x30);
-	auto column_count = static_cast<int32_t>(read_memory<float>("column count", headers_address + 0x30));
+	auto headers_address = read_memory_safe<uintptr_t>("headers address", manager_address + 0x30);
+	auto column_count = static_cast<int32_t>(read_memory_safe<float>("column count", headers_address + 0x30));
 	debug("column count is %d", column_count);
+
+	if (column_count <= 0) {
+		throw std::runtime_error("got invalid column count");
+	}
 
 	auto keys = get_key_subset(column_count);
 	debug("using key subset '%s'", keys.c_str());
 
-	auto list_pointer = read_memory<uintptr_t>("list pointer", manager_address + 0x48);
-	auto list_address = read_memory<uintptr_t>("list address", list_pointer + 0x4);
-	auto list_size = read_memory<size_t>("list size", list_pointer + 0xC);
-	debug("got hit object list at %#x", list_address);
+	auto list_pointer = read_memory_safe<uintptr_t>("list pointer", manager_address + 0x48);
+	auto list_address = read_memory_safe<uintptr_t>("list address", list_pointer + 0x4);
+	auto list_size = read_memory_safe<size_t>("list size", list_pointer + 0xC);
+	debug("got hit object list at %#x (size %d)", list_address, list_size);
+
+	if (list_size <= 0) {
+		throw std::runtime_error("got invalid list size");
+	}
 
 	std::vector<Action> actions;
 
@@ -80,15 +88,14 @@ std::vector<Action> Osu::get_actions() {
 			actions.emplace_back(keys[column], false, end_time + default_delay);
 		} catch (std::exception &err) {
 			failed++;
+
+			// It's okay if a couple fail...
 		}
 	}
 
-	debug("failed parsing %d/%d hit points", failed, i);
-
+	// ...but not all of them.
 	if (i == failed) {
-		printf("[-] failed parsing hit points\n");
-
-		return std::vector<Action>{ };
+		throw std::runtime_error("failed parsing hitpoints");
 	}
 
 	debug("%s %d %s %d %s %d %s", "parsed", i, "out of", list_size, "hit objects into",
