@@ -80,7 +80,7 @@ inline int32_t Osu::get_game_time() {
 }
 
 inline bool Osu::is_playing() {
-	uintptr_t address;
+	uintptr_t address = 0;
 	read_memory<uintptr_t>(player_pointer, &address);
 
 	return address != 0;
