@@ -84,9 +84,9 @@ inline bool Osu::is_playing() {
 
 	debug("reading %d bytes of memory at %#x", sizeof(address), player_pointer);
 
-	size_t read = read_memory<int32_t>(player_pointer, &address);
+	size_t read = read_memory<int32_t>(player_pointer, &address, 1);
 
-	debug("is playing: %d (read: %d, address : %#x)", address != 0, read, address);
+	debug("is playing: %d (read: %d, address: %#x)", address != 0, read, address);
 
 	return address != 0;
 }
