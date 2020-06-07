@@ -80,11 +80,11 @@ inline int32_t Osu::get_game_time() {
 }
 
 inline bool Osu::is_playing() {
-	int32_t address = 0;
+	uintptr_t address = 0;
 
 	debug("reading %d bytes of memory at %#x", sizeof(address), player_pointer);
 
-	size_t read = read_memory<int32_t>(player_pointer, &address, 1);
+	size_t read = read_memory<uintptr_t>(player_pointer, &address, 1);
 
 	debug("is playing: %d (read: %d, address: %#x)", address != 0, read, address);
 
