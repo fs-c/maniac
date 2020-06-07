@@ -38,4 +38,4 @@ endif ()
 
 target_compile_features(maniac PRIVATE cxx_std_17)
 
-set_target_properties(maniac PROPERTIES OUTPUT_NAME "maniac.exe")
+set_target_properties(maniac PROPERTIES OUTPUT_NAME "maniac")
