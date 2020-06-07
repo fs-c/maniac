@@ -35,6 +35,13 @@ public:
 	inline T read_memory(uintptr_t address);
 
 	/**
+	 * See `T read_memory`, except that it throws exceptions with the given name included in the
+	 * error message.
+	 */
+	template<typename T>
+	T read_memory_safe(const char *name, uintptr_t address);
+
+	/**
 	 * Expects `pattern` to be in "IDA-Style", i.e. to group bytes in pairs of two and to denote
 	 * wildcards by a single question mark. Returns 0 if the pattern couldn't be found.
 	 */
@@ -43,7 +50,7 @@ public:
 
 template<typename T>
 inline size_t Process::read_memory(uintptr_t address, T *out, size_t count) {
-	size_t read;
+	size_t read = 0;
 
 	ReadProcessMemory(handle, reinterpret_cast<LPCVOID>(address),
 		reinterpret_cast<LPVOID>(out), count * sizeof(T),
@@ -58,6 +65,31 @@ inline T Process::read_memory(uintptr_t address) {
 
 	if (!read_memory(address, &out, 1)) {
 		throw std::runtime_error("failed reading memory");
+	}
+
+	return out;
+}
+
+template<typename T>
+T Process::read_memory_safe(const char *name, uintptr_t address) {
+	if (!address) {
+		char msg[128];
+		msg[127] = '\0';
+
+		sprintf(msg, "pointer to %s was invalid", name);
+
+		throw std::runtime_error(msg);
+	}
+
+	T out;
+
+	if (!read_memory(address, &out, 1)) {
+		char msg[128];
+		msg[127] = '\0';
+
+		sprintf(msg, "failed reading %s at %#x", name, address);
+
+		throw std::runtime_error(msg);
 	}
 
 	return out;

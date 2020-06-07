@@ -2,6 +2,7 @@
 
 #include "Windows.h"
 #include <cstdint>
+#include <cstddef>
 
 #ifdef DEBUG
 

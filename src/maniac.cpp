@@ -11,7 +11,23 @@ void run(Osu &osu) {
 
 	printf("[+] found beatmap\n");
 
-	auto actions = osu.get_actions();
+	std::vector<Action> actions;
+	for (int i = 0; i < 10; i++) {
+		try {
+			actions = osu.get_actions();
+
+			break;
+		} catch (std::exception &err) {
+			debug("get actions attempt %d failed: %s", i + 1, err.what());
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		}
+	}
+
+	if (actions.empty()) {
+		throw std::runtime_error("failed getting actions");
+	}
+
 	auto cur_time = osu.get_game_time();
 
 	size_t discarded = 0;
@@ -23,7 +39,7 @@ void run(Osu &osu) {
 		}
 	}
 
-	printf("[+] parsed %d actions (discarded %d)\n", actions.size(), discarded);
+	printf("[+] parsed %d actions (discarded: %d)\n", actions.size(), discarded);
 
 	auto cur_i = 0;
 	auto raw_actions = actions.data();
@@ -51,8 +67,6 @@ int main(int argc, char *argv[]) {
 		if (config::should_exit) {
 			return EXIT_FAILURE;
 		}
-
-		debug("humanization: %d", config::humanization);
 
 		auto osu = Osu();
 
