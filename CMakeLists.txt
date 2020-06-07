@@ -9,6 +9,8 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
+set_target_properties(maniac PROPERTIES OUTPUT_NAME "maniac.exe")
+
 add_executable(maniac
         src/maniac.cpp
         src/process/process.cpp
