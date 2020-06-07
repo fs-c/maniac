@@ -18,7 +18,7 @@ jobs:
 
     - name: Build debug executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
+        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         nmake
         mv maniac.exe maniac-dbg.exe
 
