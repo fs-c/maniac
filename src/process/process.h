@@ -52,9 +52,11 @@ template<typename T>
 inline size_t Process::read_memory(uintptr_t address, T *out, size_t count) {
 	size_t read = 0;
 
-	ReadProcessMemory(handle, reinterpret_cast<LPCVOID>(address),
+	if (!ReadProcessMemory(handle, reinterpret_cast<LPCVOID>(address),
 		reinterpret_cast<LPVOID>(out), count * sizeof(T),
-		reinterpret_cast<SIZE_T *>(&read));
+		reinterpret_cast<SIZE_T *>(&read))) {
+		return 0;
+	}
 
 	return read;
 }
