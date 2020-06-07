@@ -10,6 +10,8 @@ jobs:
     steps:
     - uses: ilammy/msvc-dev-cmd@v1
 
+    - run: cl
+
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
