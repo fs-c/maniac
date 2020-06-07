@@ -16,10 +16,10 @@ jobs:
 
     - name: Build debug executable
       run: |
-        cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-        dir
+        cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
         msbuild.exe maniac.vcxproj
         mv maniac.exe maniac-dbg.exe
+        dir
 
     - name: Build release executable
       run: |
