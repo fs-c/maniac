@@ -68,8 +68,6 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 
-		debug("humanization: %d", config::humanization);
-
 		auto osu = Osu();
 
 		while (true) {
