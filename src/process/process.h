@@ -50,7 +50,7 @@ public:
 
 template<typename T>
 inline size_t Process::read_memory(uintptr_t address, T *out, size_t count) {
-	size_t read;
+	size_t read = 0;
 
 	ReadProcessMemory(handle, reinterpret_cast<LPCVOID>(address),
 		reinterpret_cast<LPVOID>(out), count * sizeof(T),
