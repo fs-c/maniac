@@ -10,21 +10,19 @@ jobs:
     steps:
     - uses: ilammy/msvc-dev-cmd@v1
 
-    - run: cl
-
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
 
     - name: Build debug executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_GENERATOR_PLATFORM=x86
         nmake
         mv maniac.exe maniac-dbg.exe
 
     - name: Build release executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
+        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_GENERATOR_PLATFORM=x86
         nmake
         mv maniac.exe maniac-prd.exe
 
