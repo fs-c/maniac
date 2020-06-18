@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: ilammy/msvc-dev-cmd@v1
+    - uses: microsoft/setup-msbuild@v1.0.0
 
     - uses: actions/checkout@v1
       with:
@@ -16,15 +16,15 @@ jobs:
 
     - name: Build debug executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
-        nmake
-        mv maniac.exe maniac-dbg.exe
+        cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
+        msbuild.exe maniac.vcxproj
+        mv Debug\maniac.exe maniac-dbg.exe
 
     - name: Build release executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
-        nmake
-        mv maniac.exe maniac-prd.exe
+        cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
+        msbuild.exe maniac.vcxproj
+        mv Debug\maniac.exe maniac-prd.exe
 
     - name: Create and populate builds folder
       run: |
