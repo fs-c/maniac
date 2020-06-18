@@ -16,13 +16,13 @@ jobs:
 
     - name: Build debug executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_CXX_COMPILER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.26.28801/bin/Hostx86/x86/cl.exe"
+        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
         nmake
         mv maniac.exe maniac-dbg.exe
 
     - name: Build release executable
       run: |
-        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_CXX_COMPILER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.26.28801/bin/Hostx86/x86/cl.exe"
+        cmake . -G "CodeBlocks - NMake Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
         nmake
         mv maniac.exe maniac-prd.exe
 
