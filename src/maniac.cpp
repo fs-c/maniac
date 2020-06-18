@@ -28,6 +28,8 @@ void run(Osu &osu) {
 		throw std::runtime_error("failed getting actions");
 	}
 
+	Osu::humanize_actions(actions, config::humanization_range);
+
 	auto cur_time = osu.get_game_time();
 
 	size_t discarded = 0;

@@ -4,6 +4,8 @@
 #include "../process/process.h"
 #include "signatures.h"
 
+#include <vector>
+#include <random>
 #include <algorithm>
 
 struct HitObject {
@@ -66,6 +68,8 @@ public:
 
 	std::vector<Action> get_actions();
 
+	static void humanize_actions(std::vector<Action> &actions, std::pair<int, int> range);
+
 	static void execute_actions(Action *action, size_t count);
 };
 
@@ -82,11 +86,11 @@ inline int32_t Osu::get_game_time() {
 inline bool Osu::is_playing() {
 	uintptr_t address = 0;
 
-	debug("reading %d bytes of memory at %#x", sizeof(address), player_pointer);
-
 	size_t read = read_memory<uintptr_t>(player_pointer, &address, 1);
 
-	debug("is playing: %d (read: %d, address: %#x)", address != 0, read, address);
+	if (!read) {
+		debug("%s %#x", "failed getting player address at", address);
+	}
 
 	return address != 0;
 }
@@ -95,8 +99,6 @@ inline void Osu::execute_actions(Action *action, size_t count) {
 	// TODO: Look into KEYEVENTF_SCANCODE (see esp. KEYBDINPUT remarks section).
 
 	static auto layout = GetKeyboardLayout(0);
-
-	debug("sending %d", count);
 
 	// TODO: Magic numbers are a bad idea.
 	INPUT in[10];

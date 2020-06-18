@@ -107,6 +107,21 @@ std::vector<Action> Osu::get_actions() {
 	return actions;
 }
 
+void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> range) {
+	if (!range.first && !range.second)
+		return;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distr(range.first, range.second);
+
+	for (auto &action : actions) {
+		action.time += distr(gen);;
+	}
+
+	debug("humanized actions with a range of [%d, %d]", range.first, range.second);
+}
+
 void HitObject::log() const {
 #ifdef DEBUG
 	debug("hit object:");
