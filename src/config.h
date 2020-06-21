@@ -35,11 +35,11 @@ namespace config {
 			humanization_range.first = 0;
 			humanization_range.second = 0;
 		} else if (_humanization_range.size() == 1) {
-			humanization_range.first = _humanization_range[0] * -1;
-			humanization_range.second = _humanization_range[0];
+			humanization_range.first = _humanization_range.at(0) * -1;
+			humanization_range.second = _humanization_range.at(0);
 		} else {
-			humanization_range.first = _humanization_range[0];
-			humanization_range.second =_humanization_range[1];
+			humanization_range.first = _humanization_range.at(0);
+			humanization_range.second =_humanization_range.at(0);
 		}
 	}
 }

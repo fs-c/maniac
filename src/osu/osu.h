@@ -103,6 +103,12 @@ inline void Osu::execute_actions(Action *action, size_t count) {
 	// TODO: Magic numbers are a bad idea.
 	INPUT in[10];
 
+	if (count > 10) {
+		debug("count > 10, setting to 10");
+
+		count = 10;
+	}
+
 	for (size_t i = 0; i < count; i++) {
 		in[i].type = INPUT_KEYBOARD;
 

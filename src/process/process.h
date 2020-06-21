@@ -75,10 +75,11 @@ inline T Process::read_memory(uintptr_t address) {
 template<typename T>
 T Process::read_memory_safe(const char *name, uintptr_t address) {
 	if (!address) {
+		// TODO: Get rid of this ASAP once std::format is out.
 		char msg[128];
 		msg[127] = '\0';
 
-		sprintf(msg, "pointer to %s was invalid", name);
+		sprintf_s(msg, 128, "pointer to %s was invalid", name);
 
 		throw std::runtime_error(msg);
 	}
@@ -86,10 +87,11 @@ T Process::read_memory_safe(const char *name, uintptr_t address) {
 	T out;
 
 	if (!read_memory(address, &out, 1)) {
+		// TODO: See above.
 		char msg[128];
 		msg[127] = '\0';
 
-		sprintf(msg, "failed reading %s at %#x", name, address);
+		sprintf_s(msg, 128, "failed reading %s at %#x", name, address);
 
 		throw std::runtime_error(msg);
 	}
