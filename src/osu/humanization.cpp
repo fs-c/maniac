@@ -20,7 +20,7 @@ void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> ran
 
 std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_frame = 1000) {
 	std::vector<int> frames = {};
-	const int chunks_needed = actions.back().time / time_frame;
+	const int chunks_needed = (actions.back().time / time_frame) + 1;
 
 	debug("will need %d frames", chunks_needed);
 
@@ -40,7 +40,12 @@ std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_
 	return frames;
 }
 
-void Osu::humanize_actions(std::vector<Action> &actions, int level) {
+void Osu::humanize_actions(std::vector<Action> &actions, int modifier) {
+	if (!modifier)
+		return;
+
+	const auto actual_modifier = static_cast<double>(modifier) / 100.0;
+
 	constexpr auto frame_range = 1000;
 	const auto frames = actions_per_frame(actions, frame_range);
 
@@ -54,6 +59,9 @@ void Osu::humanize_actions(std::vector<Action> &actions, int level) {
 			continue;
 		}
 
-		action.time += frames.at(frame_i) * (level / 100);
+		action.time += frames.at(frame_i) * actual_modifier;
 	}
+
+	debug("%s %d %s %d %s %dms %s %f", "humanized", actions.size(), "actions over",
+		frames_size, "time frames of", frame_range, "with a modifier of", actual_modifier);
 }
