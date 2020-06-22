@@ -18,19 +18,16 @@ Maniac will now automatically play any beatmap you open in osu.
 
 Maniac accepts options which have to be passed through the command line when running the executable.
 
-Example of running `./maniac-*.exe -h`:
-
-```bash
+```
 $ ./maniac-*.exe -h
 Simple osu!mania cheat.
 Usage:
   maniac [options...]
 
   -h, --help              Show this message and exit.
-  -u, --humanization arg  where arg is `a,b`. Add milliseconds in the range
-                          [a,b] to all key presses. If only `a` is provided,
-                          defaults to [-a,a]. If nothing is provided, defaults
-                          to [0,0].
+  -u, --humanization arg  For every action, an offset calculated through
+                          (density at that point * (arg / 100)) is added to the
+                          time.
 ```
 
 ## Thanks

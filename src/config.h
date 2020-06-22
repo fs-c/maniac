@@ -22,7 +22,7 @@ namespace config {
 		options.add_options()
 			("h,help", "Show this message and exit.",
 				cxxopts::value(should_exit))
-			("u,humanization", "where arg is `a,b`. Add milliseconds in the range [a,b] to all key presses. If only `a` is provided, defaults to [-a,a]. If nothing is provided, defaults to [0,0].",
+			("u,humanization", "For every action, an offset calculated through (density at that point * (arg / 100)) is added to the time.",
 		    		cxxopts::value<std::vector<int>>(_humanization_range));
 
 		auto result = options.parse(argc, argv);
