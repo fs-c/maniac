@@ -18,20 +18,36 @@ std::string Osu::get_key_subset(int column_count) {
 	// TODO: This pile of shit is copied pretty much straight from maniac 0.x and needs to
 	// 	 be refactored.
 
+	if (column_count > 9) {
+		throw std::runtime_error("maps with more than 9 columns are not supported");
+	}
+
+	if (column_count <= 0) {
+		throw std::runtime_error("got negative column count");
+	}
+
 	const char *keys = "asdfjkl[";
 	constexpr auto keys_len = 8;
 
-	char *const key_subset = reinterpret_cast<char *>(malloc(column_count + 1));
+	const size_t key_subset_len = column_count + 1;
+	char *const key_subset = reinterpret_cast<char *>(malloc(key_subset_len));
+
+	if (!key_subset) {
+		throw std::runtime_error("failed allocating memory");
+	}
+
 	key_subset[column_count] = '\0';
 
 	const size_t subset_offset = (keys_len / 2) - (column_count / 2);
 
-	memmove(key_subset, reinterpret_cast<const void *>(keys + subset_offset),
+	memmove_s(key_subset, key_subset_len, reinterpret_cast<const void *>(keys + subset_offset),
 		keys_len - (subset_offset * 2));
 
 	if (column_count % 2) {
-		memmove(key_subset + column_count / 2 + 1, key_subset + column_count / 2,
-			column_count / 2);
+		auto offset = column_count / 2;
+		memmove_s(key_subset + offset + 1, key_subset_len + offset + 1, key_subset + offset,
+			offset);
+
 		key_subset[column_count / 2] = ' ';
 	}
 
@@ -41,6 +57,7 @@ std::string Osu::get_key_subset(int column_count) {
 	return out_string;
 }
 
+// TODO: Break up into smaller functions, this is ugly as all hell.
 std::vector<Action> Osu::get_actions() {
 	auto player_address = read_memory_safe<uintptr_t>("player address", player_pointer);
 	auto manager_address = read_memory_safe<uintptr_t>("manager address", player_address + 0x40);
@@ -84,8 +101,8 @@ std::vector<Action> Osu::get_actions() {
 				end_time += tap_time;
 			}
 
-			actions.emplace_back(keys[column], true, start_time + default_delay);
-			actions.emplace_back(keys[column], false, end_time + default_delay);
+			actions.emplace_back(keys.at(column), true, start_time + default_delay);
+			actions.emplace_back(keys.at(column), false, end_time + default_delay);
 		} catch (std::exception &err) {
 			failed++;
 
@@ -105,6 +122,21 @@ std::vector<Action> Osu::get_actions() {
 	actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
 
 	return actions;
+}
+
+void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> range) {
+	if (!range.first && !range.second)
+		return;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distr(range.first, range.second);
+
+	for (auto &action : actions) {
+		action.time += distr(gen);;
+	}
+
+	debug("humanized actions with a range of [%d, %d]", range.first, range.second);
 }
 
 void HitObject::log() const {

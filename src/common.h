@@ -1,5 +1,7 @@
 #pragma once
 
+#define __STDC_WANT_LIB_EXT1__ 1
+
 #include "Windows.h"
 #include <cstdint>
 #include <cstddef>
