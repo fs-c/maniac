@@ -49,17 +49,25 @@ void Osu::humanize_actions(std::vector<Action> &actions, int modifier) {
 	constexpr auto frame_range = 1000;
 	const auto frames = actions_per_frame(actions, frame_range);
 
+	std::random_device rd;
+	std::mt19937 gen(rd());
+
+	std::uniform_int_distribution<> offset_distr(-5, 5);
+
 	const auto frames_size = frames.size();
 	for (auto &action : actions) {
 		const int frame_i = action.time / frame_range;
+		const auto random_offset = offset_distr(gen);
 
 		if (frame_i >= frames_size) {
-			debug("got invalid frame_i (%d)", frame_i);
+			debug("ignoring invalid frame_i (%d)", frame_i);
 
 			continue;
 		}
 
-		action.time += frames.at(frame_i) * actual_modifier;
+		const auto offset = (frames.at(frame_i) * actual_modifier) + random_offset;
+
+		action.time += offset;
 	}
 
 	debug("%s %d %s %d %s %dms %s %f", "humanized", actions.size(), "actions over",
