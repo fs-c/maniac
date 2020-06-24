@@ -101,8 +101,10 @@ std::vector<Action> Osu::get_actions() {
 				end_time += tap_time;
 			}
 
-			actions.emplace_back(keys.at(column), true, start_time + default_delay);
-			actions.emplace_back(keys.at(column), false, end_time + default_delay);
+			actions.emplace_back(keys.at(column), true,
+				start_time + config::compensation_offset);
+			actions.emplace_back(keys.at(column), false,
+				end_time + config::compensation_offset);
 		} catch (std::exception &err) {
 			failed++;
 
@@ -124,7 +126,7 @@ std::vector<Action> Osu::get_actions() {
 	return actions;
 }
 
-void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> range) {
+void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> &range) {
 	if (!range.first && !range.second)
 		return;
 
