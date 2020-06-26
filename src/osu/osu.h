@@ -69,7 +69,8 @@ public:
 	std::vector<Action> get_actions();
 
 	static void humanize_actions(std::vector<Action> &actions, int modifier);
-	static void humanize_actions(std::vector<Action> &actions, std::pair<int, int> range);
+
+	static void randomize_actions(std::vector<Action> &actions, std::pair<int, int> range);
 
 	static void execute_actions(Action *action, size_t count);
 };

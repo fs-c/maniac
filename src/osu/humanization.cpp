@@ -1,11 +1,9 @@
 #include "common.h"
 #include "osu.h"
 
-void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> range) {
+void Osu::randomize_actions(std::vector<Action> &actions, std::pair<int, int> range) {
 	if (!range.first && !range.second)
 		return;
-
-	debug("using legacy humanization");
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -15,7 +13,8 @@ void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> ran
 		action.time += distr(gen);;
 	}
 
-	debug("humanized actions with a range of [%d, %d]", range.first, range.second);
+	debug("randomized %d actions with a range of [%d, %d]", actions.size(), range.first,
+		range.second);
 }
 
 std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_frame = 1000) {
