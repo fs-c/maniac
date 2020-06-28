@@ -1,5 +1,7 @@
 #include "maniac.h"
 
+config config;
+
 void run(Osu &osu) {
 	printf("[*] waiting for beatmap...\n");
 
@@ -28,8 +30,8 @@ void run(Osu &osu) {
 		throw std::runtime_error("failed getting actions");
 	}
 
-	Osu::randomize_actions(actions, config::randomization_range);
-	Osu::humanize_actions(actions, config::humanization_modifier);
+	Osu::randomize_actions(actions, config.randomization_range);
+	Osu::humanize_actions(actions, config.humanization_modifier);
 
 	auto cur_time = osu.get_game_time();
 
@@ -65,9 +67,9 @@ void run(Osu &osu) {
 
 int main(int argc, char *argv[]) {
 	try {
-		config::parse(argc, argv);
+		config.parse(argc, argv);
 
-		if (config::should_exit) {
+		if (config.should_exit) {
 			return EXIT_FAILURE;
 		}
 
