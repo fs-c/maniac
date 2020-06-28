@@ -8,35 +8,75 @@
 #include <vector>
 #include <utility>
 
-class config {
-	argh::parser cmdl;
+struct Output {
+	static constexpr auto PAGE_WIDTH = 75;
 
-	// TODO: This is ugly and prone to bugs
+	// TODO: None of the text breaking functions handle newlines.
+
+	static void print_text(const char *string, const int padding = 4) {
+		std::string out;
+
+		for (size_t i = 0; string[i]; i++) {
+			if (!(i % (PAGE_WIDTH - padding))) {
+				if (i != 0)
+					out.append(1, '\n');
+
+				out.append(padding, ' ');
+			}
+
+			out.append(1, string[i]);
+		}
+
+		puts(out.c_str());
+	}
+
+	// TODO: This is ugly and prone to bugs.
 	static void print_option(const char *s_form, const char *l_form, const char *desc) {
+		constexpr auto buf_size = 1024;
+		constexpr auto long_arg_length = 22;
+
+		char preamble[PAGE_WIDTH];
+		sprintf_s(preamble, PAGE_WIDTH, "    %s / %-*s", s_form, long_arg_length,
+			l_form);
+
+		const auto padding = strlen(preamble);
+
 		std::string broken_desc;
 		for (int i = 0; desc[i]; i++) {
-			if (!(i % 60) && i != 0) {
-				broken_desc.append("\n                         ");
+			if (!(i % (PAGE_WIDTH - padding)) && i != 0) {
+				broken_desc.append("\n");
+				broken_desc.append(padding, ' ');
 			}
 
 			broken_desc.append(1, desc[i]);
 		}
 
-		constexpr auto buf_size = 1024;
-		char temp_buf[buf_size];
+		char out_buf[buf_size];
+		sprintf_s(out_buf, buf_size, "%s%s\n", preamble, broken_desc.c_str());
 
-		sprintf_s(temp_buf, buf_size, "    %s / %-15s %s\n", s_form, l_form, broken_desc.c_str());
-
-		printf("%s", temp_buf);
+		printf("%s", out_buf);
 	}
+};
+
+class config : Output {
+	argh::parser cmdl;
 
 	static void print_help() {
 		printf("\nUsage: maniac [options]\n");
 		printf("\nOptions:\n");
 
 		print_option("-h", "--help", "Show this message and exit.");
-		print_option("-r", "--randomization", "where arg is `a,b`. Add milliseconds in the range [a,b] to all key presses. If only `a` is provided, `b` implicitly equals `-a`. (default: 0,0, implicit: -5,5)");
-		print_option("-u", "--humanization", "For every key press, an offset calculated through (density at that point * (arg / 100)) is added to the time. (default: 0, implicit: 100)");
+		print_option("-r", "--randomization [a,b]", "Add milliseconds in the range [a,b] to all key presses. If only `a` is provided, `b` implicitly equals `-a`. (default: 0,0, implicit: -5,5)");
+		print_option("-u", "--humanization [a]", "For every key press, an offset calculated through (density at that point * (a / 100)) is added to the time. (default: 0, implicit: 100)");
+
+		putchar('\n');
+
+		print_text("Note that all options have both a default and an implicit value. The difference is best illustrated through an example:\n");
+
+		printf("    command                       humanization\n");
+		printf("    $ ./maniac                    0\n");
+		printf("    $ ./maniac --humanization     100\n");
+		printf("    $ ./maniac --humanization 50  50\n");
 	}
 
 	template<typename T>
