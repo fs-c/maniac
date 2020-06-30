@@ -47,6 +47,4 @@ Options:
  
 - n0b453c0d3r on UC and [mrflashstudio](https://github.com/mrflashstudio) for
  providing up to date signatures and offsets
-- [jarro2783](https://github.com/jarro2783) for the [cxxopts](https://github.com/jarro2783/cxxopts)
-library
-- to those who reports bugs and provides feedback
+- to those who report bugs and provide feedback
