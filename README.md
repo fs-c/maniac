@@ -47,4 +47,5 @@ Options:
  
 - n0b453c0d3r on UC and [mrflashstudio](https://github.com/mrflashstudio) for
  providing up to date signatures and offsets
-- to those who report bugs and provide feedback
+- [Asi Shavit](https://github.com/adishavit) for the [Argh](https://github.com/adishavit/argh) library
+- to everyone who reported bugs and provided feedback
