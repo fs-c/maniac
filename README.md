@@ -18,24 +18,34 @@ Maniac will now automatically play any beatmap you open in osu.
 
 Maniac accepts options which have to be passed through the command line when running the executable.
 
-Example of running `./maniac-*.exe -h`:
+```
+$ ./maniac.exe -h
 
-```bash
-$ ./maniac-*.exe -h
-Simple osu!mania cheat.
-Usage:
-  maniac [options...]
+Usage: maniac [options]
 
-  -h, --help              Show this message and exit.
-  -u, --humanization arg  where arg is `a,b`. Add milliseconds in the range
-                          [a,b] to all key presses. If only `a` is provided,
-                          defaults to [-a,a]. If nothing is provided, defaults
-                          to [0,0].
+Options:
+    -h / --help                Show this message and exit.
+    -r / --randomization [a,b] Add milliseconds in the range [a,b] to all k
+                               ey presses. If only `a` is provided, `b` imp
+                               licitly equals `-a`. (default: 0,0, implicit
+                               : -5,5)
+    -u / --humanization [a]    For every key press, an offset calculated th
+                               rough (density at that point * (a / 100)) is
+                                added to the time. (default: 0, implicit: 1
+                               00)
+
+    Note that all options have both a default and an implicit value. The di
+    fference is best illustrated through an example:
+
+    command                       humanization
+    $ ./maniac                    0
+    $ ./maniac --humanization     100
+    $ ./maniac --humanization 50  50
 ```
 
 ## Thanks
  
 - n0b453c0d3r on UC and [mrflashstudio](https://github.com/mrflashstudio) for
  providing up to date signatures and offsets
-- [jarro2783](https://github.com/jarro2783) for the [cxxopts](https://github.com/jarro2783/cxxopts)
-library
+- [Asi Shavit](https://github.com/adishavit) for the [Argh](https://github.com/adishavit/argh) library
+- to everyone who reported bugs and provided feedback

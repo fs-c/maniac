@@ -101,10 +101,8 @@ std::vector<Action> Osu::get_actions() {
 				end_time += tap_time;
 			}
 
-			actions.emplace_back(keys.at(column), true,
-				start_time + config::compensation_offset);
-			actions.emplace_back(keys.at(column), false,
-				end_time + config::compensation_offset);
+			actions.emplace_back(keys.at(column), true, start_time + default_delay);
+			actions.emplace_back(keys.at(column), false, end_time + default_delay);
 		} catch (std::exception &err) {
 			failed++;
 
@@ -124,21 +122,6 @@ std::vector<Action> Osu::get_actions() {
 	actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
 
 	return actions;
-}
-
-void Osu::humanize_actions(std::vector<Action> &actions, std::pair<int, int> &range) {
-	if (!range.first && !range.second)
-		return;
-
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> distr(range.first, range.second);
-
-	for (auto &action : actions) {
-		action.time += distr(gen);;
-	}
-
-	debug("humanized actions with a range of [%d, %d]", range.first, range.second);
 }
 
 void HitObject::log() const {

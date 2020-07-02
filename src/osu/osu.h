@@ -1,9 +1,8 @@
 #pragma once
 
 #include "common.h"
-#include "config.h"
-#include "signatures.h"
 #include "../process/process.h"
+#include "signatures.h"
 
 #include <vector>
 #include <random>
@@ -69,7 +68,9 @@ public:
 
 	std::vector<Action> get_actions();
 
-	static void humanize_actions(std::vector<Action> &actions, std::pair<int, int> &range);
+	static void humanize_actions(std::vector<Action> &actions, int modifier);
+
+	static void randomize_actions(std::vector<Action> &actions, std::pair<int, int> range);
 
 	static void execute_actions(Action *action, size_t count);
 };
