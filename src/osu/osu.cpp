@@ -64,15 +64,12 @@ std::vector<Action> Osu::get_actions() {
 	debug("got hit object manager address: %#x", player_address);
 
 	auto headers_address = read_memory_safe<uintptr_t>("headers address", manager_address + 0x30);
-	auto column_count = static_cast<int32_t>(read_memory_safe<float>("column count", headers_address + 0x30));
-	debug("column count is %d", column_count);
+	auto mem_column_count = static_cast<int32_t>(read_memory_safe<float>("column count", headers_address + 0x30));
+	debug("column count in memory is %d", mem_column_count);
 
-	if (column_count <= 0) {
-		throw std::runtime_error("got invalid column count");
+	if (mem_column_count <= 0) {
+		debug("got invalid column count in memory");
 	}
-
-	auto keys = get_key_subset(column_count);
-	debug("using key subset '%s'", keys.c_str());
 
 	auto list_pointer = read_memory_safe<uintptr_t>("list pointer", manager_address + 0x48);
 	auto list_address = read_memory_safe<uintptr_t>("list address", list_pointer + 0x4);
@@ -87,6 +84,7 @@ std::vector<Action> Osu::get_actions() {
 
 	size_t i;
 	size_t failed = 0;
+	int largest_column = 0;
 	for (i = 0; i < list_size; i++) {
 		try {
 			auto object_address = read_memory<uintptr_t>(list_address + 0x8 + 0x4 * i);
@@ -101,8 +99,12 @@ std::vector<Action> Osu::get_actions() {
 				end_time += tap_time;
 			}
 
-			actions.emplace_back(keys.at(column), true, start_time + default_delay);
-			actions.emplace_back(keys.at(column), false, end_time + default_delay);
+			if (column > largest_column)
+				largest_column = column;
+
+			// Hacky:`column` is written into a field that should hold the key itself.
+			actions.emplace_back(column, true, start_time + default_delay);
+			actions.emplace_back(column, false, end_time + default_delay);
 		} catch (std::exception &err) {
 			failed++;
 
@@ -113,6 +115,21 @@ std::vector<Action> Osu::get_actions() {
 	// ...but not all of them.
 	if (i == failed) {
 		throw std::runtime_error("failed parsing hitpoints");
+	}
+
+	// 0 based to 1 based.
+	largest_column += 1;
+
+	if (largest_column != mem_column_count) {
+		debug("actual and memory column counts don't match, defaulting to actual (%d)",
+			largest_column);
+	}
+
+	auto keys = get_key_subset(largest_column);
+	debug("using key subset '%s'", keys.c_str());
+
+	for (auto &action : actions) {
+		action.key = keys.at(action.key);
 	}
 
 	debug("%s %d %s %d %s %d %s", "parsed", i, "out of", list_size, "hit objects into",
