@@ -69,6 +69,7 @@ public:
 	bool is_playing();
 
 	std::vector<Action> get_actions();
+	void alt_get_actions();
 
 	size_t discard_actions(std::vector<Action> &actions);
 
