@@ -68,9 +68,7 @@ public:
 
 	bool is_playing();
 
-	std::vector<Action> get_actions();
-
-	size_t discard_actions(std::vector<Action> &actions);
+	std::vector<Action> get_actions(int32_t min_time);
 
 	static void execute_actions(Action *actions, size_t count);
 };

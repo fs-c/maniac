@@ -58,7 +58,7 @@ std::string Osu::get_key_subset(int column_count) {
 }
 
 // TODO: Break up into smaller functions, this is ugly as all hell.
-std::vector<Action> Osu::get_actions() {
+std::vector<Action> Osu::get_actions(int32_t min_time) {
 	auto player_address = read_memory_safe<uintptr_t>("player address", player_pointer);
 	auto manager_address = read_memory_safe<uintptr_t>("manager address", player_address + 0x40);
 	debug("got hit object manager address: %#x", player_address);
@@ -101,6 +101,9 @@ std::vector<Action> Osu::get_actions() {
 
 			if (column > largest_column)
 				largest_column = column;
+
+			if (start_time < min_time)
+				continue;
 
 			// Hacky:`column` is written into a field that should hold the key itself.
 			actions.emplace_back(column, true, start_time + default_delay);

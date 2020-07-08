@@ -23,7 +23,7 @@ void run(Osu &osu) {
 
 	for (int i = 0; i < 10; i++) {
 		try {
-			actions = osu.get_actions();
+			actions = osu.get_actions(osu.get_game_time());
 
 			break;
 		} catch (std::exception &err) {
@@ -40,9 +40,7 @@ void run(Osu &osu) {
 	maniac::randomize(actions, config.randomization_range);
 	maniac::humanize(actions, config.humanization_modifier);
 
-	auto discarded = osu.discard_actions(actions);
-
-	printf("[+] parsed %d actions (discarded: %d)\n", actions.size(), discarded);
+	printf("[+] parsed %d actions\n", actions.size());
 
 	maniac::play(actions);
 }
