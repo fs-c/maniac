@@ -51,7 +51,6 @@ struct Action {
 
 class Osu : public Process {
 	int tap_time = 50;
-	int default_delay = -20;
 
 	// TODO: Generic pointers are bad in the long run.
 	uintptr_t time_address = 0;
@@ -68,7 +67,7 @@ public:
 
 	bool is_playing();
 
-	std::vector<Action> get_actions(int32_t min_time);
+	std::vector<Action> get_actions(int32_t min_time, int32_t default_delay);
 
 	static void execute_actions(Action *actions, size_t count);
 };

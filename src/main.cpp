@@ -8,8 +8,6 @@
 #include <chrono>
 #include <cstdlib>
 
-config config;
-
 void run(Osu &osu) {
 	maniac::osu = &osu;
 
@@ -23,7 +21,8 @@ void run(Osu &osu) {
 
 	for (int i = 0; i < 10; i++) {
 		try {
-			actions = osu.get_actions(osu.get_game_time());
+			actions = osu.get_actions(osu.get_game_time(),
+				maniac::config.compensation_offset);
 
 			break;
 		} catch (std::exception &err) {
@@ -37,8 +36,8 @@ void run(Osu &osu) {
 		throw std::runtime_error("failed getting actions");
 	}
 
-	maniac::randomize(actions, config.randomization_range);
-	maniac::humanize(actions, config.humanization_modifier);
+	maniac::randomize(actions, maniac::config.randomization_range);
+	maniac::humanize(actions, maniac::config.humanization_modifier);
 
 	printf("[+] parsed %d actions\n", actions.size());
 
@@ -47,9 +46,9 @@ void run(Osu &osu) {
 
 int main(int argc, char *argv[]) {
 	try {
-		config.parse(argc, argv);
+		maniac::config.parse(argc, argv);
 
-		if (config.should_exit) {
+		if (maniac::config.should_exit) {
 			return EXIT_FAILURE;
 		}
 

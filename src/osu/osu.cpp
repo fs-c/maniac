@@ -58,7 +58,7 @@ std::string Osu::get_key_subset(int column_count) {
 }
 
 // TODO: Break up into smaller functions, this is ugly as all hell.
-std::vector<Action> Osu::get_actions(int32_t min_time) {
+std::vector<Action> Osu::get_actions(int32_t min_time, int32_t default_delay) {
 	auto player_address = read_memory_safe<uintptr_t>("player address", player_pointer);
 	auto manager_address = read_memory_safe<uintptr_t>("manager address", player_address + 0x40);
 	debug("got hit object manager address: %#x", player_address);

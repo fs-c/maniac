@@ -1,9 +1,12 @@
 #pragma once
 
 #include "common.h"
+#include "config.h"
 #include "osu/osu.h"
 
 namespace maniac {
+	inline config config;
+
 	inline Osu *osu;
 
 	void play(std::vector<Action> &actions);
