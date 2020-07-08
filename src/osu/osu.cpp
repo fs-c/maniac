@@ -73,133 +73,146 @@ namespace osu_internal {
 	Osu *osu;
 
 	struct hit_object {
-		hit_object *base;
+		uintptr_t base;
 
-		explicit hit_object(hit_object *base) : base(base) {}
+		hit_object() : base(0) {}
+		explicit hit_object(uintptr_t base) : base(base) {}
 
-		[[nodiscard]] auto get_start_time() {
-			return osu->read_memory_safe<int32_t>("hit object start time",
-				pointer(base).add_bytes(0x10));
+		[[nodiscard]] auto get_start_time() const {
+			return osu->read_memory<int32_t>(base + 0x10);
 		}
 
-		[[nodiscard]] auto get_end_time() {
-			return osu->read_memory_safe<int32_t>("hit object end time",
-				pointer(base).add_bytes(0x14));
+		[[nodiscard]] auto get_end_time() const {
+			return osu->read_memory<int32_t>(base + 0x14);
 		}
 
-		[[nodiscard]] auto get_type() {
-			return osu->read_memory_safe<int32_t>("hit object type",
-				pointer(base).add_bytes(0x18));
-		}
-	};
-
-	template<typename T>
-	struct list_contents {
-		list_contents *base;
-
-		explicit list_contents(list_contents *base) : base(base) {}
-
-		[[nodiscard]] auto get_data() {
-			return osu->read_memory_safe<T *>("list data",
-				pointer<list_contents<T> *>(base).add_bytes(0x8));
+		[[nodiscard]] auto get_type() const {
+			return osu->read_memory<int32_t>(base + 0x18);
 		}
 	};
 
 	template<typename T>
 	struct list_container {
-		list_container *base;
+		uintptr_t base;
 
-		explicit list_container(list_container *base) : base(base) {}
+		explicit list_container(uintptr_t base) : base(base) {}
 
 		[[nodiscard]] auto get_size() {
 			return osu->read_memory_safe<size_t>("list contents size",
-				pointer<size_t *>(base).add_bytes(0xC));
+				base + 0xC);
 		}
 
 		[[nodiscard]] auto get_contents() {
-			auto contents = list_contents(osu->read_memory_safe<list_contents<T> *>("list contents address",
-				pointer<list_contents<hit_object> *>(base).add_bytes(0x4)
-			));
+			auto contents_address = osu->read_memory_safe<uintptr_t>(
+				"list contents address", base + 0x4);
 
 			auto size = get_size();
-			auto data = contents.get_data();
 
-			return std::vector(data[0], data[size - 1]);
+			std::vector<T> vector;
+			vector.reserve(size);
+
+			for (int i = 0; i < size; i++) {
+				vector.push_back(T(osu->read_memory<uintptr_t>(
+					contents_address + 0x8 + (i * 0x4))));
+			}
+
+			return vector;
 		}
 	};
 
 	struct hit_manager_headers {
-		hit_manager_headers *base;
+		uintptr_t base;
 
-		explicit hit_manager_headers(hit_manager_headers *base) : base(base) {}
+		explicit hit_manager_headers(uintptr_t base) : base(base) {}
 
 		[[nodiscard]] auto get_column_count() const {
-			return static_cast<int>(osu->read_memory_safe<float>("column count",
-				pointer(base).add_bytes(0x30)));
-		}
-
-		[[nodiscard]] auto get_list() const {
-			return list_container(osu->read_memory_safe<list_container<hit_object> *>(
-				"hitpoint list container", pointer(base).add_bytes(0x48)));
+			return static_cast<int>(osu->read_memory_safe<float>(
+				"column count", base + 0x30));
 		}
 	};
 
 	struct hit_manager {
 		uintptr_t base;
 
-		explicit hit_manager(hit_manager *base) {
-			this->base = reinterpret_cast<uintptr_t>(base);
-
-			debug("hit manager base is %#x", base);
-		}
+		explicit hit_manager(uintptr_t base) : base(base) {}
 
 		[[nodiscard]] auto get_headers() const {
 			auto addr = base + 0x30;
 
 			return hit_manager_headers(
-				osu->read_memory_safe<hit_manager_headers *>(
+				osu->read_memory_safe<uintptr_t>(
 					"hit manager headers", addr)
 			);
+		}
+
+		[[nodiscard]] auto get_list() const {
+			return list_container<hit_object>(
+				osu->read_memory_safe<uintptr_t>(
+					"hitpoint list container", base + 0x48));
 		}
 	};
 
 	struct map_player {
-		map_player *base;
+		uintptr_t base;
 
-		explicit map_player(map_player *base) : base(base) {}
+		explicit map_player(uintptr_t base) : base(base) {}
 
 		[[nodiscard]] auto get_hit_manager() const {
 			return hit_manager(
-				osu->read_memory_safe<hit_manager *>("hit manager",
-					pointer(base).add_bytes(0x40))
+				osu->read_memory_safe<uintptr_t>("hit manager",
+					base + 0x40)
 			);
 		}
 	};
 }
 
 void Osu::alt_get_actions() {
+	using namespace osu_internal;
+	osu = this;
+
+	auto player_address = read_memory_safe<uintptr_t>("player", player_pointer);
+
+	auto player = map_player(player_address);
+	auto manager = player.get_hit_manager();
+	auto list = manager.get_list();
+	auto hit_points = list.get_contents();
+
+	for (auto &hit_point : hit_points) {
+		debug("%d -> %d", hit_point.get_start_time(), hit_point.get_end_time());
+	}
+
+	debug("end alt");
 };
 
 // TODO: Break up into smaller functions, this is ugly as all hell.
 std::vector<Action> Osu::get_actions() {
-	osu_internal::osu = this;
+	try {
+		alt_get_actions();
+	} catch (std::exception &err) {
+		// Whatever
+	}
 
-	auto player_address = read_memory_safe<uintptr_t>("player address", player_pointer);
-	auto manager_address = read_memory_safe<uintptr_t>("manager address", player_address + 0x40);
-	debug("got hit object manager address: %#x", player_address);
+	auto player_address = read_memory_safe<uintptr_t>("player address",
+		player_pointer);
+	auto manager_address = read_memory_safe<uintptr_t>("manager address",
+		player_address + 0x40);
 
-	auto headers_address = read_memory_safe<uintptr_t>("headers address", manager_address + 0x30);
-	auto mem_column_count = static_cast<int32_t>(read_memory_safe<float>("column count", headers_address + 0x30));
-	debug("column count in memory is %d", mem_column_count);
+	auto headers_address = read_memory_safe<uintptr_t>("headers address",
+		manager_address + 0x30);
+
+	auto mem_column_count = static_cast<int32_t>(read_memory_safe<float>(
+		"column count", headers_address + 0x30));
 
 	if (mem_column_count <= 0) {
 		debug("got invalid column count in memory");
 	}
 
-	auto list_pointer = read_memory_safe<uintptr_t>("list pointer", manager_address + 0x48);
-	auto list_address = read_memory_safe<uintptr_t>("list address", list_pointer + 0x4);
+	auto list_pointer = read_memory_safe<uintptr_t>("list pointer",
+		manager_address + 0x48);
+	auto list_address = read_memory_safe<uintptr_t>("list address",
+		list_pointer + 0x4);
 	auto list_size = read_memory_safe<size_t>("list size", list_pointer + 0xC);
-	debug("got hit object list at %#x (size %d)", list_address, list_size);
+	debug("got hit object list with size %d", list_size);
 
 	if (list_size <= 0) {
 		throw std::runtime_error("got invalid list size");
@@ -212,7 +225,8 @@ std::vector<Action> Osu::get_actions() {
 	int largest_column = 0;
 	for (i = 0; i < list_size; i++) {
 		try {
-			auto object_address = read_memory<uintptr_t>(list_address + 0x8 + 0x4 * i);
+			auto object_address = read_memory<uintptr_t>(list_address
+				+ 0x8 + 0x4 * i);
 
 			auto start_time = read_memory<int32_t>(object_address + 0x10);
 			auto end_time = read_memory<int32_t>(object_address + 0x14);
