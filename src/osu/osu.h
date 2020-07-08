@@ -4,6 +4,8 @@
 #include "../process/process.h"
 #include "signatures.h"
 
+#include <chrono>
+#include <thread>
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -37,9 +39,9 @@ struct Action {
 
 	Action(char key, bool down, int32_t time) : key(key), down(down), time(time) { };
 
-	bool operator<(const Action &action) const { return time < action.time; };
+	bool operator < (const Action &action) const { return time < action.time; };
 
-	bool operator==(const Action &action) const {
+	bool operator == (const Action &action) const {
 		return action.key == key && action.down == down && action.time == time;
 	};
 
@@ -68,11 +70,9 @@ public:
 
 	std::vector<Action> get_actions();
 
-	static void humanize_actions(std::vector<Action> &actions, int modifier);
+	size_t discard_actions(std::vector<Action> &actions);
 
-	static void randomize_actions(std::vector<Action> &actions, std::pair<int, int> range);
-
-	static void execute_actions(Action *action, size_t count);
+	static void execute_actions(Action *actions, size_t count);
 };
 
 inline int32_t Osu::get_game_time() {
@@ -97,7 +97,7 @@ inline bool Osu::is_playing() {
 	return address != 0;
 }
 
-inline void Osu::execute_actions(Action *action, size_t count) {
+inline void Osu::execute_actions(Action *actions, size_t count) {
 	// TODO: Look into KEYEVENTF_SCANCODE (see esp. KEYBDINPUT remarks section).
 
 	static auto layout = GetKeyboardLayout(0);
@@ -117,8 +117,8 @@ inline void Osu::execute_actions(Action *action, size_t count) {
 		in[i].ki.time = 0;
 		in[i].ki.wScan = 0;
 		in[i].ki.dwExtraInfo = 0;
-		in[i].ki.dwFlags = (action + i)->down ? 0 : KEYEVENTF_KEYUP;
-		in[i].ki.wVk = VkKeyScanEx((action + i)->key, layout) & 0xFF;
+		in[i].ki.dwFlags = (actions + i)->down ? 0 : KEYEVENTF_KEYUP;
+		in[i].ki.wVk = VkKeyScanEx((actions + i)->key, layout) & 0xFF;
 	}
 
 	if (!SendInput(count, in, sizeof(INPUT))) {

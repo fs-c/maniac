@@ -1,7 +1,7 @@
 #include "common.h"
-#include "osu.h"
+#include "maniac.h"
 
-void Osu::randomize_actions(std::vector<Action> &actions, std::pair<int, int> range) {
+void maniac::randomize(std::vector<Action> &actions, std::pair<int, int> range) {
 	if (!range.first && !range.second)
 		return;
 
@@ -10,14 +10,14 @@ void Osu::randomize_actions(std::vector<Action> &actions, std::pair<int, int> ra
 	std::uniform_int_distribution<> distr(range.first, range.second);
 
 	for (auto &action : actions) {
-		action.time += distr(gen);;
+		action.time += distr(gen);
 	}
 
 	debug("randomized %d actions with a range of [%d, %d]", actions.size(), range.first,
 		range.second);
 }
 
-std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_frame = 1000) {
+static std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_frame = 1000) {
 	std::vector<int> frames = {};
 	const int chunks_needed = (actions.back().time / time_frame) + 1;
 
@@ -39,7 +39,7 @@ std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_
 	return frames;
 }
 
-void Osu::humanize_actions(std::vector<Action> &actions, int modifier) {
+void maniac::humanize(std::vector<Action> &actions, int modifier) {
 	if (!modifier)
 		return;
 
