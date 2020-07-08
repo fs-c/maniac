@@ -38,8 +38,8 @@ public:
 	 * See `T read_memory`, except that it throws exceptions with the given name included in the
 	 * error message.
 	 */
-	template<typename T>
-	T read_memory_safe(const char *name, uintptr_t address);
+	template<typename T, typename Any = uintptr_t>
+	T read_memory_safe(const char *name, Any address);
 
 	/**
 	 * Expects `pattern` to be in "IDA-Style", i.e. to group bytes in pairs of two and to denote
@@ -72,8 +72,11 @@ inline T Process::read_memory(uintptr_t address) {
 	return out;
 }
 
-template<typename T>
-T Process::read_memory_safe(const char *name, uintptr_t address) {
+template<typename T, typename Any>
+T Process::read_memory_safe(const char *name, Any addr) {
+	// TODO: So much for "safe".
+	uintptr_t address = (uintptr_t)(void *)addr;
+
 	if (!address) {
 		// TODO: Get rid of this ASAP once std::format is out.
 		char msg[128];
