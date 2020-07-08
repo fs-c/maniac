@@ -57,8 +57,133 @@ std::string Osu::get_key_subset(int column_count) {
 	return out_string;
 }
 
+template<typename T>
+class pointer {
+	T ptr;
+
+public:
+	explicit pointer(T ptr) : ptr(ptr) {}
+
+	T add_bytes(unsigned int num) const {
+		return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) + num);
+	}
+};
+
+namespace osu_internal {
+	Osu *osu;
+
+	struct hit_object {
+		hit_object *base;
+
+		explicit hit_object(hit_object *base) : base(base) {}
+
+		[[nodiscard]] auto get_start_time() {
+			return osu->read_memory_safe<int32_t>("hit object start time",
+				pointer(base).add_bytes(0x10));
+		}
+
+		[[nodiscard]] auto get_end_time() {
+			return osu->read_memory_safe<int32_t>("hit object end time",
+				pointer(base).add_bytes(0x14));
+		}
+
+		[[nodiscard]] auto get_type() {
+			return osu->read_memory_safe<int32_t>("hit object type",
+				pointer(base).add_bytes(0x18));
+		}
+	};
+
+	template<typename T>
+	struct list_contents {
+		list_contents *base;
+
+		explicit list_contents(list_contents *base) : base(base) {}
+
+		[[nodiscard]] auto get_data() {
+			return osu->read_memory_safe<T *>("list data",
+				pointer<list_contents<T> *>(base).add_bytes(0x8));
+		}
+	};
+
+	template<typename T>
+	struct list_container {
+		list_container *base;
+
+		explicit list_container(list_container *base) : base(base) {}
+
+		[[nodiscard]] auto get_size() {
+			return osu->read_memory_safe<size_t>("list contents size",
+				pointer<size_t *>(base).add_bytes(0xC));
+		}
+
+		[[nodiscard]] auto get_contents() {
+			auto contents = list_contents(osu->read_memory_safe<list_contents<T> *>("list contents address",
+				pointer<list_contents<hit_object> *>(base).add_bytes(0x4)
+			));
+
+			auto size = get_size();
+			auto data = contents.get_data();
+
+			return std::vector(data[0], data[size - 1]);
+		}
+	};
+
+	struct hit_manager_headers {
+		hit_manager_headers *base;
+
+		explicit hit_manager_headers(hit_manager_headers *base) : base(base) {}
+
+		[[nodiscard]] auto get_column_count() const {
+			return static_cast<int>(osu->read_memory_safe<float>("column count",
+				pointer(base).add_bytes(0x30)));
+		}
+
+		[[nodiscard]] auto get_list() const {
+			return list_container(osu->read_memory_safe<list_container<hit_object> *>(
+				"hitpoint list container", pointer(base).add_bytes(0x48)));
+		}
+	};
+
+	struct hit_manager {
+		uintptr_t base;
+
+		explicit hit_manager(hit_manager *base) {
+			this->base = reinterpret_cast<uintptr_t>(base);
+
+			debug("hit manager base is %#x", base);
+		}
+
+		[[nodiscard]] auto get_headers() const {
+			auto addr = base + 0x30;
+
+			return hit_manager_headers(
+				osu->read_memory_safe<hit_manager_headers *>(
+					"hit manager headers", addr)
+			);
+		}
+	};
+
+	struct map_player {
+		map_player *base;
+
+		explicit map_player(map_player *base) : base(base) {}
+
+		[[nodiscard]] auto get_hit_manager() const {
+			return hit_manager(
+				osu->read_memory_safe<hit_manager *>("hit manager",
+					pointer(base).add_bytes(0x40))
+			);
+		}
+	};
+}
+
+void Osu::alt_get_actions() {
+};
+
 // TODO: Break up into smaller functions, this is ugly as all hell.
 std::vector<Action> Osu::get_actions() {
+	osu_internal::osu = this;
+
 	auto player_address = read_memory_safe<uintptr_t>("player address", player_pointer);
 	auto manager_address = read_memory_safe<uintptr_t>("manager address", player_address + 0x40);
 	debug("got hit object manager address: %#x", player_address);
@@ -102,7 +227,7 @@ std::vector<Action> Osu::get_actions() {
 			if (column > largest_column)
 				largest_column = column;
 
-			// Hacky:`column` is written into a field that should hold the key itself.
+			// Hacky: `column` is written into a field that should hold the key itself.
 			actions.emplace_back(column, true, start_time + default_delay);
 			actions.emplace_back(column, false, end_time + default_delay);
 		} catch (std::exception &err) {
@@ -118,14 +243,14 @@ std::vector<Action> Osu::get_actions() {
 	}
 
 	// 0 based to 1 based.
-	largest_column += 1;
+	auto actual_columns = largest_column + 1;
 
 	if (largest_column != mem_column_count) {
 		debug("actual and memory column counts don't match, defaulting to actual (%d)",
 			largest_column);
 	}
 
-	auto keys = get_key_subset(largest_column);
+	auto keys = get_key_subset(actual_columns);
 	debug("using key subset '%s'", keys.c_str());
 
 	for (auto &action : actions) {
@@ -139,6 +264,21 @@ std::vector<Action> Osu::get_actions() {
 	actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
 
 	return actions;
+}
+
+size_t Osu::discard_actions(std::vector<Action> &actions) {
+	auto cur_time = get_game_time();
+
+	size_t discarded = 0;
+	for (auto action = actions.begin(); action != actions.end();) {
+		if (action->time <= cur_time && ++discarded) {
+			action = actions.erase(action);
+		} else {
+			action++;
+		}
+	}
+
+	return discarded;
 }
 
 void HitObject::log() const {
