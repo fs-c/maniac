@@ -29,7 +29,6 @@ struct Action {
 
 class Osu : public Process {
 	int tap_time = 50;
-	int default_delay = -20;
 
 	// TODO: Generic pointers are bad in the long run.
 	uintptr_t time_address = 0;

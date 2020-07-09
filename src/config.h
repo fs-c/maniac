@@ -68,6 +68,7 @@ class config : Output {
 		print_option("-h", "--help", "Show this message and exit.");
 		print_option("-r", "--randomization [a,b]", "Add milliseconds in the range [a,b] to all key presses. If only `a` is provided, `b` implicitly equals `-a`. (default: 0,0, implicit: -5,5)");
 		print_option("-u", "--humanization [a]", "For every key press, an offset calculated through (density at that point * (a / 100)) is added to the time. (default: 0, implicit: 100)");
+		print_option("-c", "--compensation [a]", "Add static offset in milliseconds to every action to compensate for the time it takes maniac to send a keypress. (default: -20)");
 
 		putchar('\n');
 
@@ -111,6 +112,7 @@ class config : Output {
 public:
 	bool should_exit = false;
 
+	int compensation_offset;
 	int humanization_modifier;
 	std::pair<int, int> randomization_range = { 0, 0 };
 
@@ -127,9 +129,11 @@ public:
 		humanization_modifier = get_param({ "-u", "--humanization" }, 0, 100);
 		randomization_range = string_to_pair(get_param<std::string>(
 			{ "-r", "--randomization" }, "0,0", "-5,5"));
+		compensation_offset = get_param({ "-c", "--compensation" }, -20, -20);
 
 		debug("humanization modifier: %d", humanization_modifier);
 		debug("randomization range: [%d, %d]", randomization_range.first,
 			randomization_range.second);
+		debug("compensation offset: %d", compensation_offset);
 	}
 };
