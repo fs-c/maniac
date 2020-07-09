@@ -1,5 +1,7 @@
 #include "osu.h"
 
+using namespace osu;
+
 Osu::Osu() : Process("osu!.exe") {
 	using namespace signatures;
 
@@ -58,7 +60,7 @@ std::string Osu::get_key_subset(int column_count) {
 }
 
 std::vector<Action> Osu::get_actions(int32_t min_time, int32_t default_delay) {
-	using namespace osu_internal;
+	using namespace internal;
 	osu = this;
 
 	auto player_address = read_memory_safe<uintptr_t>("player", player_pointer);

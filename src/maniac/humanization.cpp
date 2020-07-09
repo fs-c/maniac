@@ -1,7 +1,7 @@
 #include "common.h"
 #include "maniac.h"
 
-void maniac::randomize(std::vector<Action> &actions, std::pair<int, int> range) {
+void maniac::randomize(std::vector<osu::Action> &actions, std::pair<int, int> range) {
 	if (!range.first && !range.second)
 		return;
 
@@ -17,7 +17,8 @@ void maniac::randomize(std::vector<Action> &actions, std::pair<int, int> range) 
 		range.second);
 }
 
-static std::vector<int> actions_per_frame(const std::vector<Action> &actions, int time_frame = 1000) {
+static std::vector<int> actions_per_frame(const std::vector<osu::Action> &actions,
+	int time_frame = 1000) {
 	std::vector<int> frames = {};
 	const int chunks_needed = (actions.back().time / time_frame) + 1;
 
@@ -39,7 +40,7 @@ static std::vector<int> actions_per_frame(const std::vector<Action> &actions, in
 	return frames;
 }
 
-void maniac::humanize(std::vector<Action> &actions, int modifier) {
+void maniac::humanize(std::vector<osu::Action> &actions, int modifier) {
 	if (!modifier)
 		return;
 

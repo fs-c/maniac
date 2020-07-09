@@ -9,7 +9,7 @@ namespace maniac {
 		}
 	}
 
-	void play(std::vector<Action> &actions) {
+	void play(std::vector<osu::Action> &actions) {
 		auto cur_i = 0;
 		auto cur_time = 0;
 		auto raw_actions = actions.data();
@@ -21,7 +21,7 @@ namespace maniac {
 
 			cur_time = osu->get_game_time();
 			while (cur_i < total_actions && (raw_actions + cur_i)->time <= cur_time) {
-				Osu::execute_actions(raw_actions + cur_i, 1);
+				osu::Osu::execute_actions(raw_actions + cur_i, 1);
 
 				cur_i++;
 			}
