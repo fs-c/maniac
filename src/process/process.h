@@ -99,10 +99,7 @@ T Process::read_memory_safe(const char *name, Any addr) {
 		throw std::runtime_error(msg);
 	}
 
-	// TODO: Ew.
-#ifdef DEBUG
-	printf("[debug] %-20s: %#x\n", name, (unsigned int)address);
-#endif
+	debug_short("%s: %#x", name, (unsigned int)address);
 
 	return out;
 }
