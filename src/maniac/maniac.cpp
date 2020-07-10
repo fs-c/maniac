@@ -46,13 +46,14 @@ namespace maniac {
 			if (hit_object.start_time < min_time)
 				continue;
 
+			// TODO: Make the tap time an option or something.
 			if (hit_object.start_time == hit_object.end_time)
-				hit_object.end_time += config.compensation_offset;
+				hit_object.end_time += 20;
 
 			actions.emplace_back(keys[hit_object.column], true,
-				hit_object.start_time);
+				hit_object.start_time + config.compensation_offset);
 			actions.emplace_back(keys[hit_object.column], false,
-				hit_object.end_time);
+				hit_object.end_time + config.compensation_offset);
 		}
 
 		debug("got %d actions", actions.size());
