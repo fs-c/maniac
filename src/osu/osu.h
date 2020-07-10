@@ -127,6 +127,10 @@ struct Action {
 
 	// Only used for debugging
 	void log() const;
+
+	inline void execute() {
+		Process::send_keypress(key, down);
+	}
 };
 
 class Osu : public Process {
@@ -148,7 +152,6 @@ public:
 	internal::map_player get_map_player();
 
 	static std::string get_key_subset(int column_count);
-	static void execute_actions(Action *actions, size_t count);
 };
 
 inline int32_t Osu::get_game_time() {
@@ -172,36 +175,6 @@ inline bool Osu::is_playing() {
 	}
 
 	return address != 0;
-}
-
-inline void Osu::execute_actions(Action *actions, size_t count) {
-	// TODO: Look into KEYEVENTF_SCANCODE (see esp. KEYBDINPUT remarks
-	// 	 section).
-
-	static auto layout = GetKeyboardLayout(0);
-
-	// TODO: Magic numbers are a bad idea.
-	INPUT in[10];
-
-	if (count > 10) {
-		debug("count > 10, setting to 10");
-
-		count = 10;
-	}
-
-	for (size_t i = 0; i < count; i++) {
-		in[i].type = INPUT_KEYBOARD;
-
-		in[i].ki.time = 0;
-		in[i].ki.wScan = 0;
-		in[i].ki.dwExtraInfo = 0;
-		in[i].ki.dwFlags = (actions + i)->down ? 0 : KEYEVENTF_KEYUP;
-		in[i].ki.wVk = VkKeyScanEx((actions + i)->key, layout) & 0xFF;
-	}
-
-	if (!SendInput(count, in, sizeof(INPUT))) {
-		debug("failed sending %d inputs: %lu", count, GetLastError());
-	}
 }
 
 }
