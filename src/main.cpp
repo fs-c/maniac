@@ -21,8 +21,7 @@ void run(osu::Osu &osu) {
 
 	for (int i = 0; i < 10; i++) {
 		try {
-			actions = osu.get_actions(osu.get_game_time(),
-				maniac::config.compensation_offset);
+			actions = maniac::get_actions(osu.get_game_time());
 
 			break;
 		} catch (std::exception &err) {

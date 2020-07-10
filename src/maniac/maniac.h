@@ -15,4 +15,6 @@ namespace maniac {
 
 	void humanize(std::vector<osu::Action> &actions, int modifier);
 	void randomize(std::vector<osu::Action> &actions, std::pair<int, int> range);
+
+	std::vector<osu::Action> get_actions(int32_t min_time);
 }
