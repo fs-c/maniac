@@ -45,6 +45,9 @@ namespace maniac {
 				return a.column < b.column; })->column + 1;
 		auto keys = osu::Osu::get_key_subset(columns);
 
+		if (config.mirror_mod)
+			std::reverse(keys.begin(), keys.end());
+
 		std::vector<osu::Action> actions;
 		actions.reserve(hit_objects.size() * 2);
 
