@@ -4,12 +4,18 @@ namespace maniac {
 	void block_until_playing() {
 		while (true) {
 			if (!osu->is_playing())
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				std::this_thread::sleep_for(
+					std::chrono::milliseconds(250));
 			else break;
 		}
 	}
 
 	void play(std::vector<osu::Action> &actions) {
+		auto keys = osu::Osu::get_key_subset(9);
+		for (auto key : keys) {
+			Process::send_keypress(key, false);
+		}
+
 		auto cur_i = 0;
 		auto cur_time = 0;
 		auto raw_actions = actions.data();
@@ -21,7 +27,7 @@ namespace maniac {
 
 			cur_time = osu->get_game_time();
 			while (cur_i < total_actions && (raw_actions + cur_i)->time <= cur_time) {
-				osu::Osu::execute_actions(raw_actions + cur_i, 1);
+				(raw_actions + cur_i)->execute();
 
 				cur_i++;
 			}
