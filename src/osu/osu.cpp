@@ -59,57 +59,13 @@ std::string Osu::get_key_subset(int column_count) {
 	return out_string;
 }
 
-std::vector<Action> Osu::get_actions(int32_t min_time, int32_t default_delay) {
-	using namespace internal;
-	osu = this;
+internal::map_player Osu::get_map_player() {
+	internal::process = this;
 
 	auto player_address = read_memory_safe<uintptr_t>("player", player_pointer);
 
-	auto player = map_player(player_address);
-	// Using auto here leads to compilation errors, no idea why.
-	hit_manager manager = player.get_hit_manager();
-	auto list = manager.get_list();
-	auto hit_points = list.get_contents();
-
-	int32_t highest_col = 0;
-	std::vector<Action> actions;
-
-	for (auto &hit_point : hit_points) {
-		if (hit_point.start_time == hit_point.end_time) {
-			hit_point.end_time += osu->tap_time;
-		}
-
-		if (hit_point.column > highest_col) {
-			highest_col = hit_point.column;
-		}
-
-		if (hit_point.start_time < min_time) {
-			continue;
-		}
-
-		// Hacky: `column` is written into a field that should hold the key itself.
-		actions.emplace_back(hit_point.column, true, hit_point.start_time
-			+ default_delay);
-		actions.emplace_back(hit_point.column, false, hit_point.end_time
-			+ default_delay);
-	}
-
-	// highest_col is 0-x, get_key_subset expects 1-x
-	auto keys = get_key_subset(highest_col + 1);
-	debug("using key subset '%s'", keys.c_str());
-
-	// Hacky cont.
-	for (auto &action : actions) {
-		action.key = keys.at(action.key);
-	}
-
-	debug("got %d actions", actions.size());
-
-	std::sort(actions.begin(), actions.end());
-	actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
-
-	return actions;
-};
+	return internal::map_player(player_address);
+}
 
 void Action::log() const {
 #ifdef DEBUG

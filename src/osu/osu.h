@@ -10,7 +10,103 @@
 #include <random>
 #include <algorithm>
 
+// TODO: I don't like the osu namespace since it leads to the ugly `osu::Osu` but
+//	 I also don't want `Action` and `internal` to be in the global namespace.
+
 namespace osu {
+
+namespace internal {
+
+inline Process *process;
+
+struct hit_object {
+	uintptr_t base;
+
+	int32_t start_time;
+	int32_t end_time;
+	int32_t type;
+	int32_t column;
+
+	hit_object();
+	explicit hit_object(uintptr_t base);
+
+	[[nodiscard]] int32_t get_start_time() const;
+
+	[[nodiscard]] int32_t get_end_time() const;
+
+	[[nodiscard]] int32_t get_type() const;
+
+	[[nodiscard]] int32_t get_column() const;
+};
+
+// TODO: I really dislike that the implementation of this has to live here.
+template<typename T>
+struct list_container {
+	uintptr_t base;
+
+	size_t size;
+	std::vector<T> content;
+
+	explicit list_container(uintptr_t base) : base(base), size(get_size()),
+		content(get_content()) {}
+
+	[[nodiscard]] size_t get_size() {
+		return process->read_memory_safe<size_t>("list contents size",
+			base + 0xC);
+	}
+
+	[[nodiscard]] std::vector<T> get_content() {
+		auto contents_address = process->read_memory_safe<uintptr_t>(
+			"list contents address", base + 0x4);
+
+		auto size = get_size();
+
+		std::vector<T> vector;
+		vector.reserve(size);
+
+		for (int i = 0; i < size; i++) {
+			vector.push_back(T(process->read_memory<uintptr_t>(
+				contents_address + 0x8 + (i * 0x4))));
+		}
+
+		return vector;
+	}
+};
+
+struct hit_manager_headers {
+	uintptr_t base;
+
+	int column_count;
+
+	explicit hit_manager_headers(uintptr_t base);
+
+	[[nodiscard]] int get_column_count() const;
+};
+
+struct hit_manager {
+	uintptr_t base;
+
+	hit_manager_headers headers;
+	list_container<hit_object> list;
+
+	explicit hit_manager(uintptr_t base);
+
+	[[nodiscard]] hit_manager_headers get_headers() const;
+
+	[[nodiscard]] list_container<hit_object> get_list() const;
+};
+
+struct map_player {
+	uintptr_t base;
+
+	hit_manager manager;
+
+	explicit map_player(uintptr_t base);
+
+	[[nodiscard]] hit_manager get_hit_manager() const;
+};
+
+}
 
 struct Action {
 	char key;
@@ -40,8 +136,6 @@ class Osu : public Process {
 	uintptr_t time_address = 0;
 	uintptr_t player_pointer = 0;
 
-	static std::string get_key_subset(int column_count);
-
 public:
 	Osu();
 
@@ -51,8 +145,9 @@ public:
 
 	bool is_playing();
 
-	std::vector<Action> get_actions(int32_t min_time, int32_t default_delay);
+	internal::map_player get_map_player();
 
+	static std::string get_key_subset(int column_count);
 	static void execute_actions(Action *actions, size_t count);
 };
 
@@ -107,89 +202,6 @@ inline void Osu::execute_actions(Action *actions, size_t count) {
 	if (!SendInput(count, in, sizeof(INPUT))) {
 		debug("failed sending %d inputs: %lu", count, GetLastError());
 	}
-}
-
-namespace internal {
-
-// TODO: Would be enough to take a pointer to the underlying Process
-// 	 instance
-inline Osu *osu;
-
-struct hit_object {
-	uintptr_t base;
-
-	int32_t start_time;
-	int32_t end_time;
-	int32_t type;
-	int32_t column;
-
-	hit_object();
-	explicit hit_object(uintptr_t base);
-
-	[[nodiscard]] int32_t get_start_time() const;
-
-	[[nodiscard]] int32_t get_end_time() const;
-
-	[[nodiscard]] int32_t get_type() const;
-
-	[[nodiscard]] int32_t get_column() const;
-};
-
-template<typename T>
-struct list_container {
-	uintptr_t base;
-
-	explicit list_container(uintptr_t base) : base(base) {}
-
-	[[nodiscard]] size_t get_size() {
-		return osu->read_memory_safe<size_t>("list contents size",
-						     base + 0xC);
-	}
-
-	[[nodiscard]] std::vector<T> get_contents() {
-		auto contents_address = osu->read_memory_safe<uintptr_t>(
-			"list contents address", base + 0x4);
-
-		auto size = get_size();
-
-		std::vector<T> vector;
-		vector.reserve(size);
-
-		for (int i = 0; i < size; i++) {
-			vector.push_back(T(osu->read_memory<uintptr_t>(
-				contents_address + 0x8 + (i * 0x4))));
-		}
-
-		return vector;
-	}
-};
-
-struct hit_manager_headers {
-	uintptr_t base;
-
-	explicit hit_manager_headers(uintptr_t base);
-
-	[[nodiscard]] int get_column_count() const;
-};
-
-struct hit_manager {
-	uintptr_t base;
-
-	explicit hit_manager(uintptr_t base);
-
-	[[nodiscard]] hit_manager_headers get_headers() const;
-
-	[[nodiscard]] list_container<hit_object> get_list() const;
-};
-
-struct map_player {
-	uintptr_t base;
-
-	explicit map_player(uintptr_t base);
-
-	[[nodiscard]] hit_manager get_hit_manager() const;
-};
-
 }
 
 }
