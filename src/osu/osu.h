@@ -14,167 +14,79 @@
 //	 I also don't want `Action` and `internal` to be in the global namespace.
 
 namespace osu {
+	namespace internal {
+		// Still not sure whether I like this approach, seems kind of hacky.
+		// Beats having a internal.cpp with only the declarations living
+		// here because templates would have to be implemented here, which sucks.
+		#include "internal_imp.h"
+	};
 
-namespace internal {
+	struct Action {
+		char key;
+		bool down;
+		int32_t time;
 
-inline Process *process;
+		Action(char key, bool down, int32_t time) : key(key), down(down),
+			time(time) { };
 
-struct hit_object {
-	uintptr_t base;
+		bool operator < (const Action &action) const {
+			return time < action.time;
+		};
 
-	int32_t start_time;
-	int32_t end_time;
-	int32_t type;
-	int32_t column;
+		bool operator == (const Action &action) const {
+			return action.key == key && action.down == down
+				&& action.time == time;
+		};
 
-	hit_object();
-	explicit hit_object(uintptr_t base);
+		// Only used for debugging
+		void log() const;
 
-	[[nodiscard]] int32_t get_start_time() const;
+		inline void execute() {
+			Process::send_keypress(key, down);
+		}
+	};
 
-	[[nodiscard]] int32_t get_end_time() const;
+	class Osu : public Process {
+		int tap_time = 50;
 
-	[[nodiscard]] int32_t get_type() const;
+		// TODO: Generic pointers are bad in the long run.
+		uintptr_t time_address = 0;
+		uintptr_t player_pointer = 0;
 
-	[[nodiscard]] int32_t get_column() const;
-};
+	public:
+		Osu();
 
-// TODO: I really dislike that the implementation of this has to live here.
-template<typename T>
-struct list_container {
-	uintptr_t base;
+		~Osu();
 
-	size_t size;
-	std::vector<T> content;
+		int32_t get_game_time();
 
-	explicit list_container(uintptr_t base) : base(base), size(get_size()),
-		content(get_content()) {}
+		bool is_playing();
 
-	[[nodiscard]] size_t get_size() {
-		return process->read_memory_safe<size_t>("list contents size",
-			base + 0xC);
-	}
+		internal::map_player get_map_player();
 
-	[[nodiscard]] std::vector<T> get_content() {
-		auto contents_address = process->read_memory_safe<uintptr_t>(
-			"list contents address", base + 0x4);
+		static std::string get_key_subset(int column_count);
+	};
 
-		auto size = get_size();
+	inline int32_t Osu::get_game_time() {
+		int32_t time = -1;
 
-		std::vector<T> vector;
-		vector.reserve(size);
-
-		for (int i = 0; i < size; i++) {
-			vector.push_back(T(process->read_memory<uintptr_t>(
-				contents_address + 0x8 + (i * 0x4))));
+		if (!read_memory<int32_t>(time_address, &time)) {
+			debug("%s %#x", "failed getting game time at",
+				(unsigned int)(time_address));
 		}
 
-		return vector;
-	}
-};
-
-struct hit_manager_headers {
-	uintptr_t base;
-
-	int column_count;
-
-	explicit hit_manager_headers(uintptr_t base);
-
-	[[nodiscard]] int get_column_count() const;
-};
-
-struct hit_manager {
-	uintptr_t base;
-
-	hit_manager_headers headers;
-	list_container<hit_object> list;
-
-	explicit hit_manager(uintptr_t base);
-
-	[[nodiscard]] hit_manager_headers get_headers() const;
-
-	[[nodiscard]] list_container<hit_object> get_list() const;
-};
-
-struct map_player {
-	uintptr_t base;
-
-	hit_manager manager;
-
-	explicit map_player(uintptr_t base);
-
-	[[nodiscard]] hit_manager get_hit_manager() const;
-};
-
-}
-
-struct Action {
-	char key;
-	bool down;
-	int32_t time;
-
-	Action(char key, bool down, int32_t time) : key(key), down(down),
-		time(time) { };
-
-	bool operator < (const Action &action) const {
-		return time < action.time;
-	};
-
-	bool operator == (const Action &action) const {
-		return action.key == key && action.down == down
-			&& action.time == time;
-	};
-
-	// Only used for debugging
-	void log() const;
-
-	inline void execute() {
-		Process::send_keypress(key, down);
-	}
-};
-
-class Osu : public Process {
-	int tap_time = 50;
-
-	// TODO: Generic pointers are bad in the long run.
-	uintptr_t time_address = 0;
-	uintptr_t player_pointer = 0;
-
-public:
-	Osu();
-
-	~Osu();
-
-	int32_t get_game_time();
-
-	bool is_playing();
-
-	internal::map_player get_map_player();
-
-	static std::string get_key_subset(int column_count);
-};
-
-inline int32_t Osu::get_game_time() {
-	int32_t time = -1;
-
-	if (!read_memory<int32_t>(time_address, &time)) {
-		debug("%s %#x", "failed getting game time at",
-			(unsigned int)(time_address));
+		return time;
 	}
 
-	return time;
-}
+	inline bool Osu::is_playing() {
+		uintptr_t address = 0;
 
-inline bool Osu::is_playing() {
-	uintptr_t address = 0;
+		size_t read = read_memory<uintptr_t>(player_pointer, &address, 1);
 
-	size_t read = read_memory<uintptr_t>(player_pointer, &address, 1);
+		if (!read) {
+			debug("%s %#x", "failed getting player address at", address);
+		}
 
-	if (!read) {
-		debug("%s %#x", "failed getting player address at", address);
+		return address != 0;
 	}
-
-	return address != 0;
-}
-
 }

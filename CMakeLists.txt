@@ -14,7 +14,6 @@ add_executable(maniac
         src/maniac/maniac.cpp
         src/process/process.cpp
         src/osu/osu.cpp
-        src/osu/internal.cpp
         src/maniac/humanization.cpp)
 
 if (UNIX)
