@@ -23,4 +23,7 @@
 	#define debug(...)\
 		;\
 
+  	#define debug_short(...)\
+  		;\
+
 #endif
