@@ -13,46 +13,48 @@ hit_object::hit_object(uintptr_t base) : base(base) {
 }
 
 [[nodiscard]] int32_t hit_object::get_start_time() const {
-	return osu->read_memory<int32_t>(base + 0x10);
+	return process->read_memory<int32_t>(base + 0x10);
 }
 
 [[nodiscard]] int32_t hit_object::get_end_time() const {
-	return osu->read_memory<int32_t>(base + 0x14);
+	return process->read_memory<int32_t>(base + 0x14);
 }
 
 [[nodiscard]] int32_t hit_object::get_type() const {
-	return osu->read_memory<int32_t>(base + 0x18);
+	return process->read_memory<int32_t>(base + 0x18);
 }
 
 [[nodiscard]] int32_t hit_object::get_column() const {
-	return osu->read_memory<int32_t>(base + 0x9C);
+	return process->read_memory<int32_t>(base + 0x9C);
 }
 
-hit_manager_headers::hit_manager_headers(uintptr_t base) : base(base) {}
+hit_manager_headers::hit_manager_headers(uintptr_t base) : base(base),
+	column_count(get_column_count()) {}
 
 [[nodiscard]] int hit_manager_headers::get_column_count() const {
-	return static_cast<int>(osu->read_memory_safe<float>(
+	return static_cast<int>(process->read_memory_safe<float>(
 		"column count", base + 0x30));
 }
 
-hit_manager::hit_manager(uintptr_t base) : base(base) {}
+hit_manager::hit_manager(uintptr_t base) : base(base), headers(get_headers()),
+	list(get_list()) {}
 
 [[nodiscard]] hit_manager_headers hit_manager::get_headers() const {
 	auto addr = base + 0x30;
 
 	return hit_manager_headers(
-		osu->read_memory_safe<uintptr_t>("hit manager headers",
+		process->read_memory_safe<uintptr_t>("hit manager headers",
 			addr));
 }
 
 [[nodiscard]] list_container<hit_object> hit_manager::get_list() const {
-	return list_container<hit_object>(osu->read_memory_safe<uintptr_t>(
+	return list_container<hit_object>(process->read_memory_safe<uintptr_t>(
 		"hitpoint list container", base + 0x48));
 }
 
-map_player::map_player(uintptr_t base) : base(base) {}
+map_player::map_player(uintptr_t base) : base(base), manager(get_hit_manager()) {}
 
 [[nodiscard]] hit_manager map_player::get_hit_manager() const {
-	return hit_manager(osu->read_memory_safe<uintptr_t>("hit manager",
+	return hit_manager(process->read_memory_safe<uintptr_t>("hit manager",
 		base + 0x40));
 }
