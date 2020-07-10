@@ -13,9 +13,17 @@
 		printf(__VA_ARGS__);\
 		putchar('\n');\
 
+  	#define debug_short(...)\
+		printf("[debug] ");\
+		printf(__VA_ARGS__);\
+		putchar('\n');\
+
 #else
 
 	#define debug(...)\
 		;\
+
+  	#define debug_short(...)\
+  		;\
 
 #endif

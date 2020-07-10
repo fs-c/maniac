@@ -8,7 +8,7 @@
 #include <chrono>
 #include <cstdlib>
 
-void run(Osu &osu) {
+void run(osu::Osu &osu) {
 	maniac::osu = &osu;
 
 	printf("[*] waiting for beatmap...\n");
@@ -17,12 +17,11 @@ void run(Osu &osu) {
 
 	printf("[+] found beatmap\n");
 
-	std::vector<Action> actions;
+	std::vector<osu::Action> actions;
 
 	for (int i = 0; i < 10; i++) {
 		try {
-			actions = osu.get_actions(osu.get_game_time(),
-				maniac::config.compensation_offset);
+			actions = maniac::get_actions(osu.get_game_time());
 
 			break;
 		} catch (std::exception &err) {
@@ -52,7 +51,7 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 
-		auto osu = Osu();
+		auto osu = osu::Osu();
 
 		while (true) {
 			run(osu);

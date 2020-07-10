@@ -7,12 +7,14 @@
 namespace maniac {
 	inline config config;
 
-	inline Osu *osu;
+	inline osu::Osu *osu;
 
-	void play(std::vector<Action> &actions);
+	void play(std::vector<osu::Action> &actions);
 
 	void block_until_playing();
 
-	void humanize(std::vector<Action> &actions, int modifier);
-	void randomize(std::vector<Action> &actions, std::pair<int, int> range);
+	void humanize(std::vector<osu::Action> &actions, int modifier);
+	void randomize(std::vector<osu::Action> &actions, std::pair<int, int> range);
+
+	std::vector<osu::Action> get_actions(int32_t min_time);
 }

@@ -10,43 +10,127 @@
 #include <random>
 #include <algorithm>
 
-struct HitObject {
-	enum Type {
-		HIT_CIRCLE = 1 << 0,
-		SLIDER = 1 << 1,
-		SPINNER = 1 << 3,
-		MANIA_HOLD = 1 << 7
-	};
+// TODO: I don't like the osu namespace since it leads to the ugly `osu::Osu` but
+//	 I also don't want `Action` and `internal` to be in the global namespace.
 
-	int32_t type;
-	int32_t column;
+namespace osu {
+
+namespace internal {
+
+inline Process *process;
+
+struct hit_object {
+	uintptr_t base;
 
 	int32_t start_time;
 	int32_t end_time;
+	int32_t type;
+	int32_t column;
 
-	bool operator<(const HitObject &hit_object) const {
-		return start_time < hit_object.start_time;
-	};
+	hit_object();
+	explicit hit_object(uintptr_t base);
 
-	// Only used for debugging
-	void log() const;
+	[[nodiscard]] int32_t get_start_time() const;
+
+	[[nodiscard]] int32_t get_end_time() const;
+
+	[[nodiscard]] int32_t get_type() const;
+
+	[[nodiscard]] int32_t get_column() const;
 };
+
+// TODO: I really dislike that the implementation of this has to live here.
+template<typename T>
+struct list_container {
+	uintptr_t base;
+
+	size_t size;
+	std::vector<T> content;
+
+	explicit list_container(uintptr_t base) : base(base), size(get_size()),
+		content(get_content()) {}
+
+	[[nodiscard]] size_t get_size() {
+		return process->read_memory_safe<size_t>("list contents size",
+			base + 0xC);
+	}
+
+	[[nodiscard]] std::vector<T> get_content() {
+		auto contents_address = process->read_memory_safe<uintptr_t>(
+			"list contents address", base + 0x4);
+
+		auto size = get_size();
+
+		std::vector<T> vector;
+		vector.reserve(size);
+
+		for (int i = 0; i < size; i++) {
+			vector.push_back(T(process->read_memory<uintptr_t>(
+				contents_address + 0x8 + (i * 0x4))));
+		}
+
+		return vector;
+	}
+};
+
+struct hit_manager_headers {
+	uintptr_t base;
+
+	int column_count;
+
+	explicit hit_manager_headers(uintptr_t base);
+
+	[[nodiscard]] int get_column_count() const;
+};
+
+struct hit_manager {
+	uintptr_t base;
+
+	hit_manager_headers headers;
+	list_container<hit_object> list;
+
+	explicit hit_manager(uintptr_t base);
+
+	[[nodiscard]] hit_manager_headers get_headers() const;
+
+	[[nodiscard]] list_container<hit_object> get_list() const;
+};
+
+struct map_player {
+	uintptr_t base;
+
+	hit_manager manager;
+
+	explicit map_player(uintptr_t base);
+
+	[[nodiscard]] hit_manager get_hit_manager() const;
+};
+
+}
 
 struct Action {
 	char key;
 	bool down;
 	int32_t time;
 
-	Action(char key, bool down, int32_t time) : key(key), down(down), time(time) { };
+	Action(char key, bool down, int32_t time) : key(key), down(down),
+		time(time) { };
 
-	bool operator < (const Action &action) const { return time < action.time; };
+	bool operator < (const Action &action) const {
+		return time < action.time;
+	};
 
 	bool operator == (const Action &action) const {
-		return action.key == key && action.down == down && action.time == time;
+		return action.key == key && action.down == down
+			&& action.time == time;
 	};
 
 	// Only used for debugging
 	void log() const;
+
+	inline void execute() {
+		Process::send_keypress(key, down);
+	}
 };
 
 class Osu : public Process {
@@ -55,8 +139,6 @@ class Osu : public Process {
 	// TODO: Generic pointers are bad in the long run.
 	uintptr_t time_address = 0;
 	uintptr_t player_pointer = 0;
-
-	static std::string get_key_subset(int column_count);
 
 public:
 	Osu();
@@ -67,16 +149,17 @@ public:
 
 	bool is_playing();
 
-	std::vector<Action> get_actions(int32_t min_time, int32_t default_delay);
+	internal::map_player get_map_player();
 
-	static void execute_actions(Action *actions, size_t count);
+	static std::string get_key_subset(int column_count);
 };
 
 inline int32_t Osu::get_game_time() {
 	int32_t time = -1;
 
 	if (!read_memory<int32_t>(time_address, &time)) {
-		debug("%s %#x", "failed getting game time at", (unsigned int)time_address);
+		debug("%s %#x", "failed getting game time at",
+			(unsigned int)(time_address));
 	}
 
 	return time;
@@ -94,31 +177,4 @@ inline bool Osu::is_playing() {
 	return address != 0;
 }
 
-inline void Osu::execute_actions(Action *actions, size_t count) {
-	// TODO: Look into KEYEVENTF_SCANCODE (see esp. KEYBDINPUT remarks section).
-
-	static auto layout = GetKeyboardLayout(0);
-
-	// TODO: Magic numbers are a bad idea.
-	INPUT in[10];
-
-	if (count > 10) {
-		debug("count > 10, setting to 10");
-
-		count = 10;
-	}
-
-	for (size_t i = 0; i < count; i++) {
-		in[i].type = INPUT_KEYBOARD;
-
-		in[i].ki.time = 0;
-		in[i].ki.wScan = 0;
-		in[i].ki.dwExtraInfo = 0;
-		in[i].ki.dwFlags = (actions + i)->down ? 0 : KEYEVENTF_KEYUP;
-		in[i].ki.wVk = VkKeyScanEx((actions + i)->key, layout) & 0xFF;
-	}
-
-	if (!SendInput(count, in, sizeof(INPUT))) {
-		debug("failed sending %d inputs: %lu", count, GetLastError());
-	}
 }
