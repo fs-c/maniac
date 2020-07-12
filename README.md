@@ -33,6 +33,11 @@ Options:
                                rough (density at that point * (a / 100)) is
                                 added to the time. (default: 0, implicit: 1
                                00)
+    -c / --compensation [a]    Add static offset in milliseconds to every a
+                               ction to compensate for the time it takes ma
+                               niac to send a keypress. (default: -20)
+    -m / --mirror-mod          Mirror the keys pressed (i.e.: mirror mod su
+                               pport). (default: false, implicit: true)
 
     Note that all options have both a default and an implicit value. The di
     fference is best illustrated through an example:
