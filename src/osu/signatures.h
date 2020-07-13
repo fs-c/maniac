@@ -9,4 +9,7 @@ namespace signatures {
 
 	constexpr auto PLAYER_SIG_OFFSET = 7;
 	constexpr auto PLAYER_SIG = "FF 50 0C 8B D8 8B 15\0";
+	
+	constexpr auto RULESET_SIG_OFFSET = 4;
+	constexpr auto RULESET_SIG = "73 7A 8B 0D ? ? ? ? 85 C9 74 1F\0";
 }
