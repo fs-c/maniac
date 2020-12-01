@@ -1,4 +1,4 @@
-#include "maniac.h"
+#include <maniac/maniac.h>
 
 namespace maniac {
 	void block_until_playing() {
@@ -16,7 +16,7 @@ namespace maniac {
 			Process::send_keypress(key, false);
 		}
 
-		auto cur_i = 0;
+		size_t cur_i = 0;
 		auto cur_time = 0;
 		auto raw_actions = actions.data();
 		auto total_actions = actions.size();

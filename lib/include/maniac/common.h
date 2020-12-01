@@ -8,7 +8,7 @@
 
 #ifdef DEBUG
 
-	#define debug(...)\
+#define debug(...)\
 		printf("[debug] [%s] ", __FUNCTION__ );\
 		printf(__VA_ARGS__);\
 		putchar('\n');\
@@ -23,7 +23,7 @@
 	#define debug(...)\
 		;\
 
-  	#define debug_short(...)\
+	#define debug_short(...)\
   		;\
 
 #endif

@@ -1,4 +1,4 @@
-#include "osu.h"
+#include <maniac/osu.h>
 
 using namespace osu;
 

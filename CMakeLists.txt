@@ -1,43 +1,28 @@
 cmake_minimum_required(VERSION 3.16)
-project(maniac VERSION 1.0.0 LANGUAGES CXX)
-
-message(STATUS "CMake version: ${CMAKE_VERSION}")
-
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug")
-endif (NOT CMAKE_BUILD_TYPE)
-
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
-add_executable(maniac
-        src/main.cpp
-        src/maniac/maniac.cpp
-        src/process/process.cpp
-        src/osu/osu.cpp
-        src/maniac/humanization.cpp)
+project(cpp-testing VERSION 0.1.0 LANGUAGES CXX)
 
 if (UNIX)
     message(FATAL_ERROR "UNIX systems are currently not supported")
 endif ()
 
-target_include_directories(maniac PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src)
+# Only do these if this is the main project, not if it is included through add_subdirectory
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    # Optionally set things like CMAKE_CXX_STANDARD, CMAKE_POSITION_INDEPENDENT_CODE here
 
-target_compile_options(maniac PRIVATE)
+    message(STATUS "CMake version: ${CMAKE_VERSION}")
 
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    # The additional / is important to remove the last character from the path.
-    # Note that it does not matter if the OS uses / or \, because we are only
-    # saving the path size.
-    # Thanks: https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
-    string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+    if (NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE "Debug")
+    endif (NOT CMAKE_BUILD_TYPE)
 
-    add_compile_definitions(DEBUG SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
-    add_compile_options(/W4 /WX /DDEBUG)
-else ()
-    add_compile_options(/O2)
-endif ()
+    message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-target_compile_features(maniac PRIVATE cxx_std_17)
+    # Ensure -std=c++xx instead of -std=g++xx
+    set(CMAKE_CXX_EXTENSIONS OFF)
+    # Nicely support folders in IDEs
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set_target_properties(maniac PROPERTIES OUTPUT_NAME "maniac")
+    add_subdirectory(app)
+endif()
+
+add_subdirectory(lib)

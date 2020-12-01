@@ -1,11 +1,11 @@
 #pragma once
 
-#include "common.h"
-
 #include <map>
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <maniac/common.h>
+// maniac/common.h includes windows.h, win32 headers can't be included beforehand
 #include <tlhelp32.h>
 
 class Process {
