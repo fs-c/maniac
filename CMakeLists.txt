@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(cpp-testing VERSION 0.1.0 LANGUAGES CXX)
+project(maniac VERSION 0.1.0 LANGUAGES CXX)
 
 if (UNIX)
     message(FATAL_ERROR "UNIX systems are currently not supported")

@@ -17,14 +17,14 @@ jobs:
     - name: Build debug executable
       run: |
         cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
-        msbuild.exe maniac.vcxproj -p:Configuration=Debug
-        mv Debug\maniac.exe maniac-dbg.exe
+        cmake --build
+        mv app\Debug\maniac.exe maniac-dbg.exe
 
     - name: Build release executable
       run: |
         cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
-        msbuild.exe maniac.vcxproj -p:Configuration=Release
-        mv Release\maniac.exe maniac-prd.exe
+        cmake --build
+        mv app\Release\maniac.exe maniac-prd.exe
 
     - name: Create and populate builds folder
       run: |
