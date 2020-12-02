@@ -4,12 +4,21 @@
   Simple external cheat for <a href="https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania">osu!mania</a>.<br>
 </p>
 
-Please note that maniac is __currently being rewritten__ as it transitions into the 1.0.0 release, this branch reflects the state of the rewrite. As it is now in a usable state, release candidates (`v1.0.0-rcx`) will be provided -- I am grateful for bug reports and feedback.
+If you have a question or have encountered a bug please feel free to [open an issue
+](https://github.com/fs-c/maniac/issues), I usually respond quickly. There's also a
+ [Discord server](https://discord.gg/aARF7KbTuj), if that's your thing.
+
+- [Usage](#usage)
+  - [Options](#options)
+- [Building](#building)
+- [Thanks](#thanks)
 
 ## Usage
 
 1. Download the latest build from the [releases tab](https://github.com/LW2904/maniac/releases).
-2. Start osu, start playing any beatmap for a couple of seconds and then either exit or pause. (Doesn't matter which map or mode, you only have to do this once for every time you start osu.)
+2. Start osu, start playing any beatmap for a couple of seconds and then either exit or
+ pause. (You only have to do this once for every time you start osu, the map or mode is
+ irrelevant.)
 3. Open a terminal and run maniac (e.g. by dragging-and-dropping the executable onto `cmd.exe`).
 
 Maniac will now automatically play any beatmap you open in osu.
@@ -47,6 +56,33 @@ Options:
     $ ./maniac --humanization     100
     $ ./maniac --humanization 50  50
 ```
+
+## Building
+
+_See also the CI build steps in `.github/workflows`._
+
+```
+# Get the code
+git clone https://github.com/fs-c/maniac.git
+
+# Building out-of-source is preferred
+mkdir build
+cd build
+
+# Generate build files from the CMakeLists file in the parent directory
+# Other generators would probably work too, but this is the supported one
+cmake .. -G "Visual Studio 16 2019" -A Win32
+# OR, if you want a release build
+cmake .. -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE="Release"
+
+# Run the build!
+cmake --build . -- /p:Configuration=Debug
+# OR, if you specified "Release" earlier
+cmake --build . -- /p:Configuration=Release
+```
+
+`Release` builds are optimized and don't contain debug information, unlike `Debug
+` builds which also have significantly more verbose logging.
 
 ## Thanks
  
