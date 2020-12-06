@@ -17,8 +17,9 @@ Osu::Osu() : Process("osu!.exe") {
 Osu::~Osu() = default;
 
 std::string Osu::get_key_subset(int column_count) {
-	// TODO: This pile of shit is copied pretty much straight from maniac 0.x and needs to
-	// 	 be refactored.
+	// TODO: This is straight from maniac 0.x and needs to be refactored.
+	//       Probably best to just have a dictionary of subsets for every
+	//       reasonable column count.
 
 	if (column_count > 9) {
 		throw std::runtime_error("maps with more than 9 columns are not supported");

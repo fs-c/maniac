@@ -21,7 +21,7 @@ public:
 	/**
 	 * Reads `sizeof(T) * count` bytes of memory at the specified address and writes it to `*out`.
 	 * Returns the number of bytes read. Generally a faster alternative to `T read_memory(...)`
-	 * as it does not throw exceptions and is a bare ReadProcessMemory wrapper.
+	 * as it does not throw exceptions and is a bare `ReadProcessMemory` wrapper.
 	 */
 	template<typename T>
 	inline size_t read_memory(uintptr_t address, T *out, size_t count = 1);
@@ -42,11 +42,18 @@ public:
 	T read_memory_safe(const char *name, Any address);
 
 	/**
-	 * Expects `pattern` to be in "IDA-Style", i.e. to group bytes in pairs of two and to denote
-	 * wildcards by a single question mark. Returns 0 if the pattern couldn't be found.
+	 * Searches for the address of the _beginning_ of the given pattern in the process memory
+	 * and returns it. Returns `0` if the pattern could not be found.
+	 * Expects `pattern` to be in "IDA-Style", i.e. to write bytes in hexadecimal notation
+	 * and to denote wildcards by a single question mark. Example: `EB 0A A1 ? ? ? ? A3`.
 	 */
 	uintptr_t find_pattern(const char *pattern);
 
+	/**
+	 * Sends either a key down or a key up event (depending on `down`) of the specified
+	 * character. `key` is expected to literally be a character, i.e. `a` not `0x1E`.
+	 * Currently independent of the current process, the recipient must be in focus.
+	 */
 	static void send_keypress(char key, bool down);
 };
 

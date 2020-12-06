@@ -1,5 +1,6 @@
 #pragma once
 
+// TODO: I don't see why this is necessary anymore.
 #define __STDC_WANT_LIB_EXT1__ 1
 
 #include "Windows.h"
@@ -8,7 +9,7 @@
 
 #ifdef DEBUG
 
-#define debug(...)\
+	#define debug(...)\
 		printf("[debug] [%s] ", __FUNCTION__ );\
 		printf(__VA_ARGS__);\
 		putchar('\n');\

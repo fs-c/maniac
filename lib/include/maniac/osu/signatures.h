@@ -1,6 +1,8 @@
 #pragma once
 
 namespace signatures {
+	// TODO: I don't think the additional `\0` is necessary, investigate.
+
 	constexpr auto TIME_SIG_OFFSET = 3;
 	constexpr auto TIME_SIG = "EB 0A A1 ? ? ? ? A3\0";
 
