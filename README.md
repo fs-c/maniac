@@ -11,6 +11,7 @@ If you have a question or have encountered a bug please feel free to [open an is
 - [Usage](#usage)
   - [Options](#options)
 - [Building](#building)
+- [Library](#library)
 - [Thanks](#thanks)
 
 ## Usage
@@ -83,6 +84,20 @@ cmake --build . -- /p:Configuration=Release
 
 `Release` builds are optimized and don't contain debug information, unlike `Debug
 ` builds which also have significantly more verbose logging.
+
+## Library
+
+_The following is only relevant to developers, if none of this means anything to you
+ don't worry about it._
+
+You may have noticed that `maniac` consists of two parts: a library (`lib`) and a
+ command line application (`app`). Assuming you are using CMake, when including this
+ project with `add_subdirectory` only the library will be built.
+
+I doubt that anyone will come to use the library, I mostly separated it out because
+ it was convenient for another related project. Therefore no proper documentation is
+ provided, sorry. But: the console application is simple enough that it could be
+ considered a MWE and it uses all of the features of the library.
 
 ## Thanks
  
