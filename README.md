@@ -4,22 +4,18 @@
   Simple external cheat for <a href="https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania">osu!mania</a>.<br>
 </p>
 
-If you have a question or have encountered a bug please feel free to [open an issue
-](https://github.com/fs-c/maniac/issues), I usually respond quickly. There's also a
- [Discord server](https://discord.gg/aARF7KbTuj), if that's your thing.
-
 - [Usage](#usage)
   - [Options](#options)
 - [Building](#building)
 - [Library](#library)
 - [Thanks](#thanks)
 
+If you have a question or have encountered a bug please feel free to [open an issue](https://github.com/fs-c/maniac/issues), I usually respond quickly. There's also a [Discord server](https://discord.gg/aARF7KbTuj), if that's your thing.
+
 ## Usage
 
 1. Download the latest build from the [releases tab](https://github.com/LW2904/maniac/releases).
-2. Start osu, start playing any beatmap for a couple of seconds and then either exit or
- pause. (You only have to do this once for every time you start osu, the map or mode is
- irrelevant.)
+2. Start osu and open any beatmap for a couple of seconds. Then either exit or pause. (You only have to do this once for every time you start the game, the map and mode is irrelevant.)
 3. Open a terminal and run maniac (e.g. by dragging-and-dropping the executable onto `cmd.exe`).
 
 Maniac will now automatically play any beatmap you open in osu.
@@ -87,17 +83,13 @@ cmake --build . -- /p:Configuration=Release
 
 ## Library
 
-_The following is only relevant to developers, if none of this means anything to you
- don't worry about it._
+_The following is only relevant to developers looking to use parts of the maniac codebase in their own projects. If none of this means anything to you, you can safely ignore this section._
 
-You may have noticed that `maniac` consists of two parts: a library (`lib`) and a
- command line application (`app`). Assuming you are using CMake, when including this
- project with `add_subdirectory` only the library will be built.
+You may have noticed that `maniac` consists of two parts: a library (`lib`) and a command line application (`app`). Assuming you are using CMake, when including this project with `add_subdirectory` only the library will be built.
 
-I doubt that anyone will come to use the library, I mostly separated it out because
- it was convenient for another related project. Therefore no proper documentation is
- provided, sorry. But: the console application is simple enough that it could be
- considered a MWE and it uses all of the features of the library.
+I doubt that anyone will come to use the library and I mostly separated it out because it was convenient for another related project. Therefore no proper documentation is provided, sorry. I recommend reading the header files in `lib/include/maniac` for an overview of the available functionality and to consult `app/app.cpp` for example usage.
+
+Of course please also feel free to open an issue for any questions you may have.
 
 ## Thanks
  
