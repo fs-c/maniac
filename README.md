@@ -56,7 +56,7 @@ Options:
 
 ## Building
 
-_See also the CI build steps in `.github/workflows`._
+_The following is only relevant to developers looking to build the project from source. This is not usually something done by regular users who are advised to [download the automatically built binaries](https://github.com/LW2904/maniac/releases) instead._
 
 ```
 # Get the code
@@ -77,6 +77,8 @@ cmake --build . -- /p:Configuration=Debug
 # OR, if you specified "Release" earlier
 cmake --build . -- /p:Configuration=Release
 ```
+
+For an example see the CI build steps in `.github/workflows`.
 
 `Release` builds are optimized and don't contain debug information, unlike `Debug
 ` builds which also have significantly more verbose logging.
