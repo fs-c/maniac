@@ -86,7 +86,7 @@ void window::start(const std::function<void()> &body) {
     WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
                      _T("maniac"), NULL};
     ::RegisterClassEx(&wc);
-    HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("maniac"), WS_OVERLAPPEDWINDOW, 100, 100, 400,
+    HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("maniac"), WS_OVERLAPPEDWINDOW, 100, 100, 450,
                                200, NULL, NULL, wc.hInstance, NULL);
 
     // Initialize Direct3D

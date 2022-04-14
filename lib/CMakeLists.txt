@@ -9,7 +9,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
     target_compile_definitions(maniac PRIVATE SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
-    target_compile_options(maniac PRIVATE /W4 /WX /DDEBUG)
+    target_compile_options(maniac PRIVATE /DDEBUG)
 else ()
     target_compile_options(maniac PRIVATE /O2)
 endif()
