@@ -1,7 +1,17 @@
-add_executable(maniac-app app.cpp)
+add_executable(maniac-app app.cpp window.cpp
+        dependencies/imgui/imgui.cpp
+        dependencies/imgui/backends/imgui_impl_dx9.cpp
+        dependencies/imgui/backends/imgui_impl_win32.cpp
+        dependencies/imgui/imgui_demo.cpp
+        dependencies/imgui/imgui_draw.cpp
+        dependencies/imgui/imgui_tables.cpp
+        dependencies/imgui/imgui_widgets.cpp)
 
-target_compile_features(maniac-app PRIVATE cxx_std_17)
+target_compile_features(maniac-app PRIVATE cxx_std_20)
 
-target_link_libraries(maniac-app PRIVATE maniac)
+target_include_directories(maniac-app PRIVATE dependencies)
+target_include_directories(maniac-app PRIVATE dependencies/imgui)
+
+target_link_libraries(maniac-app PRIVATE maniac d3d9.lib)
 
 set_target_properties(maniac-app PROPERTIES OUTPUT_NAME "maniac")

@@ -40,6 +40,12 @@ namespace maniac {
 		auto player = osu->get_map_player();
 		auto hit_objects = player.manager.list.content;
 
+        if (hit_objects.empty()) {
+            debug("got zero hit objects");
+
+            return {};
+        }
+
 		auto columns = std::max_element(hit_objects.begin(),
 			hit_objects.end(), [](auto a, auto b) {
 				return a.column < b.column; })->column + 1;
