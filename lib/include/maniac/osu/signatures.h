@@ -1,6 +1,8 @@
 #pragma once
 
 namespace signatures {
+	// TODO: I don't think the additional `\0` is necessary, investigate.
+
 	constexpr auto TIME_SIG_OFFSET = 3;
 	constexpr auto TIME_SIG = "EB 0A A1 ? ? ? ? A3\0";
 
@@ -9,7 +11,7 @@ namespace signatures {
 
 	constexpr auto PLAYER_SIG_OFFSET = 7;
 	constexpr auto PLAYER_SIG = "FF 50 0C 8B D8 8B 15\0";
-	
+
 	constexpr auto RULESET_SIG_OFFSET = 4;
 	constexpr auto RULESET_SIG = "73 7A 8B 0D ? ? ? ? 85 C9 74 1F\0";
 }

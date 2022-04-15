@@ -1,4 +1,4 @@
-#include "process.h"
+#include <maniac/process.h>
 
 Process::Process(const std::string &name) {
 	handle = get_handle(name);

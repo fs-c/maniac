@@ -1,4 +1,4 @@
-#include "maniac.h"
+#include <maniac/maniac.h>
 
 namespace maniac {
 	void block_until_playing() {
@@ -16,7 +16,7 @@ namespace maniac {
 			Process::send_keypress(key, false);
 		}
 
-		auto cur_i = 0;
+		size_t cur_i = 0;
 		auto cur_time = 0;
 		auto raw_actions = actions.data();
 		auto total_actions = actions.size();
@@ -39,6 +39,12 @@ namespace maniac {
 	std::vector<osu::Action> get_actions(int32_t min_time) {
 		auto player = osu->get_map_player();
 		auto hit_objects = player.manager.list.content;
+
+        if (hit_objects.empty()) {
+            debug("got zero hit objects");
+
+            return {};
+        }
 
 		auto columns = std::max_element(hit_objects.begin(),
 			hit_objects.end(), [](auto a, auto b) {

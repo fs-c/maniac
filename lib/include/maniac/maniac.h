@@ -1,10 +1,18 @@
 #pragma once
 
-#include "common.h"
-#include "config.h"
-#include "osu/osu.h"
+#include <vector>
+#include <utility>
+#include <maniac/osu.h>
+#include <maniac/common.h>
 
 namespace maniac {
+	struct config {
+		bool mirror_mod = false;
+		int compensation_offset = 0;
+		int humanization_modifier = 0;
+		std::pair<int, int> randomization_range = { 0, 0 };
+	};
+
 	inline config config;
 
 	inline osu::Osu *osu;

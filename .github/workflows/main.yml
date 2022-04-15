@@ -8,23 +8,24 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: microsoft/setup-msbuild@v1.0.0
+    - uses: microsoft/setup-msbuild@v1.0.2
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 1
+        submodules: true
 
     - name: Build debug executable
       run: |
-        cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
-        msbuild.exe maniac.vcxproj -p:Configuration=Debug
-        mv Debug\maniac.exe maniac-dbg.exe
+        cmake . -G "Visual Studio 17 2022" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Debug"
+        cmake --build . -- /p:Configuration=Debug
+        mv app\Debug\maniac.exe maniac-dbg.exe
 
     - name: Build release executable
       run: |
-        cmake . -G "Visual Studio 16 2019" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
-        msbuild.exe maniac.vcxproj -p:Configuration=Release
-        mv Release\maniac.exe maniac-prd.exe
+        cmake . -G "Visual Studio 17 2022" -A Win32 -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_BUILD_TYPE="Release"
+        cmake --build . -- /p:Configuration=Release
+        mv app\Release\maniac.exe maniac-prd.exe
 
     - name: Create and populate builds folder
       run: |
@@ -60,7 +61,7 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: false
-        prerelease: true
+        prerelease: false
 
     - name: Get the latest version
       id: get_version

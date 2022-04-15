@@ -4,53 +4,69 @@
   Simple external cheat for <a href="https://osu.ppy.sh/help/wiki/Game_Modes/osu!mania">osu!mania</a>.<br>
 </p>
 
-Please note that maniac is __currently being rewritten__ as it transitions into the 1.0.0 release, this branch reflects the state of the rewrite. As it is now in a usable state, release candidates (`v1.0.0-rcx`) will be provided -- I am grateful for bug reports and feedback.
+![](media/showcase.png)
+
+Join the [Discord server](https://discord.gg/aARF7KbTuj), if that's your thing.
 
 ## Usage
 
-1. Download the latest build from the [releases tab](https://github.com/LW2904/maniac/releases).
-2. Start osu, start playing any beatmap for a couple of seconds and then either exit or pause. (Doesn't matter which map or mode, you only have to do this once for every time you start osu.)
-3. Open a terminal and run maniac (e.g. by dragging-and-dropping the executable onto `cmd.exe`).
+1. Download the latest build from the [releases tab](https://github.com/fs-c/maniac/releases). (Don't use the `-debug` version unless you are encountering issues and want debug information.)
+2. Start osu.
+3. Start maniac.
 
 Maniac will now automatically play any beatmap you open in osu.
 
-### Options
+## Contact
 
-Maniac accepts options which have to be passed through the command line when running the executable.
+The preferred ways for getting in touch with me are 
+- [opening an issue](https://github.com/fs-c/maniac/issues) on GitHub
+- joining the [Discord](https://discord.gg/aARF7KbTuj) server
+
+If you have encountered bugs or have a feature request, GitHub issues are usually best. For general questions or if you just want to get in touch please use Discord.
+
+I'd prefer if you didn't send me emails regarding maniac, please just use one of the platforms above. Thanks.
+
+## Building
+
+_The following is only relevant to developers looking to build the project from source. This is not usually something done by regular users who are advised to [download the automatically built binaries](https://github.com/fs-c/maniac/releases) instead._
 
 ```
-$ ./maniac.exe -h
+# Get the code
+git clone https://github.com/fs-c/maniac.git
 
-Usage: maniac [options]
+# Building out-of-source is preferred
+mkdir build
+cd build
 
-Options:
-    -h / --help                Show this message and exit.
-    -r / --randomization [a,b] Add milliseconds in the range [a,b] to all k
-                               ey presses. If only `a` is provided, `b` imp
-                               licitly equals `-a`. (default: 0,0, implicit
-                               : -5,5)
-    -u / --humanization [a]    For every key press, an offset calculated th
-                               rough (density at that point * (a / 100)) is
-                                added to the time. (default: 0, implicit: 1
-                               00)
-    -c / --compensation [a]    Add static offset in milliseconds to every a
-                               ction to compensate for the time it takes ma
-                               niac to send a keypress. (default: -20)
-    -m / --mirror-mod          Mirror the keys pressed (i.e.: mirror mod su
-                               pport). (default: false, implicit: true)
+# Generate build files from the CMakeLists file in the parent directory
+# Other generators should work as well too, but this is the supported one
+cmake .. -G "Visual Studio 17 2022" -A Win32
+# OR, if you want a release build
+cmake .. -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE="Release"
 
-    Note that all options have both a default and an implicit value. The di
-    fference is best illustrated through an example:
-
-    command                       humanization
-    $ ./maniac                    0
-    $ ./maniac --humanization     100
-    $ ./maniac --humanization 50  50
+# Run the build
+cmake --build . -- /p:Configuration=Debug
+# OR, if you specified "Release" earlier
+cmake --build . -- /p:Configuration=Release
 ```
+
+For an example see the CI build steps in `.github/workflows`.
+
+`Release` builds are optimized and don't contain debug information, unlike `Debug` builds which also have significantly more verbose logging.
+
+## Library
+
+_The following is only relevant to developers looking to use parts of the maniac codebase in their own projects. If none of this means anything to you, you can safely ignore this section._
+
+You may have noticed that `maniac` consists of two parts: a library (`lib`) and the GUI application (`app`). Assuming you are using CMake, when including this project with `add_subdirectory` only the library will be built.
+
+I doubt that anyone will come to use the library and I mostly separated it out because it was convenient for another related project. Therefore no proper documentation is provided, sorry. I recommend reading the header files in `lib/include/maniac` for an overview of the available functionality and to consult `app/app.cpp` for example usage.
+
+Of course please also feel free to open an issue for any questions you may have.
 
 ## Thanks
- 
+
 - n0b453c0d3r on UC and [mrflashstudio](https://github.com/mrflashstudio) for
- providing up to date signatures and offsets
-- [Asi Shavit](https://github.com/adishavit) for the [Argh](https://github.com/adishavit/argh) library
+  providing up to date signatures and offsets
+- [ocornut](https://github.com/ocornut) for the [imgui](https://github.com/ocornut/imgui) library
 - to everyone who reported bugs and provided feedback

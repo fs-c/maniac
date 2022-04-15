@@ -1,24 +1,26 @@
 #pragma once
 
-#include "common.h"
-#include "../process/process.h"
-#include "signatures.h"
-
 #include <chrono>
 #include <thread>
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <maniac/common.h>
+#include <maniac/process.h>
+#include <maniac/osu/signatures.h>
 
 // TODO: I don't like the osu namespace since it leads to the ugly `osu::Osu` but
-//	 I also don't want `Action` and `internal` to be in the global namespace.
+//	 I also don't want `Action` and `internal` to be in the global namespace,
+//	 and it would feel weird to independently have an Osu class and an osu
+//	 namespace.
 
 namespace osu {
 	namespace internal {
 		// Still not sure whether I like this approach, seems kind of hacky.
 		// Beats having a internal.cpp with only the declarations living
-		// here because templates would have to be implemented here, which sucks.
-		#include "internal_imp.h"
+		// here because templates then templates would also have to be
+		// implemented here which would make things messy.
+		#include <maniac/osu/internal.h>
 	};
 
 	struct Action {

@@ -1,5 +1,5 @@
-#include "common.h"
-#include "maniac.h"
+#include <maniac/common.h>
+#include <maniac/maniac.h>
 
 void maniac::randomize(std::vector<osu::Action> &actions, std::pair<int, int> range) {
 	if (!range.first && !range.second)
@@ -20,7 +20,7 @@ void maniac::randomize(std::vector<osu::Action> &actions, std::pair<int, int> ra
 static std::vector<int> actions_per_frame(const std::vector<osu::Action> &actions,
 	int time_frame = 1000) {
 	std::vector<int> frames = {};
-	const int chunks_needed = (actions.back().time / time_frame) + 1;
+	const size_t chunks_needed = (actions.back().time / time_frame) + 1;
 
 	debug("will need %d frames", chunks_needed);
 
@@ -28,8 +28,8 @@ static std::vector<int> actions_per_frame(const std::vector<osu::Action> &action
 		frames.emplace_back(0);
 
 		for (const auto &action : actions) {
-			const auto lower_bound = time_frame * chunk_i;
-			const auto upper_bound = lower_bound + time_frame;
+			const int32_t lower_bound = time_frame * chunk_i;
+			const int32_t upper_bound = lower_bound + time_frame;
 
 			if (action.time >= lower_bound && action.time <= upper_bound) {
 				frames[chunk_i]++;
@@ -56,8 +56,8 @@ void maniac::humanize(std::vector<osu::Action> &actions, int modifier) {
 
 	const auto frames_size = frames.size();
 	for (auto &action : actions) {
-		const int frame_i = action.time / frame_range;
 		const auto random_offset = offset_distr(gen);
+		const size_t frame_i = action.time / frame_range;
 
 		if (frame_i >= frames_size) {
 			debug("ignoring invalid frame_i (%d)", frame_i);
@@ -65,7 +65,7 @@ void maniac::humanize(std::vector<osu::Action> &actions, int modifier) {
 			continue;
 		}
 
-		const auto offset = (frames.at(frame_i) * actual_modifier) + random_offset;
+		const int offset = static_cast<int>(frames.at(frame_i) * actual_modifier) + random_offset;
 
 		action.time += offset;
 	}

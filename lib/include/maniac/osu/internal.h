@@ -53,17 +53,17 @@ struct list_container {
 	}
 
 	[[nodiscard]] std::vector<T> get_content() {
-		auto contents_address = process->read_memory_safe<uintptr_t>(
-			"list contents address", base + 0x4);
+		auto content_address = process->read_memory_safe<uintptr_t>(
+			"list content address", base + 0x4);
 
-		auto size = get_size();
+		auto content_size = get_size();
 
 		std::vector<T> vector;
-		vector.reserve(size);
+		vector.reserve(content_size);
 
-		for (size_t i = 0; i < size; i++) {
+		for (size_t i = 0; i < content_size; i++) {
 			vector.push_back(T(process->read_memory<uintptr_t>(
-				contents_address + 0x8 + (i * 0x4))));
+				content_address + 0x8 + (i * 0x4))));
 		}
 
 		return vector;
