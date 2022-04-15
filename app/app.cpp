@@ -12,6 +12,16 @@ static void help_marker(const char *desc) {
     }
 }
 
+static void horizontal_break(bool separator = true) {
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+    if (separator) {
+        ImGui::Separator();
+    }
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+}
+
 int main(int, char **) {
     std::string message;
 
@@ -69,15 +79,29 @@ int main(int, char **) {
         ImGui::Begin("maniac", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
 
         ImGui::Text("Status: %s", message.c_str());
+        horizontal_break();
 
         ImGui::SliderInt("Humanization", &maniac::config.humanization_modifier, 0, 1000);
+        ImGui::SameLine();
+        help_marker("Advanced hit-time randomization based on hit density.");
 
         ImGui::DragIntRange2("Randomization", &maniac::config.randomization_range.first,
             &maniac::config.randomization_range.second);
+        ImGui::SameLine();
+        help_marker("Adds a random hit-time offset between the first and last value, in milliseconds.");
 
         ImGui::InputInt("Compensation", &maniac::config.compensation_offset);
+        ImGui::SameLine();
+        help_marker("Adds constant value to all hit-times to compensate for input latency, slower processors, etc.");
 
         ImGui::Checkbox("Mirror Mod", &maniac::config.mirror_mod);
+
+        horizontal_break();
+        ImGui::Text("Drag or <Ctrl>+Click to change values.");
+
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+        ImGui::TextDisabled("maniac by fs-c, https://github.com/fs-c/maniac");
 
         ImGui::End();
     });
