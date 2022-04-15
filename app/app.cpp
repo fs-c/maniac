@@ -12,12 +12,10 @@ static void help_marker(const char *desc) {
     }
 }
 
-static void horizontal_break(bool separator = true) {
+static void horizontal_break() {
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-    if (separator) {
-        ImGui::Separator();
-    }
+    ImGui::Separator();
 
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
