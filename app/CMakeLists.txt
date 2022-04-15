@@ -9,6 +9,10 @@ add_executable(maniac-app app.cpp window.cpp
 
 target_compile_features(maniac-app PRIVATE cxx_std_20)
 
+if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    target_link_options(maniac-app PRIVATE /SUBSYSTEM:windows /ENTRY:mainCRTStartup)
+endif()
+
 target_include_directories(maniac-app PRIVATE dependencies)
 target_include_directories(maniac-app PRIVATE dependencies/imgui)
 
