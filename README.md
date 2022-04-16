@@ -10,6 +10,8 @@ Join the [Discord server](https://discord.gg/aARF7KbTuj), if that's your thing.
 
 ## Usage
 
+https://user-images.githubusercontent.com/28566392/163677800-b3087fe0-d7f7-46cd-9645-dc1f0f88ad67.mp4
+
 1. Download the latest build from the [releases tab](https://github.com/fs-c/maniac/releases). (Don't use the `-debug` version unless you are encountering issues and want debug information.)
 2. Start osu.
 3. Start maniac.
