@@ -8,10 +8,10 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     # Thanks: https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
     string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
-    target_compile_definitions(maniac PRIVATE SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
-    target_compile_options(maniac PRIVATE /DDEBUG)
+    target_compile_definitions(maniac PUBLIC SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
+    target_compile_options(maniac PUBLIC /DDEBUG)
 else ()
-    target_compile_options(maniac PRIVATE /O2)
+    target_compile_options(maniac PUBLIC /O2)
 endif()
 
 # We need this directory, and users of the library will need it too
