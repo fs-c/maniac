@@ -11,7 +11,7 @@ Join the [Discord server](https://discord.gg/aARF7KbTuj), if that's your thing.
 ## Usage
 
 1. Download the latest build from the [releases tab](https://github.com/fs-c/maniac/releases). (Don't use the `-debug` version unless you are encountering issues and want debug information.)
-2. Start osu.
+2. Start osu. You might get a pop-up with a title like "Windows protected your PC". This is a false positive, just click "More info" and "Run anyway".
 3. Start maniac.
 
 Maniac will now automatically play any beatmap you open in osu.
