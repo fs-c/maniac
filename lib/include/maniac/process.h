@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <maniac/common.h>
 // maniac/common.h includes windows.h, win32 headers can't be included beforehand
-#include <tlhelp32.h>
+#include <TlHelp32.h>
 
 class Process {
 	HANDLE handle;
@@ -55,6 +55,11 @@ public:
 	 * Currently independent of the current process, the recipient must be in focus.
 	 */
 	static void send_keypress(char key, bool down);
+
+    /**
+     * See `send_keypress`. Expects a scan code instead of a literal character.
+     */
+    static void send_scan_code(short code, bool down);
 };
 
 template<typename T>
@@ -84,7 +89,7 @@ inline T Process::read_memory(uintptr_t address) {
 template<typename T, typename Any>
 T Process::read_memory_safe(const char *name, Any addr) {
 	// TODO: So much for "safe".
-	uintptr_t address = (uintptr_t)(void *)addr;
+	auto address = (uintptr_t)(void *)addr;
 
 	if (!address) {
 		// TODO: Get rid of this ASAP once std::format is out.
@@ -114,19 +119,20 @@ T Process::read_memory_safe(const char *name, Any addr) {
 }
 
 inline void Process::send_keypress(char key, bool down) {
-	// TODO: Look into KEYEVENTF_SCANCODE (see esp. KEYBDINPUT remarks section).
+    static auto layout = GetKeyboardLayout(0);
 
+    send_scan_code(VkKeyScanEx(key, layout) & 0xFF, down);
+}
+
+inline void Process::send_scan_code(short code, bool down) {
 	static INPUT in;
-	static auto layout = GetKeyboardLayout(0);
 
 	in.type = INPUT_KEYBOARD;
-	in.ki.time = 0;
+	in.ki.time = 238423874;
 	in.ki.wScan = 0;
 	in.ki.dwExtraInfo = 0;
 	in.ki.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
-	// TODO: Populate an array of scan codes for the keys that are going to be
-	//	 pressed to avoid calculating them all the time.
-	in.ki.wVk = VkKeyScanEx(key, layout) & 0xFF;
+	in.ki.wVk = code;
 
 	if (!SendInput(1, &in, sizeof(INPUT))) {
 		debug("failed sending input: %lu", GetLastError());

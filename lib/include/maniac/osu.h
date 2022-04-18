@@ -9,27 +9,23 @@
 #include <maniac/process.h>
 #include <maniac/osu/signatures.h>
 
-// TODO: I don't like the osu namespace since it leads to the ugly `osu::Osu` but
-//	 I also don't want `Action` and `internal` to be in the global namespace,
-//	 and it would feel weird to independently have an Osu class and an osu
-//	 namespace.
-
 namespace osu {
 	namespace internal {
-		// Still not sure whether I like this approach, seems kind of hacky.
-		// Beats having a internal.cpp with only the declarations living
-		// here because templates then templates would also have to be
-		// implemented here which would make things messy.
 		#include <maniac/osu/internal.h>
 	};
 
-	struct Action {
+    struct Action {
 		char key;
 		bool down;
 		int32_t time;
 
-		Action(char key, bool down, int32_t time) : key(key), down(down),
-			time(time) { };
+        short scan_code;
+
+        Action(char key, bool down, int32_t time) : key(key), down(down), time(time) {
+            static auto layout = GetKeyboardLayout(0);
+
+            scan_code = VkKeyScanEx(key, layout) & 0xFF;
+        };
 
 		bool operator < (const Action &action) const {
 			return time < action.time;
@@ -43,14 +39,12 @@ namespace osu {
 		// Only used for debugging
 		void log() const;
 
-		inline void execute() {
-			Process::send_keypress(key, down);
+		inline void execute() const {
+			Process::send_scan_code(scan_code, down);
 		}
 	};
 
 	class Osu : public Process {
-		int tap_time = 50;
-
 		// TODO: Generic pointers are bad in the long run.
 		uintptr_t time_address = 0;
 		uintptr_t player_pointer = 0;
