@@ -57,12 +57,14 @@ int main(int, char **) {
         maniac::play(actions);
     };
 
-    auto t = std::thread([&message, &run]() {
-        while (true) {
+    std::atomic<bool> should_run;
+
+    auto thread = std::jthread([&message, &run](const std::stop_token& token) {
+        while (!token.stop_requested()) {
             try {
                 auto osu = osu::Osu();
 
-                while (true) {
+                while (!token.stop_requested()) {
                     run(osu);
                 }
             } catch (std::exception &err) {
