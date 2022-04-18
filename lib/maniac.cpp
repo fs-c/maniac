@@ -32,7 +32,7 @@ namespace maniac {
 				cur_i++;
 			}
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+			std::this_thread::sleep_for(std::chrono::nanoseconds(100));
 		}
 	}
 
