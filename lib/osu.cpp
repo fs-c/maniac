@@ -29,7 +29,8 @@ std::string Osu::get_key_subset(int column_count) {
 		throw std::runtime_error("got negative column count");
 	}
 
-	const char *keys = "asdfjkl[";
+    // TODO: Make configurable?
+	const char *keys = "asdfjkl;";
 	constexpr auto keys_len = 8;
 
 	const size_t key_subset_len = column_count + 1;
