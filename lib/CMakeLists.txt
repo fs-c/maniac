@@ -17,5 +17,5 @@ endif()
 # We need this directory, and users of the library will need it too
 target_include_directories(maniac PUBLIC include)
 
-# All users of the library will need at least C++17
-target_compile_features(maniac PUBLIC cxx_std_17)
+# All users of the library will need at least C++20
+target_compile_features(maniac PUBLIC cxx_std_20)
