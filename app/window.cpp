@@ -8,6 +8,8 @@
 #include <imgui/backends/imgui_impl_dx9.h>
 #include <imgui/backends/imgui_impl_win32.h>
 
+#include <maniac/common.h>
+
 // TODO: Most of this is taken straight out of some example in the imgui repository, needs to be refactored
 
 static LPDIRECT3D9 g_pD3D = NULL;
@@ -27,8 +29,8 @@ bool CreateDeviceD3D(HWND hWnd) {
     g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
     g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;           // Present with vsync
     //g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;   // Present without vsync, maximum unthrottled framerate
-    if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_d3dpp,
-                             &g_pd3dDevice) < 0)
+    if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+            D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_d3dpp, &g_pd3dDevice) < 0)
         return false;
 
     return true;
@@ -54,7 +56,8 @@ void ResetDevice() {
 }
 
 // Forward declare message handler from imgui_impl_win32.cpp
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT
+ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Win32 message handler
 // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -89,11 +92,11 @@ void window::start(const std::function<void()> &body) {
 
     // Create application window
     ImGui_ImplWin32_EnableDpiAwareness();
-    WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-                     _T("maniac"), NULL};
+    WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL,
+            NULL, NULL, NULL, _T("maniac"), NULL};
     ::RegisterClassEx(&wc);
     HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("maniac"), WS_OVERLAPPEDWINDOW, 100, 100, 450,
-                               250, NULL, NULL, wc.hInstance, NULL);
+            300, NULL, NULL, wc.hInstance, NULL);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd)) {
@@ -124,9 +127,11 @@ void window::start(const std::function<void()> &body) {
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     // Load custom font
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(Karla_compressed_data, Karla_compressed_size, 16.0f);
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(Karla_compressed_data,
+            Karla_compressed_size, 16.0f);
 
     bool done = false;
+
     while (!done) {
         MSG msg;
         while (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
@@ -162,7 +167,9 @@ void window::start(const std::function<void()> &body) {
         g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-        D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x*clear_color.w*255.0f), (int)(clear_color.y*clear_color.w*255.0f), (int)(clear_color.z*clear_color.w*255.0f), (int)(clear_color.w*255.0f));
+        D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int) (clear_color.x * clear_color.w * 255.0f),
+                (int) (clear_color.y * clear_color.w * 255.0f),
+                (int) (clear_color.z * clear_color.w * 255.0f), (int) (clear_color.w * 255.0f));
         g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
         if (g_pd3dDevice->BeginScene() >= 0) {
             ImGui::Render();
@@ -172,7 +179,8 @@ void window::start(const std::function<void()> &body) {
         HRESULT result = g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 
         // Handle loss of D3D9 device
-        if (result == D3DERR_DEVICELOST && g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
+        if (result == D3DERR_DEVICELOST &&
+                g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
             ResetDevice();
         }
     }
