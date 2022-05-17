@@ -109,6 +109,10 @@ int main(int, char **) {
 
         ImGui::Checkbox("Mirror Mod", &maniac::config.mirror_mod);
 
+        ImGui::InputInt("Tap time", &maniac::config.tap_time);
+        ImGui::SameLine();
+        help_marker("How long a key is held down for a single keypress, in milliseconds.");
+
         horizontal_break();
         ImGui::Text("Drag or <Ctrl>+Click to change values.");
 

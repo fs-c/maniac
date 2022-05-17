@@ -7,6 +7,7 @@
 
 namespace maniac {
 	struct config {
+        int tap_time = 20;
 		bool mirror_mod = false;
 		int compensation_offset = 0;
 		int humanization_modifier = 0;

@@ -1,5 +1,12 @@
 #include <maniac/maniac.h>
 
+static void reset_keys() {
+    auto keys = osu::Osu::get_key_subset(9);
+    for (auto key : keys) {
+        Process::send_keypress(key, false);
+    }
+}
+
 namespace maniac {
 	void block_until_playing() {
 		while (true) {
@@ -12,10 +19,7 @@ namespace maniac {
 	}
 
 	void play(std::vector<osu::Action> &actions) {
-		auto keys = osu::Osu::get_key_subset(9);
-		for (auto key : keys) {
-			Process::send_keypress(key, false);
-		}
+		reset_keys();
 
 		size_t cur_i = 0;
 		auto cur_time = 0;
@@ -38,7 +42,7 @@ namespace maniac {
 	}
 
 	std::vector<osu::Action> get_actions(int32_t min_time) {
-		auto player = osu->get_map_player();
+		const auto player = osu->get_map_player();
 		auto hit_objects = player.manager.list.content;
 
         if (hit_objects.empty()) {
@@ -47,7 +51,7 @@ namespace maniac {
             return {};
         }
 
-		auto columns = std::max_element(hit_objects.begin(),
+		const auto columns = std::max_element(hit_objects.begin(),
 			hit_objects.end(), [](auto a, auto b) {
 				return a.column < b.column; })->column + 1;
 		auto keys = osu::Osu::get_key_subset(columns);
@@ -62,9 +66,8 @@ namespace maniac {
 			if (hit_object.start_time < min_time)
 				continue;
 
-			// TODO: Make the tap time an option or something.
 			if (hit_object.start_time == hit_object.end_time)
-				hit_object.end_time += 20;
+				hit_object.end_time += config.tap_time;
 
 			actions.emplace_back(keys[hit_object.column], true,
 				hit_object.start_time + config.compensation_offset);
