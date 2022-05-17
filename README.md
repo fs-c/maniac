@@ -52,7 +52,7 @@ cmake --build . -- /p:Configuration=Debug
 cmake --build . -- /p:Configuration=Release
 ```
 
-For an example see the CI build steps in `.github/workflows`.
+For an example see the CI build steps in `.github/workflows`. __Make sure to use Win32 or equivalent, maniac expects certain (implementation/architecture dependent) type sizes!__
 
 `Release` builds are optimized and don't contain debug information, unlike `Debug` builds which also have significantly more verbose logging.
 
