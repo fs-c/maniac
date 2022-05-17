@@ -20,6 +20,16 @@ static void horizontal_break() {
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
 
+static void set_priority_class(int priority) {
+    const auto proc = GetCurrentProcess();
+    const auto old_priority = GetPriorityClass(proc);
+
+    SetPriorityClass(proc, priority);
+
+    debug("changed priority class from 0x%lx to 0x%lx", old_priority,
+            GetPriorityClass(proc));
+}
+
 int main(int, char **) {
     std::string message;
 
@@ -39,7 +49,8 @@ int main(int, char **) {
                 actions = maniac::get_actions(osu.get_game_time());
 
                 break;
-            } catch (std::exception &err) { debug("get actions attempt %d failed: %s", i + 1, err.what());
+            } catch (std::exception &err) {
+                debug("get actions attempt %d failed: %s", i + 1, err.what());
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
             }
@@ -49,15 +60,17 @@ int main(int, char **) {
             throw std::runtime_error("failed getting actions");
         }
 
+        set_priority_class(HIGH_PRIORITY_CLASS);
+
         maniac::randomize(actions, maniac::config.randomization_range);
         maniac::humanize(actions, maniac::config.humanization_modifier);
 
         message = "playing";
 
         maniac::play(actions);
-    };
 
-    std::atomic<bool> should_run;
+        set_priority_class(NORMAL_PRIORITY_CLASS);
+    };
 
     auto thread = std::jthread([&message, &run](const std::stop_token& token) {
         while (!token.stop_requested()) {
@@ -105,6 +118,8 @@ int main(int, char **) {
 
         ImGui::End();
     });
+
+    thread.request_stop();
 
     return EXIT_SUCCESS;
 }
