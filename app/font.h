@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 // File: 'Karla-Regular.ttf' (16848 bytes)
 // Exported using binary_to_compressed_c.cpp
 static const unsigned int Karla_compressed_size = 12719;
