@@ -80,7 +80,7 @@ namespace osu {
 		size_t read = read_memory<uintptr_t>(player_pointer, &address, 1);
 
 		if (!read) {
-			debug("%s %#x", "failed getting player address at", address);
+			debug("%s %#x", "failed getting player address at", player_pointer);
 		}
 
 		return address != 0;

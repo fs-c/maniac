@@ -3,10 +3,11 @@
 namespace maniac {
 	void block_until_playing() {
 		while (true) {
-			if (!osu->is_playing())
-				std::this_thread::sleep_for(
-					std::chrono::milliseconds(250));
-			else break;
+			if (osu->is_playing()) {
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		}
 	}
 
