@@ -16,7 +16,7 @@ https://user-images.githubusercontent.com/28566392/163677800-b3087fe0-d7f7-46cd-
 2. Start osu. You might get a pop-up with a title like "Windows protected your PC". This is a false positive, just click "More info" and "Run anyway".
 3. Start maniac.
 
-Maniac will now automatically play any beatmap you open in osu.
+Maniac will now automatically play any beatmap you open in osu. __Make sure your keybinds are set to the defaults.__
 
 ## Contact
 
