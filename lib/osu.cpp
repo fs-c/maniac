@@ -7,11 +7,11 @@ Osu::Osu() : Process("osu!.exe") {
 
 	// TODO: Run this in parallel.
 
-	time_address = read_memory<uintptr_t>(find_pattern(TIME_SIG) + TIME_SIG_OFFSET);
-	debug("found time address: %#x", time_address);
+    time_address = read_memory<uintptr_t>(find_pattern(TIME_SIG) + TIME_SIG_OFFSET);
+    debug("found time address: %#x", time_address);
 
-	player_pointer = read_memory<uintptr_t>(find_pattern(PLAYER_SIG) + PLAYER_SIG_OFFSET);
-	debug("found player pointer: %#x", player_pointer);
+    player_pointer = read_memory<uintptr_t>(find_pattern(PLAYER_SIG) + PLAYER_SIG_OFFSET);
+    debug("found player pointer: %#x", player_pointer);
 }
 
 Osu::~Osu() = default;

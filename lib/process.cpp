@@ -42,7 +42,7 @@ HANDLE Process::get_handle(const std::string &name) {
 
 	debug("%s '%s' %s %lu", "found process", name.c_str(), "with id", process_id);
 
-	HANDLE handle = OpenProcess(PROCESS_VM_READ, FALSE, process_id);
+	HANDLE handle = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, process_id);
 	if (!handle || handle == INVALID_HANDLE_VALUE) {
 		throw std::runtime_error("failed opening handle to process");
 	}
@@ -53,34 +53,59 @@ HANDLE Process::get_handle(const std::string &name) {
 }
 
 uintptr_t Process::find_pattern(const char *pattern) {
-	auto pattern_bytes = std::vector<int>{ };
+    const auto pattern_to_bytes = [](const char *pattern) {
+        auto pattern_bytes = std::vector<int>{ };
 
-	for (auto cur = pattern; *cur; cur++) {
-		if (*cur == '?') {
-			// If the current byte is a wildcard push a dummy byte
-			pattern_bytes.push_back(-1);
-		} else if (*cur == ' ') {
-			continue;
-		} else {
-			// This is somewhat hacky: strtol parses *as many characters as
-			// possible* and sets cur to the first character it couldn't parse.
-			// This is the reason why patterns *must* follow the structure
-			// "AB CD EF ? ? FF"; "ABCDEF??FF" would cause it to fail later (!).
-			pattern_bytes.push_back(strtol(cur, const_cast<char **>(&cur), 16));
-		}
-	}
+        for (auto cur = pattern; *cur; cur++) {
+            if (*cur == '?') {
+                // If the current byte is a wildcard push a dummy byte
+                pattern_bytes.push_back(-1);
+            } else if (*cur == ' ') {
+                continue;
+            } else {
+                // This is somewhat hacky: strtol parses *as many characters as
+                // possible* and sets cur to the first character it couldn't parse.
+                // This is the reason why patterns *must* follow the structure
+                // "AB CD EF ? ? FF"; "ABCDEF??FF" would cause it to fail later (!).
+                pattern_bytes.push_back(strtol(cur, const_cast<char **>(&cur), 16));
+            }
+        }
 
-	auto pattern_size = pattern_bytes.size();
+        return pattern_bytes;
+    };
 
-	const size_t chunk_size = 4096;
-	std::byte chunk_bytes[chunk_size];
+    const auto pattern_bytes = pattern_to_bytes(pattern);
+	const auto pattern_size = pattern_bytes.size();
 
-	for (uintptr_t i = 1; i < INT_MAX; i += chunk_size - pattern_size) {
-		if (!read_memory<std::byte>(i, chunk_bytes, chunk_size)) {
-			continue;
-		}
+	uintptr_t cur_address = 0;
+    // this is an osu-specific optimization
+    uintptr_t max_address = 0x7fffffff;
 
-		for (size_t j = 0; j < chunk_size; j++) {
+    while (cur_address < max_address) {
+        MEMORY_BASIC_INFORMATION info;
+
+        if (!VirtualQueryEx(handle, reinterpret_cast<void *>(cur_address), &info, sizeof(info))) {
+            debug("couldn't query at %x", cur_address);
+
+            return 0;
+        }
+
+        bool invalidType = (info.Type != MEM_IMAGE && info.Type != MEM_PRIVATE);
+        bool invalidProtection = (info.Protect != PAGE_WRITECOPY && info.Protect != PAGE_EXECUTE_WRITECOPY
+                && info.Protect != PAGE_EXECUTE_READWRITE && info.Protect != PAGE_READWRITE);
+
+        if (info.RegionSize == 0 || info.State != MEM_COMMIT || invalidType || invalidProtection) {
+            cur_address = reinterpret_cast<uintptr_t>(info.BaseAddress) + info.RegionSize;
+
+            continue;
+        }
+
+        cur_address = reinterpret_cast<uintptr_t>(info.BaseAddress);
+
+        auto buffer = std::vector<std::byte>(info.RegionSize);
+        read_memory<std::byte>(cur_address, buffer.data(), buffer.size());
+
+        for (size_t j = 0; j < buffer.size(); j++) {
 			bool hit = true;
 
 			for (size_t k = 0; k < pattern_size; k++) {
@@ -88,18 +113,19 @@ uintptr_t Process::find_pattern(const char *pattern) {
 					continue;
 				}
 
-				if (chunk_bytes[j + k] !=
-					static_cast<std::byte>(pattern_bytes[k])) {
+				if (buffer.at(j + k) != static_cast<std::byte>(pattern_bytes[k])) {
 					hit = false;
 					break;
 				}
 			}
 
 			if (hit) {
-				return i + j;
+				return cur_address + j;
 			}
 		}
-	}
+
+        cur_address += info.RegionSize;
+    }
 
 	return 0;
 }

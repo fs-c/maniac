@@ -69,6 +69,8 @@ inline size_t Process::read_memory(uintptr_t address, T *out, size_t count) {
 	if (!ReadProcessMemory(handle, reinterpret_cast<LPCVOID>(address),
 		reinterpret_cast<LPVOID>(out), count * sizeof(T),
 		reinterpret_cast<SIZE_T *>(&read))) {
+        debug("failed reading memory at %x (%d)", address, GetLastError());
+
 		return 0;
 	}
 
@@ -113,7 +115,7 @@ T Process::read_memory_safe(const char *name, Any addr) {
 		throw std::runtime_error(msg);
 	}
 
-	debug_short("%s: %#x", name, (unsigned int)address);
+	debug("%s: %#x", name, (unsigned int)address);
 
 	return out;
 }
