@@ -75,7 +75,6 @@ uintptr_t Process::find_pattern(const char *pattern) {
     };
 
     const auto pattern_bytes = pattern_to_bytes(pattern);
-	const auto pattern_size = pattern_bytes.size();
 
 	uintptr_t cur_address = 0;
     // this is an osu-specific optimization
@@ -105,10 +104,10 @@ uintptr_t Process::find_pattern(const char *pattern) {
         auto buffer = std::vector<std::byte>(info.RegionSize);
         read_memory<std::byte>(cur_address, buffer.data(), buffer.size());
 
-        for (size_t j = 0; j < buffer.size(); j++) {
+        for (size_t j = 0; j < buffer.size() - pattern_bytes.size(); j++) {
 			bool hit = true;
 
-			for (size_t k = 0; k < pattern_size; k++) {
+			for (size_t k = 0; k < pattern_bytes.size(); k++) {
 				if (pattern_bytes[k] == -1) {
 					continue;
 				}
