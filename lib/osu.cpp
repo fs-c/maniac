@@ -5,12 +5,12 @@ using namespace osu;
 Osu::Osu() : Process("osu!.exe") {
 	using namespace signatures;
 
-	// TODO: Run this in parallel.
+	// TODO: This fails with an unhelpful error when the pattern wasn't found, refactor.
 
-    time_address = read_memory<uintptr_t>(find_pattern(TIME_SIG) + TIME_SIG_OFFSET);
+    time_address = read_memory<uintptr_t>(find_signature(signatures::time));
     debug("found time address: %#x", time_address);
 
-    player_pointer = read_memory<uintptr_t>(find_pattern(PLAYER_SIG) + PLAYER_SIG_OFFSET);
+    player_pointer = read_memory<uintptr_t>(find_signature(signatures::player));
     debug("found player pointer: %#x", player_pointer);
 }
 
@@ -61,21 +61,11 @@ std::string Osu::get_key_subset(int column_count) {
 	return out_string;
 }
 
-internal::map_player Osu::get_map_player() {
-	internal::process = this;
+std::vector<HitObject> Osu::get_hit_objects() {
+    internal::process = this;
 
-	auto player_address = read_memory_safe<uintptr_t>("player", player_pointer);
+    const auto player_address = read_memory_safe<uintptr_t>("player", player_pointer);
+    const auto player = internal::map_player(player_address);
 
-	return internal::map_player(player_address);
-}
-
-void Action::log() const {
-#ifdef DEBUG
-	debug("action:");
-	debug("    time: %d", time);
-	debug("    key: %c", key);
-	debug("    down: %d", down);
-#else
-	return;
-#endif
+    return player.manager.list.content;
 }

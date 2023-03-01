@@ -1,75 +1,54 @@
 #include <maniac/common.h>
 #include <maniac/maniac.h>
 
-void maniac::randomize(std::vector<osu::Action> &actions, std::pair<int, int> range) {
+void maniac::randomize(std::vector<osu::HitObject> &hit_objects, std::pair<int, int> range) {
 	if (!range.first && !range.second)
 		return;
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
+
 	std::uniform_int_distribution<> distr(range.first, range.second);
 
-	for (auto &action : actions) {
-		action.time += distr(gen);
+	for (auto &hit_object : hit_objects) {
+        // if it's a slider we want to randomize start and end, if it's not we ignore end anyway
+        hit_object.start_time += distr(gen);
+        hit_object.end_time += distr(gen);
 	}
 
-	debug("randomized %d actions with a range of [%d, %d]", actions.size(), range.first,
+	debug("randomized %d hit objects with a range of [%d, %d]", hit_objects.size(), range.first,
 		range.second);
 }
 
-static std::vector<int> actions_per_frame(const std::vector<osu::Action> &actions,
-	int time_frame = 1000) {
-	std::vector<int> frames = {};
-	const size_t chunks_needed = (actions.back().time / time_frame) + 1;
-
-	debug("will need %d frames", chunks_needed);
-
-	for (size_t chunk_i = 0; chunk_i < chunks_needed; chunk_i++) {
-		frames.emplace_back(0);
-
-		for (const auto &action : actions) {
-			const int32_t lower_bound = time_frame * chunk_i;
-			const int32_t upper_bound = lower_bound + time_frame;
-
-			if (action.time >= lower_bound && action.time <= upper_bound) {
-				frames[chunk_i]++;
-			}
-		}
-	}
-
-	return frames;
-}
-
-void maniac::humanize(std::vector<osu::Action> &actions, int modifier) {
+void maniac::humanize(std::vector<osu::HitObject> &hit_objects, int modifier) {
 	if (!modifier)
 		return;
 
 	const auto actual_modifier = static_cast<double>(modifier) / 100.0;
 
-	constexpr auto frame_range = 1000;
-	const auto frames = actions_per_frame(actions, frame_range);
+    // count number of hits/unit of time (slice size)
+	constexpr auto slice_size = 1000;
+    auto slices = std::vector<int>{};
 
-	std::random_device rd;
-	std::mt19937 gen(rd());
+    for (const auto &hit_object : hit_objects) {
+        slices.at(hit_object.start_time / slice_size)++;
 
-	std::uniform_int_distribution<> offset_distr(-5, 5);
+        if (hit_object.is_slider) {
+            slices.at(hit_object.end_time / slice_size)++;
+        }
+    }
 
-	const auto frames_size = frames.size();
-	for (auto &action : actions) {
-		const auto random_offset = offset_distr(gen);
-		const size_t frame_i = action.time / frame_range;
+    for (auto &hit_object : hit_objects) {
+        const auto start_offset = static_cast<int>(slices.at(hit_object.start_time / slice_size) * actual_modifier);
 
-		if (frame_i >= frames_size) {
-			debug("ignoring invalid frame_i (%d)", frame_i);
+        hit_object.start_time += start_offset;
 
-			continue;
-		}
+        if (hit_object.is_slider) {
+            const auto end_offset = static_cast<int>(slices.at(hit_object.end_time / slice_size) * actual_modifier);
 
-		const int offset = static_cast<int>(frames.at(frame_i) * actual_modifier) + random_offset;
+            hit_object.end_time += end_offset;
+        }
+    }
 
-		action.time += offset;
-	}
-
-	debug("%s %d %s %d %s %dms %s %f", "humanized", actions.size(), "actions over",
-		frames_size, "time frames of", frame_range, "with a modifier of", actual_modifier);
+	debug("humanized %d hit objects (%d slices of %dms)", hit_objects.size(), slices.size(), slice_size);
 }

@@ -2,13 +2,16 @@
 
 inline Process *process;
 
-struct hit_object {
+class hit_object {
 	uintptr_t base;
 
+public:
 	int32_t start_time;
 	int32_t end_time;
 	int32_t type;
 	int32_t column;
+
+    bool is_slider;
 
 	hit_object() : base(0), start_time(0), end_time(0), type(0),
 		column(0) {}
@@ -18,8 +21,11 @@ struct hit_object {
 		end_time = get_end_time();
 		type = get_type();
 		column = get_column();
+
+        is_slider = start_time != end_time;
 	}
 
+private:
 	[[nodiscard]] int32_t get_start_time() const {
 		return process->read_memory<int32_t>(base + 0x10);
 	}

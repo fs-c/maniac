@@ -14,35 +14,7 @@ namespace osu {
 		#include <maniac/osu/internal.h>
 	};
 
-    struct Action {
-		char key;
-		bool down;
-		int32_t time;
-
-        short scan_code;
-
-        Action(char key, bool down, int32_t time) : key(key), down(down), time(time) {
-            static auto layout = GetKeyboardLayout(0);
-
-            scan_code = VkKeyScanEx(key, layout) & 0xFF;
-        };
-
-		bool operator < (const Action &action) const {
-			return time < action.time;
-		};
-
-		bool operator == (const Action &action) const {
-			return action.key == key && action.down == down
-				&& action.time == time;
-		};
-
-		// Only used for debugging
-		void log() const;
-
-		inline void execute() const {
-			Process::send_scan_code(scan_code, down);
-		}
-	};
+    using HitObject = internal::hit_object;
 
 	class Osu : public Process {
 		// TODO: Generic pointers are bad in the long run.
@@ -58,7 +30,7 @@ namespace osu {
 
 		bool is_playing();
 
-		internal::map_player get_map_player();
+		std::vector<HitObject> get_hit_objects();
 
 		static std::string get_key_subset(int column_count);
 	};

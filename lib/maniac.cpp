@@ -18,7 +18,7 @@ namespace maniac {
 		}
 	}
 
-	void play(std::vector<osu::Action> &actions) {
+	void play(const std::vector<Action> &&actions) {
 		reset_keys();
 
 		size_t cur_i = 0;
@@ -41,45 +41,42 @@ namespace maniac {
 		}
 	}
 
-	std::vector<osu::Action> get_actions(int32_t min_time) {
-		const auto player = osu->get_map_player();
-		auto hit_objects = player.manager.list.content;
-
+    std::vector<Action> to_actions(std::vector<osu::HitObject> &hit_objects, int32_t min_time) {
         if (hit_objects.empty()) {
             debug("got zero hit objects");
 
             return {};
         }
 
-		const auto columns = std::max_element(hit_objects.begin(),
-			hit_objects.end(), [](auto a, auto b) {
-				return a.column < b.column; })->column + 1;
-		auto keys = osu::Osu::get_key_subset(columns);
+        const auto columns = std::max_element(hit_objects.begin(),
+                                              hit_objects.end(), [](auto a, auto b) {
+                    return a.column < b.column; })->column + 1;
+        auto keys = osu::Osu::get_key_subset(columns);
 
-		if (config.mirror_mod)
-			std::reverse(keys.begin(), keys.end());
+        if (config.mirror_mod)
+            std::reverse(keys.begin(), keys.end());
 
-		std::vector<osu::Action> actions;
-		actions.reserve(hit_objects.size() * 2);
+        std::vector<Action> actions;
+        actions.reserve(hit_objects.size() * 2);
 
-		for (auto &hit_object : hit_objects) {
-			if (hit_object.start_time < min_time)
-				continue;
+        for (auto &hit_object : hit_objects) {
+            if (hit_object.start_time < min_time)
+                continue;
 
-			if (hit_object.start_time == hit_object.end_time)
-				hit_object.end_time += config.tap_time;
+            if (!hit_object.is_slider)
+                hit_object.end_time = hit_object.start_time + config.tap_time;
 
-			actions.emplace_back(keys[hit_object.column], true,
-				hit_object.start_time + config.compensation_offset);
-			actions.emplace_back(keys[hit_object.column], false,
-				hit_object.end_time + config.compensation_offset);
-		}
+            actions.emplace_back(keys[hit_object.column], true,
+                                 hit_object.start_time + config.compensation_offset);
+            actions.emplace_back(keys[hit_object.column], false,
+                                 hit_object.end_time + config.compensation_offset);
+        }
 
-		debug("got %d actions", actions.size());
+        debug("got %d actions", actions.size());
 
-		std::sort(actions.begin(), actions.end());
-		actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
+        std::sort(actions.begin(), actions.end());
+        actions.erase(std::unique(actions.begin(), actions.end()), actions.end());
 
-		return actions;
-	}
+        return actions;
+    }
 }

@@ -36,6 +36,10 @@ _The following is only relevant to developers looking to build the project from 
 # Get the code
 git clone https://github.com/fs-c/maniac.git
 
+# Get submodule dependencies
+git submodule init
+git submodule update
+
 # Building out-of-source is preferred
 mkdir build
 cd build
@@ -68,7 +72,8 @@ Of course please also feel free to open an issue for any questions you may have.
 
 ## Thanks
 
-- n0b453c0d3r on UC and [mrflashstudio](https://github.com/mrflashstudio) for
-  providing up to date signatures and offsets
-- [ocornut](https://github.com/ocornut) for the [imgui](https://github.com/ocornut/imgui) library
+- n0b453c0d3r on UC, [mrflashstudio](https://github.com/mrflashstudio) and [daycheat](https://github.com/daycheat) for
+  providing up-to-date signatures and offsets and helpful discussion
+- LSNM for particularly helpful suggestions and bug reports
+- [ocornut](https://github.com/ocornut) for the [imgui](https://github.com/ocornut/imgui) library 
 - to everyone who reported bugs and provided feedback
