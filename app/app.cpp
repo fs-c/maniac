@@ -33,6 +33,8 @@ static void set_priority_class(int priority) {
 int main(int, char **) {
     std::string message;
 
+    maniac::config.read_from_file();
+
     auto run = [&message](osu::Osu &osu) {
         maniac::osu = &osu;
 
@@ -42,32 +44,32 @@ int main(int, char **) {
 
         message = "found beatmap";
 
-        std::vector<osu::Action> actions;
+        std::vector<osu::HitObject> hit_objects;
 
         for (int i = 0; i < 10; i++) {
             try {
-                actions = maniac::get_actions(osu.get_game_time());
+                hit_objects = osu.get_hit_objects();
 
                 break;
             } catch (std::exception &err) {
-                debug("get actions attempt %d failed: %s", i + 1, err.what());
+                debug("get hit objects attempt %d failed: %s", i + 1, err.what());
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
             }
         }
 
-        if (actions.empty()) {
-            throw std::runtime_error("failed getting actions");
+        if (hit_objects.empty()) {
+            throw std::runtime_error("failed getting hit objects");
         }
 
         set_priority_class(HIGH_PRIORITY_CLASS);
 
-        maniac::randomize(actions, maniac::config.randomization_range);
-        maniac::humanize(actions, maniac::config.humanization_modifier);
+        maniac::randomize(hit_objects, maniac::config.randomization_range);
+        maniac::humanize(hit_objects, maniac::config.humanization_modifier);
 
         message = "playing";
 
-        maniac::play(actions);
+        maniac::play(maniac::to_actions(hit_objects, osu.get_game_time()));
 
         set_priority_class(NORMAL_PRIORITY_CLASS);
     };
@@ -122,6 +124,8 @@ int main(int, char **) {
 
         ImGui::End();
     });
+
+    maniac::config.write_to_file();
 
     thread.request_stop();
 
