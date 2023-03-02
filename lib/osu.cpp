@@ -16,7 +16,7 @@ Osu::Osu() : Process("osu!.exe") {
 
 Osu::~Osu() = default;
 
-std::string Osu::get_key_subset(int column_count) {
+std::string Osu::get_key_subset(const std::string &keys, int column_count) {
 	// TODO: This is straight from maniac 0.x and needs to be refactored.
 	//       Probably best to just have a dictionary of subsets for every
 	//       reasonable column count.
@@ -29,10 +29,6 @@ std::string Osu::get_key_subset(int column_count) {
 		throw std::runtime_error("got negative column count");
 	}
 
-    // TODO: Make configurable?
-	const char *keys = "asdfjkl;";
-	constexpr auto keys_len = 8;
-
 	const size_t key_subset_len = column_count + 1;
 	char *const key_subset = reinterpret_cast<char *>(malloc(key_subset_len));
 
@@ -42,10 +38,10 @@ std::string Osu::get_key_subset(int column_count) {
 
 	key_subset[column_count] = '\0';
 
-	const size_t subset_offset = (keys_len / 2) - (column_count / 2);
+	const size_t subset_offset = (keys.length() / 2) - (column_count / 2);
 
-	memmove_s(key_subset, key_subset_len, reinterpret_cast<const void *>(keys + subset_offset),
-		keys_len - (subset_offset * 2));
+	memmove_s(key_subset, key_subset_len, reinterpret_cast<const void *>(keys.data() + subset_offset),
+		keys.length() - (subset_offset * 2));
 
 	if (column_count % 2) {
 		auto offset = column_count / 2;
@@ -55,7 +51,7 @@ std::string Osu::get_key_subset(int column_count) {
 		key_subset[column_count / 2] = ' ';
 	}
 
-	auto out_string = std::string(key_subset);
+	auto out_string = std::string{key_subset};
 	free(key_subset);
 
 	return out_string;

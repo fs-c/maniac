@@ -1,13 +1,13 @@
 #include <maniac/maniac.h>
 
-static void reset_keys() {
-    auto keys = osu::Osu::get_key_subset(9);
-    for (auto key : keys) {
-        Process::send_keypress(key, false);
-    }
-}
-
 namespace maniac {
+    void reset_keys() {
+        auto keys = osu::Osu::get_key_subset(config.keys, 9);
+        for (auto key : keys) {
+            Process::send_keypress(key, false);
+        }
+    }
+
 	void block_until_playing() {
 		while (true) {
 			if (osu->is_playing()) {
@@ -43,15 +43,13 @@ namespace maniac {
 
     std::vector<Action> to_actions(std::vector<osu::HitObject> &hit_objects, int32_t min_time) {
         if (hit_objects.empty()) {
-            debug("got zero hit objects");
-
             return {};
         }
 
         const auto columns = std::max_element(hit_objects.begin(),
                                               hit_objects.end(), [](auto a, auto b) {
                     return a.column < b.column; })->column + 1;
-        auto keys = osu::Osu::get_key_subset(columns);
+        auto keys = osu::Osu::get_key_subset(config.keys, columns);
 
         if (config.mirror_mod)
             std::reverse(keys.begin(), keys.end());
@@ -72,7 +70,7 @@ namespace maniac {
                                  hit_object.end_time + config.compensation_offset);
         }
 
-        debug("got %d actions", actions.size());
+        debug("converted %d hit objects to %d actions", hit_objects.size(), actions.size());
 
         std::sort(actions.begin(), actions.end());
         actions.erase(std::unique(actions.begin(), actions.end()), actions.end());

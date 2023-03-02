@@ -10,9 +10,12 @@ namespace maniac {
 	struct config {
         int tap_time = 20;
 		bool mirror_mod = false;
-		int compensation_offset = 0;
+		int compensation_offset = -15;
 		int humanization_modifier = 0;
 		std::pair<int, int> randomization_range = { 0, 0 };
+
+        // TODO: This isn't configurable yet, use a non-shit config format
+        std::string keys = "asdfjkl;";
 
         // TODO: Would be good to have the read/write stuff be in a constructor/destructor
 
@@ -32,7 +35,7 @@ namespace maniac {
             file.read(reinterpret_cast<char *>(&randomization_range.first), sizeof randomization_range.first);
             file.read(reinterpret_cast<char *>(&randomization_range.second), sizeof randomization_range.second);
 
-            debug("loaded config from file");
+            debug("loaded config from file (%s)", keys.c_str());
         }
 
         void write_to_file() {

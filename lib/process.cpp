@@ -131,5 +131,5 @@ unsigned int Process::find_process_id(const std::string &name) {
     }
 
     CloseHandle(snapshot);
-    return 0ul;
+    throw std::runtime_error(std::format("couldn't find process '{}'", name));
 }

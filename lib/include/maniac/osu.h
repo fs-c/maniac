@@ -32,7 +32,7 @@ namespace osu {
 
 		std::vector<HitObject> get_hit_objects();
 
-		static std::string get_key_subset(int column_count);
+        static std::string get_key_subset(const std::string &keys, int column_count);
 	};
 
 	inline int32_t Osu::get_game_time() {

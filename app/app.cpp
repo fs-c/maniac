@@ -67,12 +67,6 @@ int main(int, char **) {
         maniac::randomize(hit_objects, maniac::config.randomization_range);
         maniac::humanize(hit_objects, maniac::config.humanization_modifier);
 
-        for (const auto &hit_object : hit_objects) {
-            if (hit_object.start_time > hit_object.end_time) {
-                debug("start: %d, end: %d (slider %d)", hit_object.start_time, hit_object.end_time, hit_object.is_slider);
-            }
-        }
-
         message = "playing";
 
         maniac::play(maniac::to_actions(hit_objects, osu.get_game_time()));

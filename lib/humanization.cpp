@@ -21,14 +21,21 @@ void maniac::randomize(std::vector<osu::HitObject> &hit_objects, std::pair<int, 
 }
 
 void maniac::humanize(std::vector<osu::HitObject> &hit_objects, int modifier) {
-	if (!modifier)
-		return;
+	if (!modifier) {
+        return;
+    }
 
 	const auto actual_modifier = static_cast<double>(modifier) / 100.0;
 
     // count number of hits/unit of time (slice size)
 	constexpr auto slice_size = 1000;
+
+    const auto latest_hit = std::max_element(hit_objects.begin(), hit_objects.end(), [](auto a, auto b) {
+        return a.end_time < b.end_time;
+    })->end_time;
+
     auto slices = std::vector<int>{};
+    slices.resize((latest_hit / slice_size) + 1);
 
     for (const auto &hit_object : hit_objects) {
         slices.at(hit_object.start_time / slice_size)++;
@@ -50,5 +57,5 @@ void maniac::humanize(std::vector<osu::HitObject> &hit_objects, int modifier) {
         }
     }
 
-	debug("humanized %d hit objects (%d slices of %dms)", hit_objects.size(), slices.size(), slice_size);
+	debug("humanized %d hit objects (%d slices of %dms) with modifier %d", hit_objects.size(), slices.size(), slice_size, modifier);
 }
