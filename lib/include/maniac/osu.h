@@ -20,6 +20,7 @@ namespace osu {
 		// TODO: Generic pointers are bad in the long run.
 		uintptr_t time_address = 0;
 		uintptr_t player_pointer = 0;
+        uintptr_t status_pointer = 0;
 
 	public:
 		Osu();
@@ -47,14 +48,8 @@ namespace osu {
 	}
 
 	inline bool Osu::is_playing() {
-		uintptr_t address = 0;
+		const auto status = read_memory<int>(status_pointer);
 
-		size_t read = read_memory<uintptr_t>(player_pointer, &address, 1);
-
-		if (!read) {
-			debug("%s %#x", "failed getting player address at", player_pointer);
-		}
-
-		return address != 0;
+        return status == internal::OSU_STATUS_PLAYING;
 	}
 }

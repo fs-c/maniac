@@ -1,5 +1,9 @@
 #pragma once
 
+constexpr auto OSU_STATUS_IN_MENU = 0;
+constexpr auto OSU_STATUS_PLAYING = 2;
+constexpr auto OSU_STATUS_IN_SONG_SELECT = 5;
+
 inline Process *process;
 
 class hit_object {

@@ -18,7 +18,7 @@ namespace maniac {
 		}
 	}
 
-	void play(const std::vector<Action> &&actions) {
+	void play(const std::vector<Action> &actions) {
 		reset_keys();
 
 		size_t cur_i = 0;
@@ -65,9 +65,9 @@ namespace maniac {
                 hit_object.end_time = hit_object.start_time + config.tap_time;
 
             actions.emplace_back(keys[hit_object.column], true,
-                                 hit_object.start_time + config.compensation_offset);
+                hit_object.start_time + config.compensation_offset);
             actions.emplace_back(keys[hit_object.column], false,
-                                 hit_object.end_time + config.compensation_offset);
+                hit_object.end_time + config.compensation_offset);
         }
 
         debug("converted %d hit objects to %d actions", hit_objects.size(), actions.size());

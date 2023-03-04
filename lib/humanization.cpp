@@ -20,7 +20,7 @@ void maniac::randomize(std::vector<osu::HitObject> &hit_objects, std::pair<int, 
 		range.second);
 }
 
-void maniac::humanize(std::vector<osu::HitObject> &hit_objects, int modifier) {
+void maniac::humanize_static(std::vector<osu::HitObject> &hit_objects, int modifier) {
 	if (!modifier) {
         return;
     }
@@ -57,5 +57,43 @@ void maniac::humanize(std::vector<osu::HitObject> &hit_objects, int modifier) {
         }
     }
 
-	debug("humanized %d hit objects (%d slices of %dms) with modifier %d", hit_objects.size(), slices.size(), slice_size, modifier);
+	debug("statically humanized %d hit objects (%d slices of %dms) with modifier %d", hit_objects.size(), slices.size(), slice_size, modifier);
+}
+
+void maniac::humanize_dynamic(std::vector<osu::HitObject> &hit_objects, int modifier) {
+    const auto actual_modifier = static_cast<double>(modifier) / 100.0;
+
+    constexpr auto max_delta = 1000;
+
+    for (int i = 0; i < hit_objects.size(); i++) {
+        auto &cur = hit_objects.at(i);
+
+        int start_density = 0;
+
+        for (int j = i - 1; j >= 0; j--) {
+            const auto pre = hit_objects.at(j);
+
+            if ((pre.start_time + max_delta > cur.start_time) || (pre.is_slider && pre.end_time + max_delta > cur.start_time)) {
+                start_density++;
+            }
+        }
+
+        cur.start_time += static_cast<int>(start_density * actual_modifier);
+
+        if (cur.is_slider) {
+            int end_density = 0;
+
+            for (int j = i - 1; j >= 0; j--) {
+                const auto pre = hit_objects.at(j);
+
+                if ((pre.start_time + max_delta > cur.end_time) || (pre.is_slider && pre.end_time + max_delta > cur.end_time)) {
+                    end_density++;
+                }
+            }
+
+            cur.end_time += static_cast<int>(end_density * actual_modifier);
+        }
+    }
+
+    debug("dynamically humanized %d hit objects with modifier %d", hit_objects.size(), modifier);
 }
