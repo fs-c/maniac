@@ -12,6 +12,9 @@ Osu::Osu() : Process("osu!.exe") {
 
     player_pointer = read_memory<uintptr_t>(find_signature(signatures::player));
     debug("found player pointer: %#x", player_pointer);
+
+    status_pointer = read_memory<uintptr_t>(find_signature(signatures::status));
+    debug("found status pointer: %#x", status_pointer);
 }
 
 Osu::~Osu() = default;
@@ -61,7 +64,16 @@ std::vector<HitObject> Osu::get_hit_objects() {
     internal::process = this;
 
     const auto player_address = read_memory_safe<uintptr_t>("player", player_pointer);
-    const auto player = internal::map_player(player_address);
 
-    return player.manager.list.content;
+    try {
+        const auto player = internal::map_player(player_address);
+
+        return player.manager.list.content;
+    } catch (std::runtime_error &err) {
+        // if this fails, it's very likely because we previously scanned an outdated map player so just rescan
+        debug("failed getting map player, rescanning")
+        player_pointer = read_memory<uintptr_t>(find_signature(signatures::player));
+
+        return get_hit_objects();
+    }
 }

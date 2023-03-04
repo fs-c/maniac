@@ -5,7 +5,7 @@ static void help_marker(const char *desc) {
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered()) {
         ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 30.0f);
         ImGui::TextUnformatted(desc);
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
@@ -65,11 +65,20 @@ int main(int, char **) {
         set_priority_class(HIGH_PRIORITY_CLASS);
 
         maniac::randomize(hit_objects, maniac::config.randomization_range);
-        maniac::humanize(hit_objects, maniac::config.humanization_modifier);
+
+        if (maniac::config.humanization_type == maniac::config::STATIC_HUMANIZATION) {
+            maniac::humanize_static(hit_objects, maniac::config.humanization_modifier);
+        }
+
+        if (maniac::config.humanization_type == maniac::config::DYNAMIC_HUMANIZATION) {
+            maniac::humanize_dynamic(hit_objects, maniac::config.humanization_modifier);
+        }
+
+        auto actions = maniac::to_actions(hit_objects, osu.get_game_time());
 
         message = "playing";
 
-        maniac::play(maniac::to_actions(hit_objects, osu.get_game_time()));
+        maniac::play(actions);
 
         set_priority_class(NORMAL_PRIORITY_CLASS);
     };
@@ -95,6 +104,10 @@ int main(int, char **) {
 
         ImGui::Text("Status: %s", message.c_str());
         horizontal_break();
+
+        ImGui::Combo("Humanization Type", &maniac::config.humanization_type, "Static\0Dynamic (new)\0\0");
+        ImGui::SameLine();
+        help_marker("Static: Density calculated per 1s chunk and applied to all hit objects in that chunk. Dynamic: Density 1s 'in front' of each hit object, applied individually.");
 
         ImGui::SliderInt("Humanization", &maniac::config.humanization_modifier, 0, 1000);
         ImGui::SameLine();
