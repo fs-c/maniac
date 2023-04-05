@@ -124,6 +124,6 @@ struct map_player {
 
 	[[nodiscard]] hit_manager get_hit_manager() const {
 		return hit_manager(process->read_memory_safe<uintptr_t>("hit manager",
-			base + 0x40));
+			base + 0x48));
 	}
 };
