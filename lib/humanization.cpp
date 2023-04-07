@@ -78,7 +78,8 @@ void maniac::humanize_dynamic(std::vector<osu::HitObject> &hit_objects, int modi
             }
         }
 
-        cur.start_time += static_cast<int>(start_density * actual_modifier);
+        const auto offset = static_cast<int>(start_density * actual_modifier);
+        cur.start_time += distr(gen) == 0 ? -1 * offset : offset;
 
         if (cur.is_slider) {
             int end_density = 0;
