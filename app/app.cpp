@@ -64,7 +64,7 @@ int main(int, char **) {
 
         set_priority_class(HIGH_PRIORITY_CLASS);
 
-        maniac::randomize(hit_objects, maniac::config.randomization_range);
+        maniac::randomize(hit_objects, maniac::config.randomization_mean, maniac::config.randomization_stddev);
 
         if (maniac::config.humanization_type == maniac::config::STATIC_HUMANIZATION) {
             maniac::humanize_static(hit_objects, maniac::config.humanization_modifier);
@@ -113,10 +113,10 @@ int main(int, char **) {
         ImGui::SameLine();
         help_marker("Advanced hit-time randomization based on hit density.");
 
-        ImGui::DragIntRange2("Randomization", &maniac::config.randomization_range.first,
-            &maniac::config.randomization_range.second);
+        ImGui::InputInt("Randomization Mean", &maniac::config.randomization_mean);
+        ImGui::InputInt("Randomization Stddev", &maniac::config.randomization_stddev);
         ImGui::SameLine();
-        help_marker("Adds a random hit-time offset between the first and last value, in milliseconds.");
+        help_marker("Adds a random hit-time offset generated using a normal distribution with given mean and standard deviation.");
 
         ImGui::InputInt("Compensation", &maniac::config.compensation_offset);
         ImGui::SameLine();

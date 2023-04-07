@@ -1,23 +1,24 @@
 #include <maniac/common.h>
 #include <maniac/maniac.h>
 
-void maniac::randomize(std::vector<osu::HitObject> &hit_objects, std::pair<int, int> range) {
-	if (!range.first && !range.second)
-		return;
+void maniac::randomize(std::vector<osu::HitObject> &hit_objects, int mean, int stddev) {
+    if (stddev <= 0) {
+        return;
+    }
 
 	std::random_device rd;
-	std::mt19937 gen(rd());
+	std::mt19937 gen{rd()};
 
-	std::uniform_int_distribution<> distr(range.first, range.second);
+	std::normal_distribution<> distr{static_cast<double>(mean), static_cast<double>(stddev)};
 
 	for (auto &hit_object : hit_objects) {
         // if it's a slider we want to randomize start and end, if it's not we ignore end anyway
-        hit_object.start_time += distr(gen);
-        hit_object.end_time += distr(gen);
+        hit_object.start_time += std::round(distr(gen));
+        hit_object.end_time += std::round(distr(gen));
 	}
 
-	debug("randomized %d hit objects with a range of [%d, %d]", hit_objects.size(), range.first,
-		range.second);
+	debug("randomized %d hit objects with offsets along a normal distribution with mean %d and stddev %d",
+        hit_objects.size(), mean, stddev);
 }
 
 void maniac::humanize_static(std::vector<osu::HitObject> &hit_objects, int modifier) {
@@ -64,6 +65,11 @@ void maniac::humanize_dynamic(std::vector<osu::HitObject> &hit_objects, int modi
     const auto actual_modifier = static_cast<double>(modifier) / 100.0;
 
     constexpr auto max_delta = 1000;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::uniform_int_distribution<> distr(0, 1);
 
     for (int i = 0; i < hit_objects.size(); i++) {
         auto &cur = hit_objects.at(i);

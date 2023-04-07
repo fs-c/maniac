@@ -42,7 +42,7 @@ namespace maniac {
 
 	void block_until_playing();
 
-	void randomize(std::vector<osu::HitObject> &hit_objects, std::pair<int, int> range);
+	void randomize(std::vector<osu::HitObject> &hit_objects, int mean, int stddev);
     void humanize_static(std::vector<osu::HitObject> &hit_objects, int modifier);
     void humanize_dynamic(std::vector<osu::HitObject> &hit_objects, int modifier);
 
