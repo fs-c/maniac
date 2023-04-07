@@ -109,7 +109,7 @@ int main(int, char **) {
         ImGui::SameLine();
         help_marker("Static: Density calculated per 1s chunk and applied to all hit objects in that chunk. Dynamic: Density 1s 'in front' of each hit object, applied individually.");
 
-        ImGui::SliderInt("Humanization", &maniac::config.humanization_modifier, 0, 1000);
+        ImGui::DragInt("Humanization", &maniac::config.humanization_modifier, 1, 0, 1000);
         ImGui::SameLine();
         help_marker("Advanced hit-time randomization based on hit density.");
 
@@ -118,13 +118,13 @@ int main(int, char **) {
         ImGui::SameLine();
         help_marker("Adds a random hit-time offset between the first and last value, in milliseconds.");
 
-        ImGui::InputInt("Compensation", &maniac::config.compensation_offset);
+        ImGui::DragInt("Compensation", &maniac::config.compensation_offset);
         ImGui::SameLine();
         help_marker("Adds constant value to all hit-times to compensate for input latency, slower processors, etc.");
 
         ImGui::Checkbox("Mirror Mod", &maniac::config.mirror_mod);
 
-        ImGui::InputInt("Tap time", &maniac::config.tap_time);
+        ImGui::DragInt("Tap time", &maniac::config.tap_time);
         ImGui::SameLine();
         help_marker("How long a key is held down for a single keypress, in milliseconds.");
 
