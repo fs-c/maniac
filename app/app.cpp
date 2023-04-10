@@ -109,14 +109,19 @@ int main(int, char **) {
         ImGui::SameLine();
         help_marker("Static: Density calculated per 1s chunk and applied to all hit objects in that chunk. Dynamic: Density 1s 'in front' of each hit object, applied individually.");
 
-        ImGui::SliderInt("Humanization", &maniac::config.humanization_modifier, 0, 1000);
+        ImGui::InputInt("Humanization", &maniac::config.humanization_modifier, 0, 1000);
         ImGui::SameLine();
         help_marker("Advanced hit-time randomization based on hit density.");
 
+        horizontal_break();
+
+        ImGui::Text("Adds a random hit-time offset generated using a normal \ndistribution with given mean and standard deviation.");
+        ImGui::Dummy(ImVec2(0.0f, 2.0f));
+
         ImGui::InputInt("Randomization Mean", &maniac::config.randomization_mean);
         ImGui::InputInt("Randomization Stddev", &maniac::config.randomization_stddev);
-        ImGui::SameLine();
-        help_marker("Adds a random hit-time offset generated using a normal distribution with given mean and standard deviation.");
+
+        horizontal_break();
 
         ImGui::InputInt("Compensation", &maniac::config.compensation_offset);
         ImGui::SameLine();
@@ -129,8 +134,6 @@ int main(int, char **) {
         help_marker("How long a key is held down for a single keypress, in milliseconds.");
 
         horizontal_break();
-        ImGui::Text("Drag or <Ctrl>+Click to change values.");
-
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
         ImGui::TextDisabled("maniac by fs-c, https://github.com/fs-c/maniac");
