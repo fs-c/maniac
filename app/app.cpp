@@ -1,4 +1,5 @@
 #include "window.h"
+#include "config.h"
 #include <maniac/maniac.h>
 
 static void help_marker(const char *desc) {
@@ -33,7 +34,7 @@ static void set_priority_class(int priority) {
 int main(int, char **) {
     std::string message;
 
-    maniac::config.read_from_file();
+    config::read_from_file(maniac::config);
 
     auto run = [&message](osu::Osu &osu) {
         maniac::osu = &osu;
@@ -141,7 +142,7 @@ int main(int, char **) {
         ImGui::End();
     });
 
-    maniac::config.write_to_file();
+    config::write_to_file(maniac::config);
 
     thread.request_stop();
 

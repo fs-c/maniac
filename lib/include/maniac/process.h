@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include <functional>
+#include <format>
 #include <maniac/common.h>
 #include <maniac/signature.h>
 // maniac/common.h includes windows.h, win32 headers can't be included beforehand
@@ -108,29 +109,16 @@ inline T Process::read_memory(uintptr_t address) const {
 
 template<typename T, typename Any>
 T Process::read_memory_safe(const char *name, Any addr) const {
-	// TODO: So much for "safe".
 	auto address = (uintptr_t)(void *)addr;
 
 	if (!address) {
-		// TODO: Get rid of this ASAP once std::format is out.
-		char msg[128];
-		msg[127] = '\0';
-
-		sprintf_s(msg, 128, "pointer to %s was invalid", name);
-
-		throw std::runtime_error(msg);
+		throw std::runtime_error(std::format("pointer to {} was invalid", name));
 	}
 
 	T out;
 
 	if (!read_memory(address, &out, 1)) {
-		// TODO: See above.
-		char msg[128];
-		msg[127] = '\0';
-
-		sprintf_s(msg, 128, "failed reading %s at %#x", name, address);
-
-		throw std::runtime_error(msg);
+		throw std::runtime_error(std::format("failed reading {} at {}", name, address));
 	}
 
 	debug("%s: %#x", name, (unsigned int)address);
@@ -148,7 +136,7 @@ inline void Process::send_scan_code(short code, bool down) {
 	static INPUT in;
 
 	in.type = INPUT_KEYBOARD;
-	in.ki.time = 238423874;
+	in.ki.time = 0;
 	in.ki.wScan = 0;
 	in.ki.dwExtraInfo = 0;
 	in.ki.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
