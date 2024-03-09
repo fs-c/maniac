@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <imgui/backends/imgui_impl_dx9.h>
 #include <imgui/backends/imgui_impl_win32.h>
+#include <random>
 
 #include <maniac/common.h>
 
@@ -87,6 +88,32 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return ::DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
+static std::string generate_random_string(int length) {
+    std::string random_string;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 61);
+
+    for (int i = 0; i < length; ++i) {
+        int random_index = distrib(gen);
+        char random_char;
+        if (random_index < 10) {
+            random_char = '0' + random_index;
+        } else if (random_index < 36) {
+            random_char = 'A' + (random_index - 10);
+        } else {
+            random_char = 'a' + (random_index - 36);
+        }
+        random_string += random_char;
+    }
+
+    return random_string;
+}
+
+static void randomize_window_title(const HWND window) {
+    SetWindowTextA(window, generate_random_string(16).c_str());
+}
+
 void window::start(const std::function<void()> &body) {
     // TODO: Refactor this into something readable
 
@@ -97,6 +124,8 @@ void window::start(const std::function<void()> &body) {
     ::RegisterClassEx(&wc);
     HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("maniac"), WS_OVERLAPPEDWINDOW, 100, 100, 550,
             420, NULL, NULL, wc.hInstance, NULL);
+
+    randomize_window_title(hwnd);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd)) {

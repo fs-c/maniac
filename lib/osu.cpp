@@ -74,6 +74,8 @@ std::vector<HitObject> Osu::get_hit_objects() {
         debug("failed getting map player, rescanning")
         player_pointer = read_memory<uintptr_t>(find_signature(signatures::player));
 
+        // TODO: Break recursion at some point if it keeps failing, maybe exponential back off for some
+        //       time and then fatal error.
         return get_hit_objects();
     }
 }
