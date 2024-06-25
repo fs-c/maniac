@@ -9,6 +9,8 @@
 #include <imgui/backends/imgui_impl_win32.h>
 #include <random>
 
+#include <alh>
+
 #include <maniac/common.h>
 
 // TODO: Most of this is taken straight out of some example in the imgui repository, needs to be refactored
@@ -190,6 +192,9 @@ void window::start(const std::function<void()> &body) {
 #endif
 
         body();
+
+        std::clamp(maniac::config.tap_time, 0, 500);
+        std::clamp(maniac::config.humanization_modifier, 0, 1000);
 
         ImGui::EndFrame();
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
