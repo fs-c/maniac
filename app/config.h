@@ -27,6 +27,14 @@ void config::read_from_file(struct maniac::config &c) {
         c.humanization_type = data["humanization_type"];
         c.humanization_modifier = data["humanization_modifier"];
         c.keys = data["keys"];
+        
+        // Read 4K and 7K keys if available
+        if (data.contains("keys4k")) {
+            c.keys4k = data["keys4k"];
+        }
+        if (data.contains("keys7k")) {
+            c.keys7k = data["keys7k"];
+        }
 
         debug("loaded config from file");
     } catch (json::parse_error &err) {
@@ -44,7 +52,9 @@ void config::write_to_file(struct maniac::config &c) {
             {"randomization_stddev", c.randomization_stddev},
             {"humanization_type", c.humanization_type},
             {"humanization_modifier", c.humanization_modifier},
-            {"keys", c.keys}
+            {"keys", c.keys},
+            {"keys4k", c.keys4k},
+            {"keys7k", c.keys7k}
     };
 
     std::ofstream file(file_name);

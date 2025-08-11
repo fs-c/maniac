@@ -12,6 +12,8 @@
 #include <algorithm>
 
 #include <maniac/common.h>
+#include <maniac/maniac.h>
+#include <dwmapi.h>
 
 // TODO: Most of this is taken straight out of some example in the imgui repository, needs to be refactored
 
@@ -116,10 +118,54 @@ static void randomize_window_title(const HWND window) {
     SetWindowTextA(window, generate_random_string(16).c_str());
 }
 
-void window::start(const std::function<void()> &body) {
-    // TODO: Refactor this into something readable
+static void set_immersive_dark_mode(HWND hwnd, bool enabled) {
+    BOOL use_dark = enabled ? TRUE : FALSE;
+    const DWORD attribute = 20;
+    DwmSetWindowAttribute(hwnd, attribute, &use_dark, sizeof(use_dark));
+}
 
-    // Create application window
+static bool is_system_using_dark_mode() {
+    bool dark_mode = false;
+    
+    HMODULE hUxtheme = LoadLibraryExW(L"uxtheme.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    if (hUxtheme) {
+        typedef bool (WINAPI *ShouldAppsUseDarkMode)();
+        ShouldAppsUseDarkMode darkModeFunc = (ShouldAppsUseDarkMode)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(132));
+        
+        if (darkModeFunc) {
+            dark_mode = darkModeFunc();
+        } else {
+            DWORD value = 0;
+            DWORD dataSize = sizeof(DWORD);
+            HKEY hKey;
+            
+            if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+                if (RegQueryValueExW(hKey, L"AppsUseDarkTheme", NULL, NULL, (LPBYTE)&value, &dataSize) == ERROR_SUCCESS) {
+                    dark_mode = value == 1;
+                }
+                RegCloseKey(hKey);
+            }
+        }
+        
+        FreeLibrary(hUxtheme);
+    }
+    
+    return dark_mode;
+}
+
+static void apply_theme(HWND hwnd) {
+    bool dark_mode = is_system_using_dark_mode();
+    
+    if (dark_mode) {
+        ImGui::StyleColorsDark();
+    } else {
+        ImGui::StyleColorsLight();
+    }
+    
+    set_immersive_dark_mode(hwnd, dark_mode);
+}
+
+void window::start(const std::function<void()> &body) {
     ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL,
             NULL, NULL, NULL, _T("maniac"), NULL};
@@ -129,7 +175,9 @@ void window::start(const std::function<void()> &body) {
 
     randomize_window_title(hwnd);
 
-    // Initialize Direct3D
+    bool is_dark_mode = is_system_using_dark_mode();
+    set_immersive_dark_mode(hwnd, is_dark_mode);
+
     if (!CreateDeviceD3D(hwnd)) {
         CleanupDeviceD3D();
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
@@ -137,27 +185,20 @@ void window::start(const std::function<void()> &body) {
         throw std::runtime_error("could not create d3d device");
     }
 
-    // Show the window
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
 
-    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup Dear ImGui style
-    //ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
-    ImGui::StyleColorsLight();
+    apply_theme(hwnd);
 
-    // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
-    // Load custom font
     ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(Karla_compressed_data,
             Karla_compressed_size, 16.0f);
 
@@ -200,7 +241,10 @@ void window::start(const std::function<void()> &body) {
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
         g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        
+        bool system_dark_mode = is_system_using_dark_mode();
+        ImVec4 clear_color = system_dark_mode ? ImVec4(0.10f, 0.10f, 0.10f, 1.00f)
+                                          : ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
         D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int) (clear_color.x * clear_color.w * 255.0f),
                 (int) (clear_color.y * clear_color.w * 255.0f),
                 (int) (clear_color.z * clear_color.w * 255.0f), (int) (clear_color.w * 255.0f));
@@ -212,7 +256,6 @@ void window::start(const std::function<void()> &body) {
         }
         HRESULT result = g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 
-        // Handle loss of D3D9 device
         if (result == D3DERR_DEVICELOST &&
                 g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
             ResetDevice();

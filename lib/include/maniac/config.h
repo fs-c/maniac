@@ -20,7 +20,9 @@ namespace maniac {
         int randomization_stddev = 0;
         int humanization_type = DYNAMIC_HUMANIZATION;
 
-        std::string keys = "asdfjkl;";
+        std::string keys = "asdfjkl;";  // Currently active keys
+        std::string keys4k = "dfjk";    // 4K mode keys
+        std::string keys7k = "sdfjkl;"; // 7K mode keys
     };
 }
 
