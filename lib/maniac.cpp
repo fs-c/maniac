@@ -49,6 +49,17 @@ namespace maniac {
         const auto columns = std::max_element(hit_objects.begin(),
                                               hit_objects.end(), [](auto a, auto b) {
                     return a.column < b.column; })->column + 1;
+        
+        if (columns == 4) {
+            debug("Detected 4K mode, using 4K key configuration");
+            config.keys = config.keys4k;
+        } else if (columns == 7) {
+            debug("Detected 7K mode, using 7K key configuration");
+            config.keys = config.keys7k;
+        } else {
+            debug("Using default key configuration for %d columns", columns);
+        }
+        
         auto keys = osu::Osu::get_key_subset(config.keys, columns);
 
         if (config.mirror_mod)
