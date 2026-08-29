@@ -1,0 +1,6 @@
+[submodule "references/tosu"]
+	path = references/tosu
+	url = https://github.com/tosuapp/tosu.git
+[submodule "references/osu"]
+	path = references/osu
+	url = https://github.com/ppy/osu
