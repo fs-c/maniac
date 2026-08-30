@@ -4,3 +4,6 @@
 [submodule "references/osu"]
 	path = references/osu
 	url = https://github.com/ppy/osu
+[submodule "references/osu-framework"]
+	path = references/osu-framework
+	url = https://github.com/ppy/osu-framework.git

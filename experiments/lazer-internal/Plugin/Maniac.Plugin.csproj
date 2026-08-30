@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Maniac.Plugin</RootNamespace>
+    <AssemblyName>Maniac.Plugin</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <LazerDir Condition="'$(LazerDir)' == ''">$(LOCALAPPDATA)\osulazer\current</LazerDir>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="osu.Framework">
+      <HintPath>$(LazerDir)\osu.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="osu.Game">
+      <HintPath>$(LazerDir)\osu.Game.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="osuTK">
+      <HintPath>$(LazerDir)\osuTK.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Maniac.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="CopyBesideStub" AfterTargets="Build">
+    <ItemGroup>
+      <_PluginOut Include="$(TargetPath)" />
+      <_PluginOut Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PluginOut)" DestinationFolder="$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net8.0" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_PluginOut)" DestinationFolder="$(MSBuildThisFileDirectory)..\Launcher\bin\$(Configuration)\net8.0-windows\plugin" SkipUnchangedFiles="true" Condition="Exists('$(MSBuildThisFileDirectory)..\Launcher\bin\$(Configuration)\net8.0-windows\plugin')" />
+  </Target>
+</Project>

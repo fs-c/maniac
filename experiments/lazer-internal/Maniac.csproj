@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Maniac</RootNamespace>
+    <AssemblyName>Maniac</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
+    <LazerDir Condition="'$(LazerDir)' == ''">$(LOCALAPPDATA)\osulazer\current</LazerDir>
+    <NoWarn>$(NoWarn);MSB3277;CA2255</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Launcher\**" />
+    <None Remove="Launcher\**" />
+    <Compile Remove="Plugin\**" />
+    <None Remove="Plugin\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="osu.Framework">
+      <HintPath>$(LazerDir)\osu.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
+  </ItemGroup>
+</Project>

@@ -10,6 +10,8 @@ The game code is available in references/osu/ - use this for reference but don't
 
 Assuming osu!lazer is installed with defaults on Windows, game binaries are available in %LOCALAPPDATA%/osu!lazer/current/.
 
+osu! uses the osu-framework, which is available in references/osu-framework/.
+
 # Prior art
 
 As an example of an application reading osu! memory, tosu is provided in references/tosu/. (Note that since this is written in TS, it shouldn't be taken as an 1-1 example.)

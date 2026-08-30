@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Maniac.Launcher</RootNamespace>
+    <AssemblyName>maniac</AssemblyName>
+    <Platforms>x64</Platforms>
+    <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+    <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="InjectDotnet" Version="0.4.0" />
+  </ItemGroup>
+    <ItemGroup>
+    <ProjectReference Include="..\Maniac.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Plugin\Maniac.Plugin.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="CopyPlugin" AfterTargets="Build">
+    <PropertyGroup>
+      <_StubDir>$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net8.0</_StubDir>
+      <_PluginDir>$(MSBuildThisFileDirectory)..\Plugin\bin\$(Configuration)\net8.0</_PluginDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PluginFiles Include="$(_StubDir)\Maniac.dll" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.pdb" Condition="Exists('$(_StubDir)\Maniac.pdb')" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.runtimeconfig.json" Condition="Exists('$(_StubDir)\Maniac.runtimeconfig.json')" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.deps.json" Condition="Exists('$(_StubDir)\Maniac.deps.json')" />
+      <_PluginFiles Include="$(_StubDir)\*Harmony*.dll" />
+      <_PluginFiles Include="$(_PluginDir)\Maniac.Plugin.dll" />
+      <_PluginFiles Include="$(_PluginDir)\Maniac.Plugin.pdb" Condition="Exists('$(_PluginDir)\Maniac.Plugin.pdb')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PluginFiles)" DestinationFolder="$(OutputPath)plugin" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
