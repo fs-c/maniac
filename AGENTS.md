@@ -8,7 +8,7 @@ osu! is written in C# and open-source.
 
 The game code is available in references/osu/ - use this for reference but don't necessesarily assume that it is exactly the same as the code used to build the game binaries.
 
-Assuming osu!lazer is installed with defaults on Windows, game binaries are available in %LOCALAPPDATA%/osu!lazer/current/.
+Assuming osu!lazer is installed with defaults on Windows, game binaries are available in `%LOCALAPPDATA%\osulazer\current\` (some installs use `osu!lazer` instead). The launcher probes both.
 
 osu! uses the osu-framework, which is available in references/osu-framework/.
 

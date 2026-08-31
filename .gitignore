@@ -1,2 +1,9 @@
 bin/
 obj/
+artifacts/
+.vs/
+*.user
+*.suo
+TestResults/
+*.DotSettings.user
+

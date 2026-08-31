@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Maniac.Core</RootNamespace>
+    <AssemblyName>Maniac.Core</AssemblyName>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Maniac.Core.Tests" />
+  </ItemGroup>
+</Project>

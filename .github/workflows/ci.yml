@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      osu_tag:
+        description: "Optional ppy/osu release tag (e.g. 2026.804.2-lazer)"
+        required: false
+
+jobs:
+  test-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Test Core
+        run: dotnet test tests/Maniac.Core.Tests/Maniac.Core.Tests.csproj -c Release --nologo
+
+  build-against-lazer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve osu!lazer release
+        id: osu
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OSU_TAG: ${{ github.event.inputs.osu_tag }}
+        run: |
+          ./scripts/resolve-osu-release.ps1
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/osu-cache
+          key: osulazer-${{ steps.osu.outputs.tag }}
+
+      - name: Install osu!lazer
+        shell: pwsh
+        run: |
+          $cache = Join-Path $env:RUNNER_TEMP "osu-cache"
+          New-Item -ItemType Directory -Force $cache | Out-Null
+          $installer = Join-Path $cache "install.exe"
+          if (-not (Test-Path $installer)) {
+            Write-Host "Downloading $($env:OSU_INSTALL_URL)"
+            Invoke-WebRequest -Uri $env:OSU_INSTALL_URL -OutFile $installer
+          }
+          $root = Join-Path $env:RUNNER_TEMP "osulazer"
+          & $installer --silent --installto $root
+          if ($LASTEXITCODE -ne 0) { throw "install.exe failed with $LASTEXITCODE" }
+          $game = Join-Path $root "current\osu.Game.dll"
+          if (-not (Test-Path $game)) { throw "Missing $game" }
+          "LAZER_DIR=$(Join-Path $root 'current')" >> $env:GITHUB_ENV
+
+      - name: Build
+        run: dotnet build Maniac.sln -c Release -p:LazerDir=$env:LAZER_DIR --nologo
+
+      - name: Test
+        env:
+          LAZER_DIR: ${{ env.LAZER_DIR }}
+        run: dotnet test Maniac.sln -c Release -p:LazerDir=$env:LAZER_DIR --no-build --nologo
+
+      - name: Pack
+        run: pwsh ./scripts/pack.ps1 -Configuration Release

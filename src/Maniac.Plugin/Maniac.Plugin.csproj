@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Maniac.Plugin</RootNamespace>
+    <AssemblyName>Maniac.Plugin</AssemblyName>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="osu.Framework">
+      <HintPath>$(LazerDir)\osu.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="osu.Game">
+      <HintPath>$(LazerDir)\osu.Game.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="osuTK">
+      <HintPath>$(LazerDir)\osuTK.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Maniac.Bootstrap\Maniac.Bootstrap.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj" />
+  </ItemGroup>
+  <Target Name="CheckLazerDir" BeforeTargets="ResolveAssemblyReferences">
+    <Warning Condition="!Exists('$(LazerDir)\osu.Game.dll')" Text="LazerDir '$(LazerDir)' does not contain osu.Game.dll. Install osu!lazer or pass -p:LazerDir=..." />
+  </Target>
+  <Target Name="CopyBesideStub" AfterTargets="Build">
+    <PropertyGroup>
+      <_StubDir>$(MSBuildThisFileDirectory)..\Maniac.Bootstrap\bin\$(Configuration)\net8.0</_StubDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PluginOut Include="$(TargetPath)" />
+      <_PluginOut Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+      <_PluginOut Include="$(TargetDir)Maniac.Core.dll" Condition="Exists('$(TargetDir)Maniac.Core.dll')" />
+      <_PluginOut Include="$(TargetDir)Maniac.Core.pdb" Condition="Exists('$(TargetDir)Maniac.Core.pdb')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PluginOut)" DestinationFolder="$(_StubDir)" SkipUnchangedFiles="true" Condition="Exists('$(_StubDir)')" />
+  </Target>
+</Project>
