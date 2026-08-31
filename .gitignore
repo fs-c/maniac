@@ -7,3 +7,5 @@ artifacts/
 TestResults/
 *.DotSettings.user
 
+# mania-human experiment caches (replays, beatmaps, oauth)
+experiments/mania-human/data/
