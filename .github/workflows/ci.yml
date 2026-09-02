@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-  pull_request:
-  schedule:
-    - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
       osu_tag:
         description: "Optional ppy/osu release tag (e.g. 2026.804.2-lazer)"
+        required: false
+      build_expiry:
+        description: "Optional demo build expiry, UTC ISO-8601 (e.g. 2026-10-15 or 2026-10-15T00:00:00Z). Empty = no expiry."
         required: false
 
 jobs:
@@ -24,6 +24,8 @@ jobs:
 
   build-against-lazer:
     runs-on: windows-latest
+    env:
+      MANIAC_BUILD_EXPIRY: ${{ github.event.inputs.build_expiry }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -42,27 +44,34 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/osu-cache
-          key: osulazer-${{ steps.osu.outputs.tag }}
+          key: osulazer-nupkg-${{ steps.osu.outputs.tag }}
 
-      - name: Install osu!lazer
+      # Velopack install.exe needs shortcuts/registry/Win32 process paths that
+      # GitHub-hosted runners do not provide so we unpack the release nupkg instead.
+      - name: Extract osu!lazer
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $cache = Join-Path $env:RUNNER_TEMP "osu-cache"
           New-Item -ItemType Directory -Force $cache | Out-Null
-          $installer = Join-Path $cache "install.exe"
-          if (-not (Test-Path $installer)) {
-            Write-Host "Downloading $($env:OSU_INSTALL_URL)"
-            Invoke-WebRequest -Uri $env:OSU_INSTALL_URL -OutFile $installer
+          $nupkg = Join-Path $cache "osu-full.nupkg"
+          if (-not (Test-Path $nupkg)) {
+            Write-Host "Downloading $($env:OSU_NUPKG_URL)"
+            curl.exe -L --fail --retry 3 -o $nupkg $env:OSU_NUPKG_URL
+            if ($LASTEXITCODE -ne 0) { throw "nupkg download failed with $LASTEXITCODE" }
           }
-          $root = Join-Path $env:RUNNER_TEMP "osulazer"
-          & $installer --silent --installto $root
-          if ($LASTEXITCODE -ne 0) { throw "install.exe failed with $LASTEXITCODE" }
-          $game = Join-Path $root "current\osu.Game.dll"
-          if (-not (Test-Path $game)) { throw "Missing $game" }
-          "LAZER_DIR=$(Join-Path $root 'current')" >> $env:GITHUB_ENV
+          $extract = Join-Path $env:RUNNER_TEMP "osu-nupkg"
+          if (Test-Path $extract) { Remove-Item $extract -Recurse -Force }
+          New-Item -ItemType Directory -Force $extract | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::ExtractToDirectory($nupkg, $extract)
+          $game = Get-ChildItem $extract -Recurse -Filter osu.Game.dll | Select-Object -First 1
+          if (-not $game) { throw "osu.Game.dll not found in nupkg" }
+          Write-Host "LazerDir $($game.DirectoryName)"
+          "LAZER_DIR=$($game.DirectoryName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Build
-        run: dotnet build Maniac.sln -c Release -p:LazerDir=$env:LAZER_DIR --nologo
+        run: dotnet build Maniac.sln -c Release -p:LazerDir=$env:LAZER_DIR -p:ManiacBuildExpiry=$env:MANIAC_BUILD_EXPIRY --nologo
 
       - name: Test
         env:

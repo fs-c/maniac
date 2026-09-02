@@ -99,9 +99,12 @@ public static class GameBindings
 
     public static MethodInfo? FindTrigger(object keyBindingContainer, string name, Type actionType)
     {
+        const BindingFlags flags =
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
         for (var type = keyBindingContainer.GetType(); type != null; type = type.BaseType)
         {
-            foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            foreach (var method in type.GetMethods(flags))
             {
                 if (method.Name != name)
                     continue;

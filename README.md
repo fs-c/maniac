@@ -15,6 +15,15 @@ dotnet test tests/Maniac.Core.Tests -c Release
 
 Optional: `-p:LazerDir=C:\path\to\osulazer\current`
 
+Optional demo build expiry (UTC). Date-only is midnight UTC. Omit it for a build that does not expire:
+
+```powershell
+dotnet build Maniac.sln -c Release -p:ManiacBuildExpiry=2026-10-15
+# or -p:ManiacBuildExpiry=2026-10-15T00:00:00Z
+```
+
+The same value is a `workflow_dispatch` input (`build_expiry`) on CI, and can be set as `MANIAC_BUILD_EXPIRY`. After that instant the launcher refuses to inject (unload still works), the overlay shows the expiry, and autoplay will not run.
+
 Pack a runnable launcher folder:
 
 ```powershell
@@ -49,7 +58,7 @@ Settings are stored at `%APPDATA%\maniac-lazer\settings.json`.
 
 ## CI
 
-GitHub Actions compiles Core tests on Linux, and on Windows downloads the latest stable `-lazer` GitHub release, silently installs it, and builds/tests the full solution against those binaries.
+GitHub Actions compiles Core tests on Linux, and on Windows downloads the latest stable `-lazer` GitHub release nupkg, extracts the game binaries, and builds/tests the full solution against those binaries.
 
 Local inject/reload/unload and the startup member probe were checked against shipped **2026.804.2-lazer** (`%LOCALAPPDATA%\osulazer\current`, Windows x64).
 

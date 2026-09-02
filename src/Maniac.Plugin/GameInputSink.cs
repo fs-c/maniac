@@ -16,6 +16,7 @@ sealed class GameInputSink : IInputSink
     DrawableRuleset? ruleset;
 
     public bool HasMouse => mouse != null;
+    public static string LastFail { get; private set; } = "";
 
     GameInputSink(Action<int> press, Action<int> release, int maxAction)
     {
@@ -26,19 +27,32 @@ sealed class GameInputSink : IInputSink
 
     public static GameInputSink? TryCreate(object keyBindingContainer, int maxAction)
     {
-        var actionType = GameBindings.KeyBindingActionType(keyBindingContainer);
-        if (actionType == null)
-            return null;
-        var pressMi = GameBindings.FindTrigger(keyBindingContainer, "TriggerPressed", actionType);
-        var releaseMi = GameBindings.FindTrigger(keyBindingContainer, "TriggerReleased", actionType);
-        if (pressMi == null || releaseMi == null)
-            return null;
+        LastFail = "";
+        try
+        {
+            var actionType = GameBindings.KeyBindingActionType(keyBindingContainer);
+            if (actionType == null)
+            {
+                LastFail = "no action type on KeyBindingContainer";
+                return null;
+            }
 
-        var wrapperType = typeof(TypedTriggers<>).MakeGenericType(actionType);
-        if (Activator.CreateInstance(wrapperType, keyBindingContainer, pressMi, releaseMi, maxAction) is not IInputSink typed)
-            return null;
+            var pressMi = GameBindings.FindTrigger(keyBindingContainer, "TriggerPressed", actionType);
+            var releaseMi = GameBindings.FindTrigger(keyBindingContainer, "TriggerReleased", actionType);
+            if (pressMi == null || releaseMi == null)
+            {
+                LastFail = $"missing trigger Pressed={pressMi != null} Released={releaseMi != null} action={actionType.Name}";
+                return null;
+            }
 
-        return new GameInputSink(typed.Press, typed.Release, maxAction);
+            var typed = new InvokedTriggers(keyBindingContainer, actionType, pressMi, releaseMi, maxAction);
+            return new GameInputSink(typed.Press, typed.Release, maxAction);
+        }
+        catch (Exception ex)
+        {
+            LastFail = ex.GetBaseException().Message;
+            return null;
+        }
     }
 
     public void BindMouse(InputManager? inputManager, DrawableRuleset? drawableRuleset)
@@ -82,34 +96,38 @@ sealed class GameInputSink : IInputSink
         }
     }
 
-    sealed class TypedTriggers<T> : IInputSink where T : struct, Enum
+    sealed class InvokedTriggers
     {
-        readonly Func<T, bool> press;
-        readonly Func<T, bool> release;
-        readonly T[] values;
+        readonly object container;
+        readonly MethodInfo pressMethod;
+        readonly MethodInfo releaseMethod;
+        readonly object[] values;
+        readonly object[] args = new object[1];
 
-        public TypedTriggers(object container, MethodInfo pressMethod, MethodInfo releaseMethod, int maxAction)
+        public InvokedTriggers(object container, Type actionType, MethodInfo pressMethod, MethodInfo releaseMethod, int maxAction)
         {
-            press = pressMethod.CreateDelegate<Func<T, bool>>(container);
-            release = releaseMethod.CreateDelegate<Func<T, bool>>(container);
-            values = new T[maxAction + 1];
+            this.container = container;
+            this.pressMethod = pressMethod;
+            this.releaseMethod = releaseMethod;
+            values = new object[maxAction + 1];
             for (int i = 0; i <= maxAction; i++)
-                values[i] = (T)Enum.ToObject(typeof(T), i);
+                values[i] = Enum.ToObject(actionType, i);
         }
 
         public void Press(int action)
         {
-            if ((uint)action < (uint)values.Length)
-                press(values[action]);
+            if ((uint)action >= (uint)values.Length)
+                return;
+            args[0] = values[action];
+            pressMethod.Invoke(container, args);
         }
 
         public void Release(int action)
         {
-            if ((uint)action < (uint)values.Length)
-                release(values[action]);
+            if ((uint)action >= (uint)values.Length)
+                return;
+            args[0] = values[action];
+            releaseMethod.Invoke(container, args);
         }
-
-        public void MoveMouse(float x, float y) { }
-        public void ReleaseHeld() { }
     }
 }

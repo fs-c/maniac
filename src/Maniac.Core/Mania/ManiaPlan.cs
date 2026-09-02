@@ -32,16 +32,32 @@ public readonly struct ManiaEvent
     }
 }
 
+public readonly struct ManiaPressRelease
+{
+    public readonly double Press;
+    public readonly double Release;
+    public readonly int Column;
+
+    public ManiaPressRelease(double press, double release, int column)
+    {
+        Press = press;
+        Release = release;
+        Column = column;
+    }
+}
+
 public sealed class ManiaPlayPlan
 {
+    public readonly ManiaHit[] Hits;
     public readonly ManiaEvent[] Events;
     public readonly int Columns;
     public readonly int HitCount;
 
-    public ManiaPlayPlan(ManiaEvent[] events, int columns, int hitCount)
+    public ManiaPlayPlan(ManiaEvent[] events, int columns, int hitCount, ManiaHit[]? hits = null)
     {
         Events = events;
         Columns = columns;
         HitCount = hitCount;
+        Hits = hits ?? [];
     }
 }

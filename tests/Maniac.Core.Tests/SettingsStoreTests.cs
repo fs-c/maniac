@@ -16,6 +16,8 @@ public class SettingsStoreTests
             s.PanelHotkey = "Insert";
             s.Osu.Enabled = false;
             s.Mania.Enabled = true;
+            s.Mania.Skill = 40;
+            s.Mania.TapLength = 55;
             s.General.PanelExpanded = false;
         });
 
@@ -24,6 +26,8 @@ public class SettingsStoreTests
         Assert.Equal("Insert", loaded.Current.PanelHotkey);
         Assert.False(loaded.Current.Osu.Enabled);
         Assert.True(loaded.Current.Mania.Enabled);
+        Assert.Equal(40, loaded.Current.Mania.Skill);
+        Assert.Equal(55, loaded.Current.Mania.TapLength);
         Assert.False(loaded.Current.General.PanelExpanded);
         Assert.Equal(ManiacSettings.CurrentVersion, loaded.Current.Version);
     }
@@ -39,6 +43,22 @@ public class SettingsStoreTests
         Assert.True(loaded.AutoplayEnabled);
         Assert.Equal("F7", loaded.PanelHotkey);
         Assert.True(loaded.Osu.Enabled);
+        Assert.Equal(75, loaded.Mania.Skill);
+    }
+
+    [Fact]
+    public void Mania_humanize_fields_are_clamped()
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "maniac-lazer-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        string path = Path.Combine(dir, "settings.json");
+        File.WriteAllText(path, """{ "version": 1, "mania": { "skill": 140, "pressure": -2, "tapLength": 5, "earlyLate": 99, "misses": 8 } }""");
+        var loaded = SettingsStore.LoadOrDefault(path);
+        Assert.Equal(100, loaded.Mania.Skill);
+        Assert.Equal(0, loaded.Mania.Pressure);
+        Assert.Equal(20, loaded.Mania.TapLength);
+        Assert.Equal(40, loaded.Mania.EarlyLate);
+        Assert.Equal(4, loaded.Mania.Misses);
     }
 
     [Fact]

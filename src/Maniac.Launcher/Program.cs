@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using InjectDotnet;
+using Maniac.Core;
 
 namespace Maniac.Launcher;
 
@@ -11,6 +12,12 @@ static class Program
         try
         {
             string command = ParseCommand(args);
+            if (command != "unload" && BuildExpiry.Current.IsExpired())
+            {
+                Console.Error.WriteLine(BuildExpiry.Current.Describe(DateTimeOffset.UtcNow));
+                return 1;
+            }
+
             int? pid = ParsePid(args);
             var process = FindOsu(pid);
             string pluginDir = Path.Combine(AppContext.BaseDirectory, "plugin");

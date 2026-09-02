@@ -1,3 +1,4 @@
+using Maniac.Core;
 using Maniac.Core.Settings;
 using Maniac.Plugin.Ui;
 using osu.Framework.Graphics;
@@ -24,6 +25,8 @@ public static class Entry
     public static void Start()
     {
         settings = new SettingsStore();
+        if (BuildExpiry.Current.IsExpired())
+            settings.Update(s => s.AutoplayEnabled = false);
         var probe = GameBindings.Probe();
         session = new GameSession(settings);
         Session.SetTick(OnTick);

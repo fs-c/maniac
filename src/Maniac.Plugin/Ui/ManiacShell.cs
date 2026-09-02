@@ -1,4 +1,5 @@
 using Maniac;
+using Maniac.Core;
 using Maniac.Core.Settings;
 using Maniac.Core.Status;
 using osu.Framework.Graphics;
@@ -27,6 +28,14 @@ public partial class ManiacShell : CompositeDrawable
     readonly ToggleRow autoRow;
     readonly ToggleRow osuRow;
     readonly ToggleRow maniaRow;
+    readonly SliderRow maniaSkill;
+    readonly SliderRow maniaPressure;
+    readonly SliderRow maniaChord;
+    readonly SliderRow maniaMisses;
+    readonly SliderRow maniaTapLength;
+    readonly SliderRow maniaEarlyLate;
+    readonly SpriteText? expiryHint;
+    readonly SpriteText? expiryDiagHint;
     double lastStatusAt;
     string lastPlayText = "";
     string lastDiagText = "";
@@ -52,9 +61,23 @@ public partial class ManiacShell : CompositeDrawable
             new PanelButton("Diag", () => ShowPage(3), 60),
         ];
 
-        autoRow = new ToggleRow("Autoplay", store.Current.AutoplayEnabled, v => store.Update(s => s.AutoplayEnabled = v));
+        autoRow = new ToggleRow("Autoplay", store.Current.AutoplayEnabled && !BuildExpiry.Current.IsExpired(), v =>
+        {
+            if (BuildExpiry.Current.IsExpired())
+                return;
+            store.Update(s => s.AutoplayEnabled = v);
+        });
+        expiryHint = MakeExpiryHint();
+        expiryDiagHint = MakeExpiryHint();
         osuRow = new ToggleRow("osu!standard driver", store.Current.Osu.Enabled, v => store.Update(s => s.Osu.Enabled = v));
         maniaRow = new ToggleRow("mania driver", store.Current.Mania.Enabled, v => store.Update(s => s.Mania.Enabled = v));
+        var mania = store.Current.Mania;
+        maniaSkill = new SliderRow("Skill", 0, 100, 1, mania.Skill, v => store.Update(s => s.Mania.Skill = v), v => $"{v:0}");
+        maniaPressure = new SliderRow("Pressure", 0, 3, 0.05, mania.Pressure, v => store.Update(s => s.Mania.Pressure = v), v => $"{v:0.00}×");
+        maniaChord = new SliderRow("Chord roll", 0, 3, 0.05, mania.ChordRoll, v => store.Update(s => s.Mania.ChordRoll = v), v => $"{v:0.00}×");
+        maniaMisses = new SliderRow("Misses", 0, 3, 0.05, mania.Misses, v => store.Update(s => s.Mania.Misses = v), v => $"{v:0.00}×");
+        maniaTapLength = new SliderRow("Tap length", 20, 120, 1, mania.TapLength, v => store.Update(s => s.Mania.TapLength = v), v => $"{v:0} ms");
+        maniaEarlyLate = new SliderRow("Early/late", -20, 20, 0.5, mania.EarlyLate, v => store.Update(s => s.Mania.EarlyLate = v), v => $"{v:+0.0;-0.0;0} ms");
         playLine = new StatusLine();
         diagLine = new StatusLine();
         compactStatus = new SpriteText
@@ -70,6 +93,7 @@ public partial class ManiacShell : CompositeDrawable
         [
             UiLayout.Column(
                 UiLayout.Heading("General"),
+                expiryHint,
                 autoRow,
                 new KeybindRow("Toggle panel", store.Current.PanelHotkey, v => store.Update(s => s.PanelHotkey = v)),
                 new KeybindRow("Toggle autoplay", store.Current.AutoplayHotkey, v => store.Update(s => s.AutoplayHotkey = v)),
@@ -81,10 +105,18 @@ public partial class ManiacShell : CompositeDrawable
             UiLayout.Column(
                 UiLayout.Heading("mania"),
                 maniaRow,
-                UiLayout.Hint("Column timing and density humanization will be configured here in a later pass.")),
+                maniaSkill,
+                UiLayout.Hint("100 is top-level timing on the current map; 0 is mid-tier."),
+                UiLayout.Hint("Advanced — multipliers and offsets on top of skill."),
+                maniaPressure,
+                maniaChord,
+                maniaMisses,
+                maniaTapLength,
+                maniaEarlyLate),
             UiLayout.Column(
                 UiLayout.Heading("Diagnostics"),
                 new StatusLine { Text = $"plugin {File.GetLastWriteTime(typeof(ManiacShell).Assembly.Location):HH:mm:ss}" },
+                expiryDiagHint,
                 playLine,
                 diagLine,
                 UiLayout.Hint(string.Join(" · ", GameBindings.LastProbe.Ok
@@ -101,7 +133,7 @@ public partial class ManiacShell : CompositeDrawable
 
         body = new Container
         {
-            Width = 320,
+            Width = 340,
             AutoSizeAxes = Axes.Y,
             Padding = new MarginPadding { Horizontal = 12, Bottom = 12 },
             Child = UiLayout.Column(UiLayout.Row(nav), pageHost),
@@ -162,8 +194,12 @@ public partial class ManiacShell : CompositeDrawable
         ApplyExpanded(expanded);
     }
 
-    public void ToggleAuto() =>
+    public void ToggleAuto()
+    {
+        if (BuildExpiry.Current.IsExpired())
+            return;
         settings.Update(s => s.AutoplayEnabled = !s.AutoplayEnabled);
+    }
 
     public void SetExpanded(bool expanded)
     {
@@ -200,11 +236,22 @@ public partial class ManiacShell : CompositeDrawable
         lastStatusAt = Time.Current;
 
         var snap = status();
-        autoRow.SetValue(settings.Current.AutoplayEnabled);
+        bool expired = BuildExpiry.Current.IsExpired();
+        autoRow.SetValue(settings.Current.AutoplayEnabled && !expired);
+        if (expiryHint != null)
+            expiryHint.Text = BuildExpiry.Current.Describe(DateTimeOffset.UtcNow);
+        if (expiryDiagHint != null)
+            expiryDiagHint.Text = expiryHint?.Text ?? BuildExpiry.Current.Describe(DateTimeOffset.UtcNow);
         osuRow.SetValue(settings.Current.Osu.Enabled);
         maniaRow.SetValue(settings.Current.Mania.Enabled);
+        maniaSkill.SetValue(settings.Current.Mania.Skill);
+        maniaPressure.SetValue(settings.Current.Mania.Pressure);
+        maniaChord.SetValue(settings.Current.Mania.ChordRoll);
+        maniaMisses.SetValue(settings.Current.Mania.Misses);
+        maniaTapLength.SetValue(settings.Current.Mania.TapLength);
+        maniaEarlyLate.SetValue(settings.Current.Mania.EarlyLate);
 
-        string play = FormatPlay(snap);
+        string play = expired ? "expired" : FormatPlay(snap);
         if (play != lastPlayText)
         {
             lastPlayText = play;
@@ -232,6 +279,14 @@ public partial class ManiacShell : CompositeDrawable
             return $"{mode} · {ruleset}";
         string keys = snap.Columns > 0 ? $"{snap.Columns}k " : "";
         return $"{mode} · {keys}{snap.Applied}/{snap.Total} · t={snap.Time:0}";
+    }
+
+    static SpriteText? MakeExpiryHint()
+    {
+        var expiry = BuildExpiry.Current;
+        if (!expiry.HasEndTime && !expiry.StampInvalid)
+            return null;
+        return UiLayout.Hint(expiry.Describe(DateTimeOffset.UtcNow));
     }
 
     protected override bool Handle(UIEvent e)

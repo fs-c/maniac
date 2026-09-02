@@ -87,6 +87,19 @@ public sealed class SettingsStore
             settings.AutoplayHotkey = "F8";
         if (settings.Version < 1)
             settings.Version = ManiacSettings.CurrentVersion;
+        settings.Mania.Skill = Clamp(settings.Mania.Skill, 0, 100, 75);
+        settings.Mania.Pressure = Clamp(settings.Mania.Pressure, 0, 4, 1);
+        settings.Mania.ChordRoll = Clamp(settings.Mania.ChordRoll, 0, 4, 1);
+        settings.Mania.Misses = Clamp(settings.Mania.Misses, 0, 4, 1);
+        settings.Mania.TapLength = Clamp(settings.Mania.TapLength, 20, 160, 70);
+        settings.Mania.EarlyLate = Clamp(settings.Mania.EarlyLate, -40, 40, 0);
         return settings;
+    }
+
+    static double Clamp(double value, double min, double max, double fallback)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            return fallback;
+        return Math.Clamp(value, min, max);
     }
 }

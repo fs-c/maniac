@@ -26,4 +26,10 @@ public sealed class OsuSettings
 public sealed class ManiaSettings
 {
     public bool Enabled { get; set; } = true;
+    public double Skill { get; set; } = 75;
+    public double Pressure { get; set; } = 1;
+    public double ChordRoll { get; set; } = 1;
+    public double Misses { get; set; } = 1;
+    public double TapLength { get; set; } = 70;
+    public double EarlyLate { get; set; } = 0;
 }

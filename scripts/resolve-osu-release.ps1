@@ -25,16 +25,20 @@ if ([string]::IsNullOrWhiteSpace($Tag)) {
     $release = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/ppy/osu/releases/tags/$Tag"
 }
 
-$asset = $release.assets | Where-Object { $_.name -eq "install.exe" } | Select-Object -First 1
-if (-not $asset) { throw "Release $Tag has no install.exe asset." }
+$nupkgName = "osulazer-$Tag-full.nupkg"
+$asset = $release.assets | Where-Object { $_.name -eq $nupkgName } | Select-Object -First 1
+if (-not $asset) {
+    $available = ($release.assets | ForEach-Object { $_.name }) -join ", "
+    throw "Release $Tag has no $nupkgName asset. Available: $available"
+}
 
-Write-Host "osu!lazer tag $Tag"
+Write-Host "osu!lazer tag $Tag ($nupkgName)"
 if ($env:GITHUB_OUTPUT) {
     "tag=$Tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 }
 if ($env:GITHUB_ENV) {
     "OSU_TAG=$Tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-    "OSU_INSTALL_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+    "OSU_NUPKG_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 }
 if ($env:GITHUB_STEP_SUMMARY) {
     "Resolved osu!lazer **$Tag**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8

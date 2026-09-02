@@ -28,6 +28,9 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj">
+      <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <Target Name="CopyPlugin" AfterTargets="Build">
     <PropertyGroup>

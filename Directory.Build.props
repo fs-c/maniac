@@ -12,5 +12,6 @@
     <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirA)\osu.Game.dll')">$(_LazerDirA)</LazerDir>
     <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirB)\osu.Game.dll')">$(_LazerDirB)</LazerDir>
     <LazerDir Condition="'$(LazerDir)' == ''">$(_LazerDirA)</LazerDir>
+    <ManiacBuildExpiry Condition="'$(ManiacBuildExpiry)' == ''">$(MANIAC_BUILD_EXPIRY)</ManiacBuildExpiry>
   </PropertyGroup>
 </Project>

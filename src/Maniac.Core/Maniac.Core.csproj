@@ -7,4 +7,13 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Maniac.Core.Tests" />
   </ItemGroup>
+  <ItemGroup Condition="'$(ManiacBuildExpiry)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ManiacBuildExpiry</_Parameter1>
+      <_Parameter2>$(ManiacBuildExpiry)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <Target Name="LogManiacBuildExpiry" BeforeTargets="BeforeCompile" Condition="'$(ManiacBuildExpiry)' != ''">
+    <Message Importance="high" Text="Maniac build expiry: $(ManiacBuildExpiry)" />
+  </Target>
 </Project>

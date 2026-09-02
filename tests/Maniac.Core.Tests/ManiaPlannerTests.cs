@@ -15,6 +15,8 @@ public class ManiaPlannerTests
         Assert.Equal(120, plan.Events[1].Time);
         Assert.False(plan.Events[1].Down);
         Assert.Equal(1, plan.Columns);
+        Assert.Single(plan.Hits);
+        Assert.Equal(100, plan.Hits[0].Start);
     }
 
     [Fact]

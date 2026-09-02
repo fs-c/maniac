@@ -1,3 +1,4 @@
+using Maniac.Core;
 using Maniac.Core.Input;
 using Maniac.Core.Mania;
 using Maniac.Core.Osu;
@@ -17,7 +18,6 @@ sealed class GameSession
     readonly SettingsStore settings;
     readonly ManiaDriver mania = new();
     readonly OsuDriver osu = new();
-    readonly IReadOnlyList<IPlayPlanTransform<ManiaPlayPlan>> maniaTransforms;
     readonly IReadOnlyList<IPlayPlanTransform<OsuPlayPlan>> osuTransforms;
 
     Player? player;
@@ -27,6 +27,9 @@ sealed class GameSession
     object? lastScreen;
     bool chartLoaded;
     string lastError = "";
+    ManiaPlayPlan? maniaSource;
+    int maniaSeed;
+    ManiaHumanKey? maniaHumanKey;
 
     public AutoplayStatus Status;
     public string LastError => lastError;
@@ -35,7 +38,6 @@ sealed class GameSession
     public GameSession(SettingsStore settings)
     {
         this.settings = settings;
-        maniaTransforms = [];
         osuTransforms = [];
         Status.ProbeOk = GameBindings.LastProbe.Ok;
     }
@@ -51,6 +53,8 @@ sealed class GameSession
         chartLoaded = false;
         boundRuleset = "";
         lastScreen = null;
+        maniaSource = null;
+        maniaHumanKey = null;
     }
 
     public void SetError(Exception ex)
@@ -101,7 +105,23 @@ sealed class GameSession
             return;
         }
 
-        double time = drawable.FrameStableClock.CurrentTime;
+        double time;
+        try
+        {
+            var clock = drawable.FrameStableClock;
+            if (clock == null)
+            {
+                Status.Diagnostic = "no clock";
+                return;
+            }
+
+            time = clock.CurrentTime;
+        }
+        catch
+        {
+            Status.Diagnostic = "no clock";
+            return;
+        }
         Status.Time = time;
         bool blocked = drawable.IsPaused.Value
                        || drawable.HasReplayLoaded.Value
@@ -132,11 +152,23 @@ sealed class GameSession
         osu.Unload(ActiveSink);
         if (!chartLoaded || boundRuleset != "mania")
         {
-            BindInput(ManiaPlanner.MaxColumn);
-            var plan = PlayPlanTransforms.ApplyAll(ManiaAdapter.Build(state), maniaTransforms);
-            mania.Load(plan);
+            maniaSource = ManiaAdapter.Build(state);
+            maniaSeed = Random.Shared.Next();
+            maniaHumanKey = null;
             boundRuleset = "mania";
             chartLoaded = true;
+        }
+
+        if (sink == null)
+            BindInput(ManiaPlanner.MaxColumn);
+
+        var key = ManiaHumanKey.From(settings.Current.Mania);
+        if (maniaSource != null && maniaHumanKey != key)
+        {
+            var plan = new ManiaHumanizer(settings.Current.Mania, maniaSeed).Apply(maniaSource);
+            mania.Unload(ActiveSink);
+            mania.Load(plan);
+            maniaHumanKey = key;
         }
 
         bool run = play && rulesetEnabled && sink != null;
@@ -145,7 +177,7 @@ sealed class GameSession
         Status.Applied = mania.Applied;
         Status.Total = mania.HitCount;
         Status.Columns = mania.Columns;
-        Status.Diagnostic = sink == null ? "no KeyBindingContainer" : "";
+        Status.Diagnostic = BindDiagnostic();
     }
 
     void TickOsu(osu.Game.Screens.Play.GameplayState state, bool play, bool rulesetEnabled)
@@ -153,12 +185,14 @@ sealed class GameSession
         mania.Unload(ActiveSink);
         if (!chartLoaded || boundRuleset != "osu")
         {
-            BindInput(1);
             var plan = PlayPlanTransforms.ApplyAll(OsuAdapter.Build(state), osuTransforms);
             osu.Load(plan);
             boundRuleset = "osu";
             chartLoaded = true;
         }
+
+        if (sink == null)
+            BindInput(1);
 
         if (sink != null && drawable != null && !sink.HasMouse)
             sink.BindMouse(GameBindings.InputManagerOf(drawable), drawable);
@@ -169,7 +203,7 @@ sealed class GameSession
         Status.Applied = osu.Applied;
         Status.Total = osu.Total;
         Status.Columns = 0;
-        Status.Diagnostic = sink == null ? "no KeyBindingContainer" : "";
+        Status.Diagnostic = BindDiagnostic();
     }
 
     void BindInput(int maxAction)
@@ -186,6 +220,11 @@ sealed class GameSession
             sink.BindMouse(GameBindings.InputManagerOf(drawable), drawable);
     }
 
+    string BindDiagnostic() =>
+        sink == null
+            ? (string.IsNullOrEmpty(GameInputSink.LastFail) ? "no KeyBindingContainer" : GameInputSink.LastFail)
+            : "";
+
     void ResetPlay()
     {
         sink?.ReleaseHeld();
@@ -196,9 +235,17 @@ sealed class GameSession
         sink = null;
         chartLoaded = false;
         boundRuleset = "";
+        maniaSource = null;
+        maniaHumanKey = null;
         Status.Applied = 0;
         Status.Total = 0;
         Status.Columns = 0;
+    }
+
+    readonly record struct ManiaHumanKey(double Skill, double Pressure, double ChordRoll, double Misses, double TapLength, double EarlyLate)
+    {
+        public static ManiaHumanKey From(ManiaSettings mania) =>
+            new(mania.Skill, mania.Pressure, mania.ChordRoll, mania.Misses, mania.TapLength, mania.EarlyLate);
     }
 
     static Player? FindPlayer(OsuGame game)
