@@ -99,7 +99,7 @@ public static class Entry
 
         if (Hotkeys.TryParse(settings.Current.PanelHotkey, out Key panelKey)
             && Hotkeys.WasPressed(input, panelKey, ref panelHotkeyDown))
-            panel.ToggleExpanded();
+            panel.ToggleVisible();
 
         if (Hotkeys.TryParse(settings.Current.AutoplayHotkey, out Key autoKey)
             && Hotkeys.WasPressed(input, autoKey, ref autoHotkeyDown))

@@ -72,7 +72,7 @@ public sealed class ManiaHumanizer : IPlayPlanTransform<ManiaPlayPlan>
             return cmp != 0 ? cmp : column[a].CompareTo(column[b]);
         });
 
-        FillNps(start, order, nps);
+        FillNps(start, order, nps, p.DensityWindowMs);
 
         double residual = 0;
         double phi = Math.Clamp(p.Phi, 0, 0.95);
@@ -163,21 +163,21 @@ public sealed class ManiaHumanizer : IPlayPlanTransform<ManiaPlayPlan>
             double rate = p.MissRate * Math.Pow(Math.Max(nps[i], 1) / ManiaHumanParams.MissNpsRef, 1.2);
             rate = Math.Clamp(rate, 0, 0.4);
             if (start[i] <= burstUntil)
-                rate = Math.Min(0.4, rate * 2.2);
+                rate = Math.Min(0.4, rate * p.MissBurstMultiplier);
             if (rng.NextDouble() < rate)
             {
                 miss[i] = true;
-                burstUntil = start[i] + 160;
+                burstUntil = start[i] + p.MissBurstDurationMs;
             }
         }
     }
 
-    static void FillNps(double[] start, int[] order, double[] nps)
+    static void FillNps(double[] start, int[] order, double[] nps, double windowMs)
     {
         int n = order.Length;
         int lo = 0;
         int hi = 0;
-        double window = ManiaHumanParams.DensityWindowMs;
+        double window = Math.Max(1, windowMs);
         for (int k = 0; k < n; k++)
         {
             double t = start[order[k]];

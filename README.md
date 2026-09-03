@@ -41,7 +41,7 @@ powershell -File ./scripts/pack.ps1 -Configuration Release
 .\maniac.exe --pid 1234
 ```
 
-The in-game overlay attaches to the top-most osu! layer. `F7` toggles the panel, `F8` toggles autoplay (configurable). Collapsed, the overlay is a compact bar that does not eat gameplay input.
+The in-game overlay attaches to the top-most osu! layer. `F7` hides or shows the overlay, `F8` toggles autoplay (configurable). Autoplay is on by default. The compact-bar chevron collapses the overlay; while visible, the overlay blocks gameplay clicks.
 
 Settings are stored at `%APPDATA%\maniac-lazer\settings.json`.
 

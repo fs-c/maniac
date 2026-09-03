@@ -11,20 +11,24 @@ public class ManiaHumanizerTests
     {
         var high = ManiaHumanParams.From(new ManiaSettings { Skill = 100 });
         var low = ManiaHumanParams.From(new ManiaSettings { Skill = 0 });
-        Assert.Equal(7, high.Sigma0, 6);
-        Assert.Equal(16, low.Sigma0, 6);
-        Assert.Equal(4, high.ChordSigma, 6);
-        Assert.Equal(16, low.ChordSigma, 6);
-        Assert.Equal(0.002, high.MissRate, 8);
-        Assert.Equal(0.025, low.MissRate, 8);
-        Assert.Equal(3, high.FingerBiasSigma, 6);
-        Assert.Equal(12, low.FingerBiasSigma, 6);
-        Assert.Equal(-5, high.HoldTailBias, 6);
-        Assert.Equal(-15, low.HoldTailBias, 6);
-        Assert.Equal(0.25, high.Phi, 6);
-        Assert.Equal(0.12, low.Phi, 6);
+        Assert.Equal(7 * Math.Pow(16.0 / 7.0, -0.5), high.Sigma0, 8);
+        Assert.Equal(7 * Math.Pow(16.0 / 7.0, 1.5), low.Sigma0, 8);
+        Assert.Equal(4 * Math.Pow(4, -0.5), high.ChordSigma, 8);
+        Assert.Equal(4 * Math.Pow(4, 1.5), low.ChordSigma, 8);
+        Assert.Equal(0.002 * Math.Pow(0.025 / 0.002, -0.5), high.MissRate, 10);
+        Assert.Equal(0.002 * Math.Pow(0.025 / 0.002, 1.5), low.MissRate, 10);
+        Assert.Equal(3 * Math.Pow(4, -0.5), high.FingerBiasSigma, 8);
+        Assert.Equal(3 * Math.Pow(4, 1.5), low.FingerBiasSigma, 8);
+        Assert.Equal(0, high.HoldTailBias, 6);
+        Assert.Equal(-20, low.HoldTailBias, 6);
+        Assert.Equal(0.315, high.Phi, 6);
+        Assert.Equal(0.055, low.Phi, 6);
         Assert.Equal(70, high.TapLength, 6);
         Assert.Equal(ManiaHumanParams.BasePressureK, high.PressureK, 8);
+        Assert.Equal(ManiaHumanParams.DefaultDensityWindowMs, high.DensityWindowMs, 6);
+        Assert.Equal(ManiaHumanParams.DefaultIdleNps, high.DensityThresholdNps, 6);
+        Assert.Equal(ManiaHumanParams.DefaultMissBurstDurationMs, high.MissBurstDurationMs, 6);
+        Assert.Equal(ManiaHumanParams.DefaultMissBurstMultiplier, high.MissBurstMultiplier, 6);
         Assert.True(high.SigmaAt(20) > high.SigmaAt(2));
     }
 
@@ -47,8 +51,8 @@ public class ManiaHumanizerTests
     public void Lower_skill_is_wider_than_high_skill()
     {
         var hits = IsolatedTaps(200);
-        double high = Std(PressErrors(hits, Humanize(hits, skill: 100, seed: 7, s => s.Misses = 0)));
-        double low = Std(PressErrors(hits, Humanize(hits, skill: 0, seed: 7, s => s.Misses = 0)));
+        double high = Std(PressErrors(hits, Humanize(hits, skill: 100, seed: 7, s => s.Human.MissChanceAt8Nps = 0)));
+        double low = Std(PressErrors(hits, Humanize(hits, skill: 0, seed: 7, s => s.Human.MissChanceAt8Nps = 0)));
         Assert.True(low > high * 1.4, $"high={high:0.00} low={low:0.00}");
     }
 
@@ -57,7 +61,7 @@ public class ManiaHumanizerTests
     {
         var sparse = IsolatedTaps(120, gap: 500);
         var dense = Stream(120, gap: 40);
-        var settings = new ManiaSettings { Skill = 75, Misses = 0 };
+        var settings = new ManiaSettings { Skill = 75, Human = { MissChanceAt8Nps = 0 } };
         double sparseStd = Std(PressErrors(sparse, Humanize(sparse, settings, 11)));
         double denseStd = Std(PressErrors(dense, Humanize(dense, settings, 11)));
         Assert.True(denseStd > sparseStd * 1.2, $"sparse={sparseStd:0.00} dense={denseStd:0.00}");
@@ -67,7 +71,7 @@ public class ManiaHumanizerTests
     public void Tap_duration_is_not_the_perfect_auto_delay()
     {
         var hits = IsolatedTaps(80, gap: 400);
-        var plan = Humanize(hits, skill: 75, seed: 3, s => s.Misses = 0);
+        var plan = Humanize(hits, skill: 75, seed: 3, s => s.Human.MissChanceAt8Nps = 0);
         var durations = TapDurations(plan);
         Assert.Equal(hits.Length, durations.Length);
         Assert.InRange(durations.Average(), 40, 110);
@@ -80,7 +84,7 @@ public class ManiaHumanizerTests
         var hits = new ManiaHit[4];
         for (int c = 0; c < 4; c++)
             hits[c] = new ManiaHit(0, 0, c, false, false);
-        var plan = Humanize(hits, skill: 50, seed: 9, s => s.Misses = 0);
+        var plan = Humanize(hits, skill: 50, seed: 9, s => s.Human.MissChanceAt8Nps = 0);
         var presses = plan.Events.Where(e => e.Down).Select(e => Math.Floor(e.Time)).ToArray();
         Assert.Equal(4, presses.Length);
         Assert.Equal(presses.Length, presses.Distinct().Count());
@@ -99,7 +103,7 @@ public class ManiaHumanizerTests
     {
         var hits = Stream(300, gap: 40, columns: 4);
         var source = ManiaPlanner.Build(hits);
-        var plan = new ManiaHumanizer(new ManiaSettings { Skill = 0, Misses = 4 }, 5).Apply(source);
+            var plan = new ManiaHumanizer(new ManiaSettings { Skill = 0, Human = { MissChanceAt8Nps = 0.1 } }, 5).Apply(source);
         Assert.True(plan.HitCount < hits.Length);
         Assert.True(plan.HitCount > 0);
         Assert.Same(source.Hits, plan.Hits);

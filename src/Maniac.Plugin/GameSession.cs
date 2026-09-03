@@ -29,7 +29,7 @@ sealed class GameSession
     string lastError = "";
     ManiaPlayPlan? maniaSource;
     int maniaSeed;
-    ManiaHumanKey? maniaHumanKey;
+    ManiaHumanParams? maniaHumanKey;
 
     public AutoplayStatus Status;
     public string LastError => lastError;
@@ -162,10 +162,10 @@ sealed class GameSession
         if (sink == null)
             BindInput(ManiaPlanner.MaxColumn);
 
-        var key = ManiaHumanKey.From(settings.Current.Mania);
+        var key = ManiaHumanParams.From(settings.Current.Mania);
         if (maniaSource != null && maniaHumanKey != key)
         {
-            var plan = new ManiaHumanizer(settings.Current.Mania, maniaSeed).Apply(maniaSource);
+            var plan = new ManiaHumanizer(key, maniaSeed).Apply(maniaSource);
             mania.Unload(ActiveSink);
             mania.Load(plan);
             maniaHumanKey = key;
@@ -240,12 +240,6 @@ sealed class GameSession
         Status.Applied = 0;
         Status.Total = 0;
         Status.Columns = 0;
-    }
-
-    readonly record struct ManiaHumanKey(double Skill, double Pressure, double ChordRoll, double Misses, double TapLength, double EarlyLate)
-    {
-        public static ManiaHumanKey From(ManiaSettings mania) =>
-            new(mania.Skill, mania.Pressure, mania.ChordRoll, mania.Misses, mania.TapLength, mania.EarlyLate);
     }
 
     static Player? FindPlayer(OsuGame game)
