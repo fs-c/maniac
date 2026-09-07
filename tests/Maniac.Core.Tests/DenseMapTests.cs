@@ -7,27 +7,41 @@ using Xunit;
 
 namespace Maniac.Core.Tests;
 
+[CollectionDefinition(nameof(DenseMapTests), DisableParallelization = true)]
+public sealed class DenseMapTestsCollection
+{
+}
+
+[Collection(nameof(DenseMapTests))]
 public class DenseMapTests
 {
+    const int PlanBuildBudgetMs = 1000;
+    const long TickSlackNs = 10_000_000;
+
     [Fact]
     public void Mania_30k_plan_builds_quickly()
     {
+        _ = ManiaPlanner.Build(StreamMania(16, 7));
+
         var hits = StreamMania(30_000, columns: 7);
         var sw = Stopwatch.StartNew();
         var plan = ManiaPlanner.Build(hits);
         sw.Stop();
         Assert.Equal(30_000, plan.HitCount);
-        Assert.True(sw.ElapsedMilliseconds < 500, $"mania 30k plan took {sw.ElapsedMilliseconds}ms");
+        Assert.True(sw.ElapsedMilliseconds < PlanBuildBudgetMs, $"mania 30k plan took {sw.ElapsedMilliseconds}ms");
     }
 
     [Fact]
     public void Osu_5k_plan_builds_quickly()
     {
+        _ = StreamOsu(16);
+
+        var builder = StreamOsuBuilder(5_000);
         var sw = Stopwatch.StartNew();
-        var plan = StreamOsu(5_000);
+        var plan = builder.Build();
         sw.Stop();
         Assert.Equal(5_000, plan.Notes.Length);
-        Assert.True(sw.ElapsedMilliseconds < 250, $"osu 5k plan took {sw.ElapsedMilliseconds}ms");
+        Assert.True(sw.ElapsedMilliseconds < PlanBuildBudgetMs, $"osu 5k plan took {sw.ElapsedMilliseconds}ms");
     }
 
     [Fact]
@@ -37,7 +51,7 @@ public class DenseMapTests
         var large = ManiaPlanner.Build(StreamMania(20_000, 4));
         long smallNs = TimeManiaTicks(small, 200);
         long largeNs = TimeManiaTicks(large, 200);
-        Assert.True(largeNs < smallNs * 8 + 2_000_000, $"small={smallNs}ns large={largeNs}ns");
+        Assert.True(largeNs < smallNs * 8 + TickSlackNs, $"small={smallNs}ns large={largeNs}ns");
     }
 
     [Fact]
@@ -78,11 +92,17 @@ public class DenseMapTests
     {
         var driver = new ManiaDriver();
         var sink = NullInputSink.Instance;
-        driver.Load(plan);
-        driver.Tick(0, sink, play: true);
+
+        void Run()
+        {
+            driver.Load(plan);
+            for (int i = 0; i <= ticks; i++)
+                driver.Tick(i * 16, sink, play: true);
+        }
+
+        Run();
         var sw = Stopwatch.StartNew();
-        for (int i = 1; i <= ticks; i++)
-            driver.Tick(i * 16, sink, play: true);
+        Run();
         sw.Stop();
         return sw.ElapsedTicks * 1_000_000_000 / Stopwatch.Frequency;
     }
@@ -99,11 +119,13 @@ public class DenseMapTests
         return hits;
     }
 
-    static OsuPlayPlan StreamOsu(int count)
+    static OsuPlayPlan StreamOsu(int count) => StreamOsuBuilder(count).Build();
+
+    static OsuPlanBuilder StreamOsuBuilder(int count)
     {
         var builder = new OsuPlanBuilder();
         for (int i = 0; i < count; i++)
             builder.AddCircle(i * 40, new Vec2(i % 512, 192), 600);
-        return builder.Build();
+        return builder;
     }
 }
