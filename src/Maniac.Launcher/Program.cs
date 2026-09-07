@@ -52,7 +52,7 @@ static class Program
             if (result is not 0)
             {
                 Console.Error.WriteLine($"bootstrap returned {DescribeHostResult(result)}");
-                string log = Path.Combine(Path.GetTempPath(), "maniac-lazer", "bootstrap.log");
+                string log = ManiacPaths.BootstrapLog;
                 if (File.Exists(log))
                     Console.Error.WriteLine($"details: {log}");
                 return 1;

@@ -84,7 +84,7 @@ sealed class GameSession
             if (player != null)
                 ResetPlay();
             Status.Bound = false;
-            Status.Ruleset = "";
+            Status.Ruleset = null;
             return;
         }
 
@@ -117,9 +117,9 @@ sealed class GameSession
 
             time = clock.CurrentTime;
         }
-        catch
+        catch (Exception ex)
         {
-            Status.Diagnostic = "no clock";
+            Status.Diagnostic = $"no clock: {ex.GetType().Name}";
             return;
         }
         Status.Time = time;
@@ -147,11 +147,11 @@ sealed class GameSession
         Status.Total = 0;
     }
 
-    void TickMania(osu.Game.Screens.Play.GameplayState state, bool play, bool rulesetEnabled)
+    void TickMania(GameplayState state, bool play, bool rulesetEnabled)
     {
-        osu.Unload(ActiveSink);
         if (!chartLoaded || boundRuleset != "mania")
         {
+            osu.Unload(ActiveSink);
             maniaSource = ManiaAdapter.Build(state);
             maniaSeed = Random.Shared.Next();
             maniaHumanKey = null;
@@ -180,11 +180,11 @@ sealed class GameSession
         Status.Diagnostic = BindDiagnostic();
     }
 
-    void TickOsu(osu.Game.Screens.Play.GameplayState state, bool play, bool rulesetEnabled)
+    void TickOsu(GameplayState state, bool play, bool rulesetEnabled)
     {
-        mania.Unload(ActiveSink);
         if (!chartLoaded || boundRuleset != "osu")
         {
+            mania.Unload(ActiveSink);
             var plan = PlayPlanTransforms.ApplyAll(OsuAdapter.Build(state), osuTransforms);
             osu.Load(plan);
             boundRuleset = "osu";
@@ -220,10 +220,10 @@ sealed class GameSession
             sink.BindMouse(GameBindings.InputManagerOf(drawable), drawable);
     }
 
-    string BindDiagnostic() =>
+    string? BindDiagnostic() =>
         sink == null
             ? (string.IsNullOrEmpty(GameInputSink.LastFail) ? "no KeyBindingContainer" : GameInputSink.LastFail)
-            : "";
+            : null;
 
     void ResetPlay()
     {

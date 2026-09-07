@@ -87,7 +87,7 @@ public static class Entry
         }
         catch (Exception ex)
         {
-            LogTick(ex);
+            Session.Log(ex);
             session?.SetError(ex);
         }
     }
@@ -104,30 +104,6 @@ public static class Entry
         if (Hotkeys.TryParse(settings.Current.AutoplayHotkey, out Key autoKey)
             && Hotkeys.WasPressed(input, autoKey, ref autoHotkeyDown))
             panel.ToggleAuto();
-    }
-
-    static string? lastTickLog;
-    static long lastTickLogAt;
-
-    static void LogTick(Exception ex)
-    {
-        string text = ex.ToString();
-        long now = DateTime.UtcNow.Ticks;
-        if (text == lastTickLog && now - lastTickLogAt < TimeSpan.FromSeconds(30).Ticks)
-            return;
-        lastTickLog = text;
-        lastTickLogAt = now;
-
-        try
-        {
-            string dir = Path.Combine(Path.GetTempPath(), "maniac-lazer");
-            Directory.CreateDirectory(dir);
-            File.AppendAllText(Path.Combine(dir, "bootstrap.log"), $"{DateTime.Now:O} {ex}\n");
-        }
-        catch
-        {
-            // nowhere to write
-        }
     }
 
     static OsuGame? FindOsuGame(GameHost host)

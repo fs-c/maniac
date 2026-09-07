@@ -240,7 +240,7 @@ public static class Session
     static string? lastLog;
     static long lastLogTicks;
 
-    internal static void Log(Exception ex)
+    public static void Log(Exception ex)
     {
         string text = ex.ToString();
         long now = DateTime.UtcNow.Ticks;

@@ -103,7 +103,7 @@ public class ManiaHumanizerTests
     {
         var hits = Stream(300, gap: 40, columns: 4);
         var source = ManiaPlanner.Build(hits);
-            var plan = new ManiaHumanizer(new ManiaSettings { Skill = 0, Human = { MissChanceAt8Nps = 0.1 } }, 5).Apply(source);
+        var plan = new ManiaHumanizer(new ManiaSettings { Skill = 0, Human = { MissChanceAt8Nps = 0.1 } }, 5).Apply(source);
         Assert.True(plan.HitCount < hits.Length);
         Assert.True(plan.HitCount > 0);
         Assert.Same(source.Hits, plan.Hits);
