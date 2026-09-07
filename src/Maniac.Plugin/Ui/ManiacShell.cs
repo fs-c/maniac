@@ -8,6 +8,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Events;
+using osu.Game.Graphics;
 using osuTK;
 
 namespace Maniac.Plugin.Ui;
@@ -25,6 +26,7 @@ public partial class ManiacShell : CompositeDrawable
     readonly Container body;
     readonly Drawable compactBar;
     readonly StatusDot statusDot;
+    readonly BrandButton generalNav;
     readonly IconButton settingsButton;
     readonly IconButton panelToggle;
     readonly Container pageHost;
@@ -56,7 +58,7 @@ public partial class ManiacShell : CompositeDrawable
     readonly SpriteText? expiryDiagHint;
     double lastStatusAt;
     string lastPlayText = "";
-    string lastDiagText = "";
+    string? lastDiagText;
     bool lastAdvanced;
     double? skillPreview;
 
@@ -74,11 +76,19 @@ public partial class ManiacShell : CompositeDrawable
         Depth = float.MinValue;
         Name = "maniac-overlay";
 
+        generalNav = new BrandButton("maniac", () => OpenPage(0));
         nav =
         [
-            new PanelButton("General", () => ShowPage(0), fillWidth: true),
-            new PanelButton("osu!", () => ShowPage(1), fillWidth: true),
-            new PanelButton("mania", () => ShowPage(2), fillWidth: true),
+            new PanelButton(OsuIcon.RulesetOsu, () => OpenPage(1), "osu!standard")
+            {
+                Anchor = Anchor.CentreLeft,
+                Origin = Anchor.CentreLeft,
+            },
+            new PanelButton(OsuIcon.RulesetMania, () => OpenPage(2), "mania")
+            {
+                Anchor = Anchor.CentreLeft,
+                Origin = Anchor.CentreLeft,
+            },
         ];
 
         autoRow = new ToggleRow("Autoplay", store.Current.AutoplayEnabled && !BuildExpiry.Current.IsExpired(), v =>
@@ -168,10 +178,13 @@ public partial class ManiacShell : CompositeDrawable
         diagLine = new StatusLine();
         statusDot = new StatusDot();
         settingsButton = new IconButton(
-            new GearIcon { Colour = Colour4.White.Opacity(0.45f) },
+            UiTheme.Icon(OsuIcon.Settings, UiTheme.IconMedium, UiTheme.IconMuted),
             OpenSettings,
             "Reload, unload, and diagnostics");
-        panelToggle = new IconButton(new ChevronIcon(), ToggleExpanded, "Collapse panel");
+        panelToggle = new IconButton(
+            UiTheme.Icon(FontAwesome.Solid.ChevronDown, UiTheme.IconSmall),
+            ToggleExpanded,
+            "Collapse panel");
 
         pages =
         [
@@ -181,7 +194,7 @@ public partial class ManiacShell : CompositeDrawable
                 autoRow,
                 new KeybindRow("Toggle overlay", store.Current.PanelHotkey, v => store.Update(s => s.PanelHotkey = v), "Hotkey that hides or shows the overlay."),
                 new KeybindRow("Toggle autoplay", store.Current.AutoplayHotkey, v => store.Update(s => s.AutoplayHotkey = v), "Hotkey that turns autoplay on or off."),
-                UiLayout.Hint("The overlay hotkey hides everything. The chevron collapses to the compact bar. Settings are saved to %APPDATA%\\maniac-lazer\\settings.json.")),
+                UiLayout.Hint("Made by fsoc, github.com/fs-c/maniac")),
             UiLayout.Column(
                 UiLayout.Heading("osu!standard"),
                 osuRow,
@@ -219,8 +232,8 @@ public partial class ManiacShell : CompositeDrawable
         {
             RelativeSizeAxes = Axes.X,
             AutoSizeAxes = Axes.Y,
-            Padding = new MarginPadding { Horizontal = 12, Bottom = 12 },
-            Child = UiLayout.Column(UiLayout.Nav(nav), pageHost),
+            Padding = new MarginPadding { Horizontal = 12, Top = 4, Bottom = 12 },
+            Child = pageHost,
         };
 
         InternalChild = new OverlayTooltipContainer
@@ -232,10 +245,10 @@ public partial class ManiacShell : CompositeDrawable
                 RelativeSizeAxes = Axes.X,
                 AutoSizeAxes = Axes.Y,
                 Masking = true,
-                CornerRadius = 8,
+                CornerRadius = UiTheme.OverlayRadius,
                 Children = new Drawable[]
                 {
-                    new BlockingBox { RelativeSizeAxes = Axes.Both, Colour = Colour4.Black.Opacity(0.95f) },
+                    new BlockingBox { RelativeSizeAxes = Axes.Both, Colour = UiTheme.OverlayBackground },
                     new FillFlowContainer
                     {
                         RelativeSizeAxes = Axes.X,
@@ -279,10 +292,10 @@ public partial class ManiacShell : CompositeDrawable
         RelativeSizeAxes = Axes.X,
         AutoSizeAxes = Axes.Y,
         Masking = true,
-        CornerRadius = 6,
+        CornerRadius = UiTheme.InsetRadius,
         Children = new Drawable[]
         {
-            new Box { RelativeSizeAxes = Axes.Both, Colour = Colour4.White.Opacity(0.08f) },
+            new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.InsetBackground },
             new FillFlowContainer
             {
                 RelativeSizeAxes = Axes.X,
@@ -312,13 +325,9 @@ public partial class ManiacShell : CompositeDrawable
                 Children = new Drawable[]
                 {
                     statusDot,
-                    new SpriteText
-                    {
-                        Text = "maniac",
-                        Font = FontUsage.Default.With(size: 16, weight: "Bold"),
-                        Anchor = Anchor.CentreLeft,
-                        Origin = Anchor.CentreLeft,
-                    },
+                    generalNav,
+                    nav[0],
+                    nav[1],
                 },
             },
             new FillFlowContainer
@@ -351,15 +360,24 @@ public partial class ManiacShell : CompositeDrawable
         ApplyExpanded(expanded);
     }
 
+    void OpenPage(int index)
+    {
+        EnsureExpanded();
+        ShowPage(index);
+    }
+
     void OpenSettings()
     {
-        if (!body.IsPresent)
-        {
-            settings.Update(s => s.General.PanelExpanded = true);
-            ApplyExpanded(true);
-        }
-
+        EnsureExpanded();
         ShowPage(SettingsPage);
+    }
+
+    void EnsureExpanded()
+    {
+        if (body.IsPresent)
+            return;
+        settings.Update(s => s.General.PanelExpanded = true);
+        ApplyExpanded(true);
     }
 
     public void ToggleAuto()
@@ -424,8 +442,9 @@ public partial class ManiacShell : CompositeDrawable
 
     void ShowPage(int index)
     {
+        generalNav.SetActive(index == 0);
         for (int i = 0; i < nav.Length; i++)
-            nav[i].SetActive(i == index);
+            nav[i].SetActive(i + 1 == index);
         for (int i = 0; i < pages.Length; i++)
         {
             if (i == index)
@@ -473,7 +492,7 @@ public partial class ManiacShell : CompositeDrawable
             playLine.Text = play;
         }
 
-        string diag = snap.Diagnostic;
+        string? diag = snap.Diagnostic;
         if (string.IsNullOrEmpty(diag))
             diag = extraDiagnostic();
         if (!snap.ProbeOk)
@@ -510,9 +529,9 @@ public partial class ManiacShell : CompositeDrawable
     static string FormatPlay(in AutoplayStatus snap)
     {
         string mode = !snap.Enabled ? "off" : snap.Blocked ? "paused" : "on";
-        string ruleset = string.IsNullOrEmpty(snap.Ruleset) ? snap.Screen : snap.Ruleset;
+        string? ruleset = string.IsNullOrEmpty(snap.Ruleset) ? snap.Screen : snap.Ruleset;
         if (snap.Total == 0)
-            return $"{mode} · {ruleset}";
+            return ruleset == null ? mode : $"{mode} · {ruleset}";
         string keys = snap.Columns > 0 ? $"{snap.Columns}k " : "";
         return $"{mode} · {keys}{snap.Applied}/{snap.Total} · t={snap.Time:0}";
     }

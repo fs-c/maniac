@@ -5,7 +5,6 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
-using osu.Game.Graphics;
 using osuTK;
 
 namespace Maniac.Plugin.Ui;
@@ -31,94 +30,69 @@ sealed partial class StatusDot : CircularContainer, IHasTooltip
 
     public StatusDot()
     {
-        Size = new Vector2(11);
+        Size = new Vector2(UiTheme.StatusDotSize);
         Masking = true;
         BorderThickness = 1.6f;
-        BorderColour = Colour4.White.Opacity(0.5f);
+        BorderColour = UiTheme.DotBorder;
         Child = fill = new Circle
         {
-            Size = new Vector2(7),
+            Size = new Vector2(UiTheme.StatusDotFill),
             Anchor = Anchor.Centre,
             Origin = Anchor.Centre,
-            Colour = Colour4.FromHex("7dffb3"),
+            Colour = UiTheme.Accent,
         };
     }
 
     public void SetState(bool on, bool paused, string tooltip)
     {
         fill.Alpha = on ? 1 : 0;
-        fill.Colour = paused ? Colour4.FromHex("ffd36a") : Colour4.FromHex("7dffb3");
-        BorderColour = Colour4.White.Opacity(on ? 0.35f : 0.5f);
+        fill.Colour = paused ? UiTheme.Warning : UiTheme.Accent;
+        BorderColour = on ? UiTheme.DotBorderOn : UiTheme.DotBorder;
         TooltipText = tooltip;
     }
 }
 
-sealed partial class ChevronIcon : CompositeDrawable
+sealed partial class BrandButton : ClickableContainer
 {
-    public ChevronIcon()
-    {
-        Size = new Vector2(12, 7);
-        Origin = Anchor.Centre;
-        Anchor = Anchor.Centre;
-        InternalChildren = new Drawable[]
-        {
-            Arm(-1),
-            Arm(1),
-        };
-    }
+    readonly Box background;
+    bool active;
 
-    static Box Arm(int side) => new()
+    public BrandButton(string text, Action action)
     {
-        Size = new Vector2(8, 1.8f),
-        Origin = Anchor.Centre,
-        Anchor = Anchor.TopCentre,
-        X = side * 2.7f,
-        Y = 3.6f,
-        Rotation = side * 38,
-        Colour = Colour4.White,
-    };
-}
-
-sealed partial class GearIcon : CompositeDrawable
-{
-    public GearIcon()
-    {
-        Size = new Vector2(14);
-        Origin = Anchor.Centre;
-        Anchor = Anchor.Centre;
-        InternalChildren = new Drawable[]
+        AutoSizeAxes = Axes.Both;
+        Action = action;
+        Masking = true;
+        CornerRadius = UiTheme.ControlRadius;
+        Anchor = Anchor.CentreLeft;
+        Origin = Anchor.CentreLeft;
+        Children = new Drawable[]
         {
-            Spoke(0),
-            Spoke(45),
-            Spoke(90),
-            Spoke(135),
-            new CircularContainer
+            background = new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.ChromeIdle },
+            new SpriteText
             {
-                Size = new Vector2(8),
+                Text = text,
+                Font = UiTheme.Heading,
                 Anchor = Anchor.Centre,
                 Origin = Anchor.Centre,
-                Masking = true,
-                BorderThickness = 1.7f,
-                BorderColour = Colour4.White,
-                Child = new Box { RelativeSizeAxes = Axes.Both, Alpha = 0 },
+                Padding = new MarginPadding { Horizontal = 6, Vertical = 4 },
             },
         };
     }
 
-    static Drawable Spoke(float rotation) => new Container
+    public void SetActive(bool value)
     {
-        RelativeSizeAxes = Axes.Both,
-        Anchor = Anchor.Centre,
-        Origin = Anchor.Centre,
-        Rotation = rotation,
-        Child = new Box
-        {
-            Size = new Vector2(2.4f, 12),
-            Anchor = Anchor.Centre,
-            Origin = Anchor.Centre,
-            Colour = Colour4.White,
-        },
-    };
+        active = value;
+        // background.Colour = UiTheme.ChromeFill(value);
+    }
+
+    protected override bool OnHover(HoverEvent e)
+    {
+        // background.Colour = UiTheme.ChromeFill(active, hovered: true);
+        return true;
+    }
+
+    // protected override void OnHoverLost(HoverLostEvent e) =>
+    //     background.Colour = UiTheme.ChromeFill(active);
 }
 
 sealed partial class IconButton : ClickableContainer, IHasTooltip
@@ -131,17 +105,17 @@ sealed partial class IconButton : ClickableContainer, IHasTooltip
 
     public IconButton(Drawable icon, Action action, string tooltip)
     {
-        Size = new Vector2(28);
+        Size = new Vector2(UiTheme.ButtonSize);
         Action = action;
         TooltipText = tooltip;
         this.icon = icon;
         Masking = true;
-        CornerRadius = 4;
+        CornerRadius = UiTheme.ControlRadius;
         icon.Anchor = Anchor.Centre;
         icon.Origin = Anchor.Centre;
         Children = new Drawable[]
         {
-            background = new Box { RelativeSizeAxes = Axes.Both, Colour = Colour4.White.Opacity(0) },
+            background = new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.ChromeIdle },
             icon,
         };
     }
@@ -151,25 +125,26 @@ sealed partial class IconButton : ClickableContainer, IHasTooltip
     public void SetActive(bool value)
     {
         active = value;
-        background.Colour = Colour4.White.Opacity(value ? 0.18f : 0);
+        background.Colour = UiTheme.ChromeFill(value);
     }
 
     protected override bool OnHover(HoverEvent e)
     {
-        if (!active)
-            background.Colour = Colour4.White.Opacity(0.1f);
+        background.Colour = UiTheme.ChromeFill(active, hovered: true);
         return true;
     }
 
     protected override void OnHoverLost(HoverLostEvent e) =>
-        background.Colour = Colour4.White.Opacity(active ? 0.18f : 0);
+        background.Colour = UiTheme.ChromeFill(active);
 }
 
-sealed partial class PanelButton : ClickableContainer
+sealed partial class PanelButton : ClickableContainer, IHasTooltip
 {
     readonly Box background;
-    readonly SpriteText label;
+    readonly SpriteText? label;
     bool active;
+
+    public LocalisableString TooltipText { get; set; }
 
     public PanelButton(string text, Action action, float minWidth = 72, bool fillWidth = false)
     {
@@ -182,44 +157,61 @@ sealed partial class PanelButton : ClickableContainer
         else
             Width = minWidth;
         Action = action;
-        Masking = true;
-        CornerRadius = 4;
-        Children = new Drawable[]
+        label = new SpriteText
         {
-            background = new Box
-            {
-                RelativeSizeAxes = Axes.Both,
-                Colour = Colour4.White.Opacity(0.12f),
-            },
-            label = new SpriteText
-            {
-                Text = text,
-                Font = FontUsage.Default.With(size: 13),
-                Anchor = Anchor.Centre,
-                Origin = Anchor.Centre,
-                Padding = new MarginPadding { Horizontal = 8, Vertical = 5 },
-            },
+            Text = text,
+            Font = UiTheme.Body,
+            Anchor = Anchor.Centre,
+            Origin = Anchor.Centre,
+            Padding = new MarginPadding { Horizontal = 8, Vertical = 5 },
         };
+        background = MakeBackground();
+        Finish(label);
     }
 
-    public void SetText(string text) => label.Text = text;
+    public PanelButton(IconUsage icon, Action action, string tooltip)
+    {
+        Size = new Vector2(UiTheme.ButtonSize);
+        Action = action;
+        TooltipText = tooltip;
+        background = MakeBackground();
+        Finish(UiTheme.Icon(icon, UiTheme.IconLarge));
+    }
+
+    static Box MakeBackground() => new()
+    {
+        RelativeSizeAxes = Axes.Both,
+        Colour = UiTheme.TabIdle,
+    };
+
+    void Finish(Drawable content)
+    {
+        Masking = true;
+        CornerRadius = UiTheme.ControlRadius;
+        Children = new Drawable[] { background, content };
+    }
+
+    public void SetText(string text)
+    {
+        if (label != null)
+            label.Text = text;
+    }
 
     public void SetActive(bool value)
     {
         active = value;
-        background.Colour = Colour4.White.Opacity(value ? 0.28f : 0.12f);
+        background.Colour = UiTheme.TabFill(value);
     }
 
     protected override bool OnHover(HoverEvent e)
     {
-        if (!active)
-            background.Colour = Colour4.White.Opacity(0.2f);
+        background.Colour = UiTheme.TabFill(active, hovered: true);
         return true;
     }
 
     protected override void OnHoverLost(HoverLostEvent e)
     {
-        background.Colour = Colour4.White.Opacity(active ? 0.28f : 0.12f);
+        background.Colour = UiTheme.TabFill(active);
     }
 }
 
@@ -251,15 +243,15 @@ sealed partial class ToggleRow : CompositeDrawable, IHasTooltip
                     new SpriteText
                     {
                         Text = title,
-                        Font = FontUsage.Default.With(size: 13),
+                        Font = UiTheme.Body,
                         Anchor = Anchor.CentreLeft,
                         Origin = Anchor.CentreLeft,
                     },
                     value = new SpriteText
                     {
                         Text = Label(on),
-                        Font = FontUsage.Default.With(size: 13, weight: "Bold"),
-                        Colour = on ? Colour4.FromHex("7dffb3") : Colour4.White.Opacity(0.6f),
+                        Font = UiTheme.BodyBold,
+                        Colour = UiTheme.OnOff(on),
                     },
                 },
             },
@@ -270,7 +262,7 @@ sealed partial class ToggleRow : CompositeDrawable, IHasTooltip
     {
         on = !on;
         value.Text = Label(on);
-        value.Colour = on ? Colour4.FromHex("7dffb3") : Colour4.White.Opacity(0.6f);
+        value.Colour = UiTheme.OnOff(on);
         changed(on);
         return true;
     }
@@ -279,7 +271,7 @@ sealed partial class ToggleRow : CompositeDrawable, IHasTooltip
     {
         on = valueOn;
         value.Text = Label(on);
-        value.Colour = on ? Colour4.FromHex("7dffb3") : Colour4.White.Opacity(0.6f);
+        value.Colour = UiTheme.OnOff(on);
     }
 
     static string Label(bool value) => value ? "ON" : "OFF";
@@ -320,16 +312,16 @@ sealed partial class DisclosureRow : CompositeDrawable
                         titleElement = new SpriteText
                         {
                             Text = title,
-                            Font = FontUsage.Default.With(size: 13, weight: FontWeight.SemiBold),
-                            Colour = Colour4.White.Opacity(0.9f),
+                            Font = UiTheme.BodySemiBold,
+                            Colour = UiTheme.TextEmphasis,
                             Anchor = Anchor.CentreLeft,
                             Origin = Anchor.CentreLeft,
                         },
                         action = new SpriteText
                         {
                             Text = ActionLabel(open),
-                            Font = FontUsage.Default.With(size: 12, weight: FontWeight.SemiBold),
-                            Colour = Colour4.FromHex("7dffb3").Opacity(0.9f),
+                            Font = UiTheme.SmallSemiBold,
+                            Colour = UiTheme.AccentEmphasis,
                             Anchor = Anchor.CentreRight,
                             Origin = Anchor.CentreRight,
                         },
@@ -341,15 +333,15 @@ sealed partial class DisclosureRow : CompositeDrawable
 
     protected override bool OnHover(HoverEvent e)
     {
-        titleElement.Font = FontUsage.Default.With(size: 13, weight: FontWeight.Bold);
-        action.Font = FontUsage.Default.With(size: 12, weight: FontWeight.Bold);
+        titleElement.Font = UiTheme.BodyBold;
+        action.Font = UiTheme.SmallBold;
         return true;
     }
 
     protected override void OnHoverLost(HoverLostEvent e)
     {
-        titleElement.Font = FontUsage.Default.With(size: 13, weight: FontWeight.SemiBold);
-        action.Font = FontUsage.Default.With(size: 12, weight: FontWeight.SemiBold);
+        titleElement.Font = UiTheme.BodySemiBold;
+        action.Font = UiTheme.SmallSemiBold;
     }
 
     protected override bool OnClick(ClickEvent e)
@@ -388,18 +380,18 @@ sealed partial class QuietLink : ClickableContainer, IHasTooltip
         Child = label = new SpriteText
         {
             Text = text,
-            Font = FontUsage.Default.With(size: 12),
-            Colour = Colour4.White.Opacity(0.4f),
+            Font = UiTheme.Small,
+            Colour = UiTheme.TextQuiet,
         };
     }
 
     protected override bool OnHover(HoverEvent e)
     {
-        label.Colour = Colour4.White.Opacity(0.7f);
+        label.Colour = UiTheme.TextSecondary;
         return true;
     }
 
-    protected override void OnHoverLost(HoverLostEvent e) => label.Colour = Colour4.White.Opacity(0.4f);
+    protected override void OnHoverLost(HoverLostEvent e) => label.Colour = UiTheme.TextQuiet;
 }
 
 sealed partial class KeybindRow : CompositeDrawable, IHasTooltip
@@ -429,14 +421,14 @@ sealed partial class KeybindRow : CompositeDrawable, IHasTooltip
                     new SpriteText
                     {
                         Text = title,
-                        Font = FontUsage.Default.With(size: 13),
+                        Font = UiTheme.Body,
                         Anchor = Anchor.CentreLeft,
                         Origin = Anchor.CentreLeft,
                     },
                     value = new SpriteText
                     {
                         Text = current,
-                        Font = FontUsage.Default.With(size: 13, weight: "Bold"),
+                        Font = UiTheme.BodyBold,
                     },
                 },
             },
@@ -466,8 +458,8 @@ sealed partial class StatusLine : SpriteText
 {
     public StatusLine()
     {
-        Font = FontUsage.Default.With(size: 12);
-        Colour = Colour4.White.Opacity(0.75f);
+        Font = UiTheme.Small;
+        Colour = UiTheme.TextBody;
         RelativeSizeAxes = Axes.X;
         Truncate = true;
     }
@@ -505,22 +497,22 @@ static class UiLayout
     public static SpriteText Heading(string text) => new()
     {
         Text = text,
-        Font = FontUsage.Default.With(size: 16, weight: "Bold"),
+        Font = UiTheme.Heading,
     };
 
     public static SpriteText Hint(string text) => new()
     {
         Text = text,
-        Font = FontUsage.Default.With(size: 11),
-        Colour = Colour4.White.Opacity(0.55f),
+        Font = UiTheme.Caption,
+        Colour = UiTheme.TextMuted,
         RelativeSizeAxes = Axes.X,
     };
 
     public static SpriteText Section(string text) => new()
     {
         Text = text,
-        Font = FontUsage.Default.With(size: 12, weight: "Bold"),
-        Colour = Colour4.White.Opacity(0.7f),
+        Font = UiTheme.SmallBold,
+        Colour = UiTheme.TextSecondary,
         Margin = new MarginPadding { Top = 4 },
     };
 }
@@ -571,7 +563,7 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
         valueText = new SpriteText
         {
             Text = format(value),
-            Font = FontUsage.Default.With(size: 13, weight: "Bold"),
+            Font = UiTheme.BodyBold,
             Anchor = Anchor.CentreRight,
             Origin = Anchor.CentreRight,
         };
@@ -580,7 +572,7 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
         {
             RelativeSizeAxes = Axes.Both,
             Width = 0,
-            Colour = Colour4.FromHex("7dffb3").Opacity(0.85f),
+            Colour = UiTheme.SliderFill(),
             Anchor = Anchor.CentreLeft,
             Origin = Anchor.CentreLeft,
         };
@@ -588,12 +580,12 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
         var bar = new SliderTrack
         {
             RelativeSizeAxes = Axes.X,
-            Height = 10,
+            Height = UiTheme.SliderHeight,
             Masking = true,
-            CornerRadius = 3,
+            CornerRadius = UiTheme.SliderRadius,
             Children = new Drawable[]
             {
-                new Box { RelativeSizeAxes = Axes.Both, Colour = Colour4.White.Opacity(0.12f) },
+                new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.Well },
                 fill,
             },
         };
@@ -622,7 +614,7 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
                             new SpriteText
                             {
                                 Text = title,
-                                Font = FontUsage.Default.With(size: 13),
+                                Font = UiTheme.Body,
                                 Anchor = Anchor.CentreLeft,
                                 Origin = Anchor.CentreLeft,
                             },
@@ -737,14 +729,14 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
 
         valueText = new SpriteText
         {
-            Font = FontUsage.Default.With(size: 13, weight: "Bold"),
+            Font = UiTheme.BodyBold,
             Anchor = Anchor.CentreRight,
             Origin = Anchor.CentreRight,
         };
 
         stateText = new SpriteText
         {
-            Font = FontUsage.Default.With(size: 11, weight: "Bold"),
+            Font = UiTheme.CaptionBold,
             Anchor = Anchor.CentreRight,
             Origin = Anchor.CentreRight,
         };
@@ -753,7 +745,7 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
         {
             RelativeSizeAxes = Axes.Both,
             Width = 0,
-            Colour = Colour4.FromHex("7dffb3").Opacity(0.85f),
+            Colour = UiTheme.SliderFill(),
             Anchor = Anchor.CentreLeft,
             Origin = Anchor.CentreLeft,
         };
@@ -761,12 +753,12 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
         var bar = new SliderTrack
         {
             RelativeSizeAxes = Axes.X,
-            Height = 10,
+            Height = UiTheme.SliderHeight,
             Masking = true,
-            CornerRadius = 3,
+            CornerRadius = UiTheme.SliderRadius,
             Children = new Drawable[]
             {
-                new Box { RelativeSizeAxes = Axes.Both, Colour = Colour4.White.Opacity(0.12f) },
+                new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.Well },
                 fill,
             },
         };
@@ -809,7 +801,7 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
                             new SpriteText
                             {
                                 Text = title,
-                                Font = FontUsage.Default.With(size: 13),
+                                Font = UiTheme.Body,
                                 Anchor = Anchor.CentreLeft,
                                 Origin = Anchor.CentreLeft,
                             },
@@ -879,8 +871,8 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
     {
         valueText.Text = format(value);
         stateText.Text = custom ? "Custom" : "Auto";
-        stateText.Colour = custom ? Colour4.FromHex("7dffb3") : Colour4.White.Opacity(0.45f);
-        fill.Colour = Colour4.FromHex("7dffb3").Opacity(custom ? 0.85f : 0.45f);
+        stateText.Colour = custom ? UiTheme.Accent : UiTheme.TextFaint;
+        fill.Colour = UiTheme.SliderFill(custom);
         float t = max <= min ? 0 : (float)((value - min) / (max - min));
         fill.Width = Math.Clamp(t, 0, 1);
     }
@@ -931,18 +923,18 @@ sealed partial class OverlayTooltip : VisibilityContainer, ITooltip
         AutoSizeAxes = Axes.Y;
         BypassAutoSizeAxes = Axes.Both;
         Masking = true;
-        CornerRadius = 4;
+        CornerRadius = UiTheme.ControlRadius;
         Children = new Drawable[]
         {
             new Box
             {
                 RelativeSizeAxes = Axes.Both,
-                Colour = Colour4.Black.Opacity(0.94f),
+                Colour = UiTheme.TooltipBackground,
             },
             text = new TextFlowContainer(t =>
             {
-                t.Font = FontUsage.Default.With(size: 12);
-                t.Colour = Colour4.White.Opacity(0.9f);
+                t.Font = UiTheme.Small;
+                t.Colour = UiTheme.TextEmphasis;
             })
             {
                 RelativeSizeAxes = Axes.X,
