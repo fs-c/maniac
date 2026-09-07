@@ -9,3 +9,7 @@ TestResults/
 
 # mania-human experiment caches (replays, beatmaps, oauth)
 experiments/mania-human/data/
+
+# in principle it would be nice to have this in the root for a consistent development experience,
+# but it would require some tweaks so for now we exclude it
+.vscode

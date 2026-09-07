@@ -22,15 +22,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Maniac.Bootstrap\Maniac.Bootstrap.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
     </ProjectReference>
     <ProjectReference Include="..\Maniac.Plugin\Maniac.Plugin.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj">
-      <GlobalPropertiesToRemove>Platform</GlobalPropertiesToRemove>
-    </ProjectReference>
+    <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj" />
   </ItemGroup>
   <Target Name="CopyPlugin" AfterTargets="Build">
     <PropertyGroup>
