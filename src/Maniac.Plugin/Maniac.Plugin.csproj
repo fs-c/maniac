@@ -6,6 +6,9 @@
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Maniac.Compatibility.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="osu.Framework">
       <HintPath>$(LazerDir)\osu.Framework.dll</HintPath>
       <Private>false</Private>

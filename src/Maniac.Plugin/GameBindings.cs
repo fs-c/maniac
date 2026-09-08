@@ -23,6 +23,7 @@ public sealed class ProbeResult
 public static class GameBindings
 {
     public static ProbeResult LastProbe { get; private set; } = new();
+    public static ProbeResult LastInputProbe { get; private set; } = new();
 
     static PropertyInfo? hostRoot;
     static FieldInfo? internalChildren;
@@ -121,6 +122,49 @@ public static class GameBindings
     {
         object? manager = Member(drawableRuleset, "KeyBindingInputManager");
         return manager == null ? null : Member(manager, "KeyBindingContainer");
+    }
+
+    public static ProbeResult ProbeInput(object drawableRuleset)
+    {
+        var result = new ProbeResult();
+        object? manager = Member(drawableRuleset, "KeyBindingInputManager");
+        if (manager == null)
+        {
+            result.Failures.Add("missing KeyBindingInputManager");
+            LastInputProbe = result;
+            return result;
+        }
+
+        result.Resolved.Add("KeyBindingInputManager");
+        object? kbc = Member(manager, "KeyBindingContainer");
+        if (kbc == null)
+        {
+            result.Failures.Add("missing KeyBindingContainer");
+            LastInputProbe = result;
+            return result;
+        }
+
+        result.Resolved.Add("KeyBindingContainer");
+        var actionType = KeyBindingActionType(kbc);
+        if (actionType == null)
+        {
+            result.Failures.Add("no action type on KeyBindingContainer");
+            LastInputProbe = result;
+            return result;
+        }
+
+        result.Resolved.Add($"KeyBindingContainer<{actionType.Name}>");
+        if (FindTrigger(kbc, "TriggerPressed", actionType) == null)
+            result.Failures.Add("missing TriggerPressed");
+        else
+            result.Resolved.Add("TriggerPressed");
+        if (FindTrigger(kbc, "TriggerReleased", actionType) == null)
+            result.Failures.Add("missing TriggerReleased");
+        else
+            result.Resolved.Add("TriggerReleased");
+
+        LastInputProbe = result;
+        return result;
     }
 
     static PropertyInfo? Require(ProbeResult result, Type type, string name, bool isProperty, bool required)

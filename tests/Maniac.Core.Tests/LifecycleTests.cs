@@ -22,6 +22,18 @@ public class LifecycleTests
     }
 
     [Fact]
+    public void Pipeline_rebuilds_from_source()
+    {
+        var source = ManiaPlanner.Build([new ManiaHit(0, 0, 0, false, false)]);
+        var pipeline = new PlayPlanPipeline<ManiaPlayPlan>();
+        pipeline.SetSource(source, [new IdentityManiaTransform()]);
+        Assert.Same(source, pipeline.Source);
+        Assert.Same(source, pipeline.Output);
+        var rebuilt = pipeline.Rebuild([new IdentityManiaTransform()]);
+        Assert.Same(source, rebuilt);
+    }
+
+    [Fact]
     public void Identity_transform_does_not_change_events()
     {
         var plan = ManiaPlanner.Build([new ManiaHit(0, 0, 0, false, false)]);

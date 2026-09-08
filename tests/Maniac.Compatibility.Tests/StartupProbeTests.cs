@@ -53,6 +53,21 @@ public class StartupProbeTests
         Assert.Equal(1, box.Releases);
     }
 
+    [Fact]
+    public void BindTrigger_compiles_press_and_release()
+    {
+        var box = new DummyContainer();
+        var pressed = GameBindings.FindTrigger(box, "TriggerPressed", typeof(DummyAction));
+        var released = GameBindings.FindTrigger(box, "TriggerReleased", typeof(DummyAction));
+        var press = GameInputSink.BindTrigger(box, pressed!, typeof(DummyAction), 1);
+        var release = GameInputSink.BindTrigger(box, released!, typeof(DummyAction), 1);
+        press(0);
+        release(0);
+        press(8);
+        Assert.Equal(1, box.Presses);
+        Assert.Equal(1, box.Releases);
+    }
+
     enum DummyAction { Key1 }
 
     sealed class DummyContainer

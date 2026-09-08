@@ -6,6 +6,8 @@ namespace Maniac.Core.Settings;
 
 public sealed class SettingsStore
 {
+    public static readonly TimeSpan DefaultSaveDelay = TimeSpan.FromMilliseconds(250);
+
     static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
@@ -16,15 +18,23 @@ public sealed class SettingsStore
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
+    readonly object gate = new();
+    readonly TimeSpan saveDelay;
+    CancellationTokenSource? saveCts;
+    int saveGeneration;
+
     public string FilePath { get; }
     public ManiacSettings Current { get; private set; }
+    public string LastLoadError { get; private set; } = "";
 
     public event Action<ManiacSettings>? Changed;
 
-    public SettingsStore(string? filePath = null)
+    public SettingsStore(string? filePath = null, TimeSpan? saveDelay = null)
     {
         FilePath = filePath ?? DefaultPath();
-        Current = LoadOrDefault(FilePath);
+        this.saveDelay = saveDelay ?? DefaultSaveDelay;
+        Current = LoadOrDefault(FilePath, out string error);
+        LastLoadError = error;
     }
 
     public static string DefaultDirectory() =>
@@ -34,26 +44,96 @@ public sealed class SettingsStore
 
     public void Update(Action<ManiacSettings> mutate)
     {
-        mutate(Current);
-        Save();
+        lock (gate)
+        {
+            mutate(Current);
+            Current = Sanitize(Current);
+            Current.Version = ManiacSettings.CurrentVersion;
+        }
+
         Changed?.Invoke(Current);
+        ScheduleSave();
     }
 
     public void Replace(ManiacSettings settings)
     {
-        Current = Sanitize(settings);
-        Save();
+        lock (gate)
+        {
+            Current = Sanitize(settings);
+            Current.Version = ManiacSettings.CurrentVersion;
+        }
+
         Changed?.Invoke(Current);
+        Flush();
     }
 
     public void Reset() => Replace(new ManiacSettings());
 
-    public void Save()
+    public void Flush()
     {
+        CancelScheduled();
+        WriteNow();
+    }
+
+    void ScheduleSave()
+    {
+        if (saveDelay <= TimeSpan.Zero)
+        {
+            WriteNow();
+            return;
+        }
+
+        int gen = Interlocked.Increment(ref saveGeneration);
+        var cts = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref saveCts, cts);
+        Cancel(previous);
+        TimeSpan delay = saveDelay;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delay, cts.Token).ConfigureAwait(false);
+                if (gen != Volatile.Read(ref saveGeneration))
+                    return;
+                WriteNow();
+            }
+            catch (OperationCanceledException)
+            {
+                // superseded
+            }
+            catch (Exception ex)
+            {
+                LogIo("save", FilePath, ex);
+            }
+        });
+    }
+
+    void CancelScheduled()
+    {
+        Interlocked.Increment(ref saveGeneration);
+        Cancel(Interlocked.Exchange(ref saveCts, null));
+    }
+
+    static void Cancel(CancellationTokenSource? cts)
+    {
+        if (cts == null)
+            return;
+        try { cts.Cancel(); }
+        catch { /* disposed */ }
+        cts.Dispose();
+    }
+
+    void WriteNow()
+    {
+        string json;
+        lock (gate)
+        {
+            Current = Sanitize(Current);
+            Current.Version = ManiacSettings.CurrentVersion;
+            json = JsonSerializer.Serialize(Current, JsonOptions);
+        }
+
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-        Current = Sanitize(Current);
-        Current.Version = ManiacSettings.CurrentVersion;
-        string json = JsonSerializer.Serialize(Current, JsonOptions);
         string temp = FilePath + ".tmp";
         File.WriteAllText(temp, json);
         if (File.Exists(FilePath))
@@ -62,8 +142,11 @@ public sealed class SettingsStore
             File.Move(temp, FilePath);
     }
 
-    public static ManiacSettings LoadOrDefault(string path)
+    public static ManiacSettings LoadOrDefault(string path) => LoadOrDefault(path, out _);
+
+    public static ManiacSettings LoadOrDefault(string path, out string error)
     {
+        error = "";
         try
         {
             if (!File.Exists(path))
@@ -72,9 +155,24 @@ public sealed class SettingsStore
             var loaded = JsonSerializer.Deserialize<ManiacSettings>(json, JsonOptions);
             return Sanitize(loaded ?? new ManiacSettings());
         }
+        catch (Exception ex)
+        {
+            error = $"{ex.GetType().Name}: {ex.Message}";
+            LogIo("load", path, ex);
+            return new ManiacSettings();
+        }
+    }
+
+    static void LogIo(string op, string path, Exception ex)
+    {
+        try
+        {
+            Directory.CreateDirectory(ManiacPaths.LogDirectory);
+            File.AppendAllText(ManiacPaths.BootstrapLog, $"{DateTime.Now:O} settings {op} {path}: {ex}\n");
+        }
         catch
         {
-            return new ManiacSettings();
+            // nowhere to write
         }
     }
 

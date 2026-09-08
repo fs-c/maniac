@@ -277,6 +277,17 @@ sealed partial class ToggleRow : CompositeDrawable, IHasTooltip
     static string Label(bool value) => value ? "ON" : "OFF";
 }
 
+static class SliderMath
+{
+    public static double Snap(double v, double min, double max, double step)
+    {
+        v = Math.Clamp(v, min, max);
+        if (step <= 0)
+            return v;
+        return Math.Clamp(min + Math.Round((v - min) / step) * step, min, max);
+    }
+}
+
 sealed partial class DisclosureRow : CompositeDrawable
 {
     readonly Box background;
@@ -555,7 +566,7 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
         released = onRelease;
         this.format = format;
         TooltipText = tooltip;
-        value = Snap(initial);
+        value = SliderMath.Snap(initial, min, max, step);
         saved = value;
         RelativeSizeAxes = Axes.X;
         AutoSizeAxes = Axes.Y;
@@ -633,7 +644,7 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
     {
         if (dragging)
             return;
-        value = Snap(next);
+        value = SliderMath.Snap(next, min, max, step);
         saved = value;
         Refresh();
     }
@@ -645,7 +656,7 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
         if (width <= 0)
             return;
         float t = Math.Clamp(track.ToLocalSpace(screen).X / width, 0, 1);
-        value = Snap(min + t * (max - min));
+        value = SliderMath.Snap(min + t * (max - min), min, max, step);
         Refresh();
         preview?.Invoke(value);
     }
@@ -669,14 +680,6 @@ sealed partial class SliderRow : CompositeDrawable, IHasTooltip
         valueText.Text = format(value);
         float t = max <= min ? 0 : (float)((value - min) / (max - min));
         fill.Width = Math.Clamp(t, 0, 1);
-    }
-
-    double Snap(double v)
-    {
-        v = Math.Clamp(v, min, max);
-        if (step <= 0)
-            return v;
-        return Math.Clamp(min + Math.Round((v - min) / step) * step, min, max);
     }
 }
 
@@ -722,7 +725,7 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
         this.format = format;
         this.tooltip = tooltip;
         this.custom = custom;
-        value = Snap(initial);
+        value = SliderMath.Snap(initial, min, max, step);
         saved = value;
         RelativeSizeAxes = Axes.X;
         AutoSizeAxes = Axes.Y;
@@ -822,7 +825,7 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
         if (dragging)
             return;
         custom = isCustom;
-        value = Snap(next);
+        value = SliderMath.Snap(next, min, max, step);
         saved = value;
         Refresh();
     }
@@ -850,7 +853,7 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
         if (width <= 0)
             return;
         float t = Math.Clamp(track.ToLocalSpace(screen).X / width, 0, 1);
-        value = Snap(min + t * (max - min));
+        value = SliderMath.Snap(min + t * (max - min), min, max, step);
         custom = true;
         Refresh();
     }
@@ -875,14 +878,6 @@ sealed partial class AutoSliderRow : CompositeDrawable, IHasTooltip
         fill.Colour = UiTheme.SliderFill(custom);
         float t = max <= min ? 0 : (float)((value - min) / (max - min));
         fill.Width = Math.Clamp(t, 0, 1);
-    }
-
-    double Snap(double v)
-    {
-        v = Math.Clamp(v, min, max);
-        if (step <= 0)
-            return v;
-        return Math.Clamp(min + Math.Round((v - min) / step) * step, min, max);
     }
 }
 

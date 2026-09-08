@@ -6,7 +6,6 @@ using Maniac.Core.Planning;
 using Maniac.Core.Settings;
 using Maniac.Core.Status;
 using Maniac.Plugin.Adapters;
-using osu.Framework.Input;
 using osu.Game;
 using osu.Game.Rulesets.UI;
 using osu.Game.Screens.Play;
@@ -15,10 +14,13 @@ namespace Maniac.Plugin;
 
 sealed class GameSession
 {
+    const int BindRetryInterval = 30;
+
     readonly SettingsStore settings;
     readonly ManiaDriver mania = new();
     readonly OsuDriver osu = new();
-    readonly IReadOnlyList<IPlayPlanTransform<OsuPlayPlan>> osuTransforms;
+    readonly PlayPlanPipeline<ManiaPlayPlan> maniaPipeline = new();
+    readonly PlayPlanPipeline<OsuPlayPlan> osuPipeline = new();
 
     Player? player;
     DrawableRuleset? drawable;
@@ -26,19 +28,28 @@ sealed class GameSession
     string boundRuleset = "";
     object? lastScreen;
     bool chartLoaded;
+    bool inputProbed;
     string lastError = "";
-    ManiaPlayPlan? maniaSource;
     int maniaSeed;
     ManiaHumanParams? maniaHumanKey;
+    int bindFailStreak;
 
     public AutoplayStatus Status;
-    public string LastError => lastError;
+    public string LastError
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(lastError))
+                return lastError;
+            return settings.LastLoadError;
+        }
+    }
+
     IInputSink ActiveSink => sink ?? (IInputSink)NullInputSink.Instance;
 
     public GameSession(SettingsStore settings)
     {
         this.settings = settings;
-        osuTransforms = [];
         Status.ProbeOk = GameBindings.LastProbe.Ok;
     }
 
@@ -53,7 +64,9 @@ sealed class GameSession
         chartLoaded = false;
         boundRuleset = "";
         lastScreen = null;
-        maniaSource = null;
+        inputProbed = false;
+        maniaPipeline.Clear();
+        osuPipeline.Clear();
         maniaHumanKey = null;
     }
 
@@ -84,7 +97,7 @@ sealed class GameSession
             if (player != null)
                 ResetPlay();
             Status.Bound = false;
-            Status.Ruleset = null;
+            Status.Ruleset = "";
             return;
         }
 
@@ -152,24 +165,17 @@ sealed class GameSession
         if (!chartLoaded || boundRuleset != "mania")
         {
             osu.Unload(ActiveSink);
-            maniaSource = ManiaAdapter.Build(state);
+            osuPipeline.Clear();
             maniaSeed = Random.Shared.Next();
+            maniaPipeline.SetSource(ManiaAdapter.Build(state));
             maniaHumanKey = null;
             boundRuleset = "mania";
             chartLoaded = true;
         }
 
-        if (sink == null)
-            BindInput(ManiaPlanner.MaxColumn);
-
-        var key = ManiaHumanParams.From(settings.Current.Mania);
-        if (maniaSource != null && maniaHumanKey != key)
-        {
-            var plan = new ManiaHumanizer(key, maniaSeed).Apply(maniaSource);
-            mania.Unload(ActiveSink);
-            mania.Load(plan);
-            maniaHumanKey = key;
-        }
+        TryBindInput(ManiaPlanner.MaxColumn);
+        ProbeInputOnce();
+        RebuildManiaIfNeeded(ManiaHumanParams.From(settings.Current.Mania));
 
         bool run = play && rulesetEnabled && sink != null;
         mania.Tick(Status.Time, ActiveSink, run);
@@ -185,14 +191,17 @@ sealed class GameSession
         if (!chartLoaded || boundRuleset != "osu")
         {
             mania.Unload(ActiveSink);
-            var plan = PlayPlanTransforms.ApplyAll(OsuAdapter.Build(state), osuTransforms);
+            maniaPipeline.Clear();
+            maniaHumanKey = null;
+            var plan = osuPipeline.SetSource(OsuAdapter.Build(state), OsuTransforms());
             osu.Load(plan);
+            osu.SnapTo(Status.Time, ActiveSink, play: false);
             boundRuleset = "osu";
             chartLoaded = true;
         }
 
-        if (sink == null)
-            BindInput(1);
+        TryBindInput(1);
+        ProbeInputOnce();
 
         if (sink != null && drawable != null && !sink.HasMouse)
             sink.BindMouse(GameBindings.InputManagerOf(drawable), drawable);
@@ -204,6 +213,50 @@ sealed class GameSession
         Status.Total = osu.Total;
         Status.Columns = 0;
         Status.Diagnostic = BindDiagnostic();
+    }
+
+    void RebuildManiaIfNeeded(ManiaHumanParams key)
+    {
+        if (maniaHumanKey == key || !maniaPipeline.HasSource)
+            return;
+
+        var plan = maniaPipeline.Rebuild(ManiaTransforms(key, maniaSeed));
+        mania.Load(plan);
+        mania.SnapTo(Status.Time, ActiveSink, play: false);
+        maniaHumanKey = key;
+    }
+
+    static IPlayPlanTransform<ManiaPlayPlan>[] ManiaTransforms(ManiaHumanParams key, int seed) =>
+        [new ManiaHumanizer(key, seed)];
+
+    static IPlayPlanTransform<OsuPlayPlan>[] OsuTransforms() => [];
+
+    void TryBindInput(int maxAction)
+    {
+        if (sink != null)
+        {
+            bindFailStreak = 0;
+            return;
+        }
+
+        if (bindFailStreak != 0 && bindFailStreak % BindRetryInterval != 0)
+        {
+            bindFailStreak++;
+            return;
+        }
+
+        BindInput(maxAction);
+        bindFailStreak = sink == null ? bindFailStreak + 1 : 0;
+    }
+
+    void ProbeInputOnce()
+    {
+        if (inputProbed || drawable == null)
+            return;
+        if (GameBindings.KeyBindingContainerOf(drawable) == null)
+            return;
+        inputProbed = true;
+        GameBindings.ProbeInput(drawable);
     }
 
     void BindInput(int maxAction)
@@ -220,10 +273,16 @@ sealed class GameSession
             sink.BindMouse(GameBindings.InputManagerOf(drawable), drawable);
     }
 
-    string? BindDiagnostic() =>
-        sink == null
-            ? (string.IsNullOrEmpty(GameInputSink.LastFail) ? "no KeyBindingContainer" : GameInputSink.LastFail)
-            : null;
+    string BindDiagnostic()
+    {
+        if (sink != null)
+            return "";
+        if (!string.IsNullOrEmpty(GameInputSink.LastFail))
+            return GameInputSink.LastFail;
+        if (!GameBindings.LastInputProbe.Ok && GameBindings.LastInputProbe.Failures.Count > 0)
+            return GameBindings.LastInputProbe.Failures[0];
+        return "no KeyBindingContainer";
+    }
 
     void ResetPlay()
     {
@@ -235,7 +294,10 @@ sealed class GameSession
         sink = null;
         chartLoaded = false;
         boundRuleset = "";
-        maniaSource = null;
+        inputProbed = false;
+        bindFailStreak = 0;
+        maniaPipeline.Clear();
+        osuPipeline.Clear();
         maniaHumanKey = null;
         Status.Applied = 0;
         Status.Total = 0;
@@ -245,8 +307,8 @@ sealed class GameSession
     static Player? FindPlayer(OsuGame game)
     {
         var screen = game.ScreenStack?.CurrentScreen;
-        if (screen is Player player)
-            return player;
+        if (screen is Player p)
+            return p;
         if (screen is PlayerLoader loader)
             return loader.CurrentPlayer;
         return null;

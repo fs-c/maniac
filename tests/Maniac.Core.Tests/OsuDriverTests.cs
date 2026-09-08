@@ -48,6 +48,10 @@ public class OsuDriverTests
         driver.Tick(10, sink, play: true);
         driver.Tick(20, sink, play: false);
         Assert.Contains(sink.Actions, a => !a.Down);
+        int afterPause = sink.Actions.Count;
+        driver.Tick(30, sink, play: true);
+        Assert.True(sink.Actions.Count > afterPause);
+        Assert.Equal(new RecordingInputSink.RecordedAction(0, true), sink.Actions[^1]);
     }
 
     [Fact]

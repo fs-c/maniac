@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using Maniac.Core.Input;
 using osu.Framework.Input;
@@ -45,14 +46,30 @@ sealed class GameInputSink : IInputSink
                 return null;
             }
 
-            var typed = new InvokedTriggers(keyBindingContainer, actionType, pressMi, releaseMi, maxAction);
-            return new GameInputSink(typed.Press, typed.Release, maxAction);
+            var press = BindTrigger(keyBindingContainer, pressMi, actionType, maxAction);
+            var release = BindTrigger(keyBindingContainer, releaseMi, actionType, maxAction);
+            return new GameInputSink(press, release, maxAction);
         }
         catch (Exception ex)
         {
             LastFail = ex.GetBaseException().Message;
             return null;
         }
+    }
+
+    public static Action<int> BindTrigger(object container, MethodInfo method, Type actionType, int maxAction)
+    {
+        var param = Expression.Parameter(typeof(int), "action");
+        var inRange = Expression.LessThan(
+            Expression.Convert(param, typeof(uint)),
+            Expression.Constant((uint)(maxAction + 1)));
+        Expression call = Expression.Call(
+            Expression.Constant(container),
+            method,
+            Expression.Convert(param, actionType));
+        if (method.ReturnType != typeof(void))
+            call = Expression.Block(typeof(void), call);
+        return Expression.Lambda<Action<int>>(Expression.IfThen(inRange, call), param).Compile();
     }
 
     public void BindMouse(InputManager? inputManager, DrawableRuleset? drawableRuleset)
@@ -93,41 +110,6 @@ sealed class GameInputSink : IInputSink
                 continue;
             held[i] = false;
             release(i);
-        }
-    }
-
-    sealed class InvokedTriggers
-    {
-        readonly object container;
-        readonly MethodInfo pressMethod;
-        readonly MethodInfo releaseMethod;
-        readonly object[] values;
-        readonly object[] args = new object[1];
-
-        public InvokedTriggers(object container, Type actionType, MethodInfo pressMethod, MethodInfo releaseMethod, int maxAction)
-        {
-            this.container = container;
-            this.pressMethod = pressMethod;
-            this.releaseMethod = releaseMethod;
-            values = new object[maxAction + 1];
-            for (int i = 0; i <= maxAction; i++)
-                values[i] = Enum.ToObject(actionType, i);
-        }
-
-        public void Press(int action)
-        {
-            if ((uint)action >= (uint)values.Length)
-                return;
-            args[0] = values[action];
-            pressMethod.Invoke(container, args);
-        }
-
-        public void Release(int action)
-        {
-            if ((uint)action >= (uint)values.Length)
-                return;
-            args[0] = values[action];
-            releaseMethod.Invoke(container, args);
         }
     }
 }

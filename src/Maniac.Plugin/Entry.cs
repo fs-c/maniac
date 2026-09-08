@@ -26,7 +26,10 @@ public static class Entry
     {
         settings = new SettingsStore();
         if (BuildExpiry.Current.IsExpired())
+        {
             settings.Update(s => s.AutoplayEnabled = false);
+            settings.Flush();
+        }
         var probe = GameBindings.Probe();
         session = new GameSession(settings);
         Session.SetTick(OnTick);
@@ -38,6 +41,7 @@ public static class Entry
     public static void Stop()
     {
         Session.SetTick(null);
+        settings?.Flush();
         session?.Stop();
         if (overlay != null && panel != null)
         {

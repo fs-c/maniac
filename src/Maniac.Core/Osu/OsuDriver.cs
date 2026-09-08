@@ -14,6 +14,7 @@ public sealed class OsuDriver
     int applied;
     int lastingIndex = -1;
     double lastTime = double.NegativeInfinity;
+    bool playing;
     readonly int[] holdCount = new int[2];
     readonly bool[] held = new bool[2];
     float lastX = Vec2.PlayfieldCentre.X;
@@ -30,6 +31,7 @@ public sealed class OsuDriver
         applied = 0;
         lastingIndex = -1;
         lastTime = double.NegativeInfinity;
+        playing = false;
         Array.Clear(holdCount);
         Array.Clear(held);
         lastX = Vec2.PlayfieldCentre.X;
@@ -45,6 +47,7 @@ public sealed class OsuDriver
         applied = 0;
         lastingIndex = -1;
         lastTime = double.NegativeInfinity;
+        playing = false;
     }
 
     public void Tick(double time, IInputSink sink, bool play)
@@ -53,24 +56,48 @@ public sealed class OsuDriver
         if (current == null)
             return;
 
-        if (time + 1 < lastTime)
-            Seek(current, time, sink);
-
+        bool seeked = time + 1 < lastTime;
         lastTime = time;
-        AdvanceNotes(current, time);
-        applied = noteCursor;
-
         if (!play)
         {
+            playing = false;
             ReleaseButtons(sink);
             return;
         }
 
+        if (!playing || seeked)
+            Seek(current, time, sink);
+
+        playing = true;
+        AdvanceNotes(current, time);
+        applied = noteCursor;
         Vec2 pos = PositionAt(current, time);
         lastX = pos.X;
         lastY = pos.Y;
         sink.MoveMouse(pos.X, pos.Y);
         AdvanceButtons(current, time, sink);
+    }
+
+    public void SnapTo(double time, IInputSink sink, bool play)
+    {
+        var current = plan;
+        if (current == null)
+            return;
+
+        lastTime = time;
+        playing = play;
+        Seek(current, time, sink);
+        AdvanceNotes(current, time);
+        applied = noteCursor;
+        if (!play)
+            return;
+
+        Vec2 pos = PositionAt(current, time);
+        lastX = pos.X;
+        lastY = pos.Y;
+        sink.MoveMouse(pos.X, pos.Y);
+        SyncButton(sink, 0);
+        SyncButton(sink, 1);
     }
 
     void Seek(OsuPlayPlan current, double time, IInputSink sink)

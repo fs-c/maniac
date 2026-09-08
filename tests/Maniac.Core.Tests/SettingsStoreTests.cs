@@ -21,6 +21,7 @@ public class SettingsStoreTests
             s.Mania.Human.TapDurationMs = 55;
             s.General.PanelExpanded = false;
         });
+        store.Flush();
 
         var loaded = new SettingsStore(path);
         Assert.True(loaded.Current.AutoplayEnabled);
@@ -138,5 +139,28 @@ public class SettingsStoreTests
         File.WriteAllText(path, "{ not json");
         var loaded = SettingsStore.LoadOrDefault(path);
         Assert.True(loaded.AutoplayEnabled);
+    }
+
+    [Fact]
+    public void Corrupt_file_records_last_load_error()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "maniac-lazer-tests", Guid.NewGuid().ToString("N"), "settings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, "{ not json");
+        var store = new SettingsStore(path, TimeSpan.Zero);
+        Assert.False(string.IsNullOrEmpty(store.LastLoadError));
+        Assert.Contains("JSON", store.LastLoadError, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Debounced_update_is_visible_after_flush()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "maniac-lazer-tests", Guid.NewGuid().ToString("N"), "settings.json");
+        var store = new SettingsStore(path, TimeSpan.FromHours(1));
+        store.Update(s => s.AutoplayEnabled = false);
+        Assert.True(File.Exists(path) is false || !File.ReadAllText(path).Contains("\"autoplayEnabled\": false", StringComparison.Ordinal));
+        store.Flush();
+        var loaded = SettingsStore.LoadOrDefault(path);
+        Assert.False(loaded.AutoplayEnabled);
     }
 }

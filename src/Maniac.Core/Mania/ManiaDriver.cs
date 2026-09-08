@@ -8,6 +8,7 @@ public sealed class ManiaDriver
     int cursor;
     int applied;
     double lastTime = double.NegativeInfinity;
+    bool playing;
     readonly bool[] held = new bool[ManiaPlanner.MaxColumn + 1];
     readonly bool[] wantHeld = new bool[ManiaPlanner.MaxColumn + 1];
 
@@ -22,6 +23,7 @@ public sealed class ManiaDriver
         cursor = 0;
         applied = 0;
         lastTime = double.NegativeInfinity;
+        playing = false;
         Array.Clear(held);
         Array.Clear(wantHeld);
     }
@@ -33,6 +35,7 @@ public sealed class ManiaDriver
         cursor = 0;
         applied = 0;
         lastTime = double.NegativeInfinity;
+        playing = false;
     }
 
     public void Tick(double time, IInputSink sink, bool play)
@@ -42,18 +45,21 @@ public sealed class ManiaDriver
             return;
 
         bool seeked = time + 1 < lastTime;
-        if (seeked)
-            SeekReplay(events, time, sink);
-
         lastTime = time;
         if (!play)
         {
+            playing = false;
             ReleaseHeld(sink);
             return;
         }
 
-        if (seeked)
+        if (!playing || seeked)
+        {
+            SeekReplay(events, time, sink);
             RestoreHeld(sink);
+            playing = true;
+            return;
+        }
 
         while (cursor < events.Length && events[cursor].Time <= time)
         {
@@ -61,6 +67,19 @@ public sealed class ManiaDriver
             cursor++;
             applied++;
         }
+    }
+
+    public void SnapTo(double time, IInputSink sink, bool play)
+    {
+        var events = plan?.Events;
+        if (events == null)
+            return;
+
+        lastTime = time;
+        playing = play;
+        SeekReplay(events, time, sink);
+        if (play)
+            RestoreHeld(sink);
     }
 
     void SeekReplay(ManiaEvent[] events, double time, IInputSink sink)
@@ -103,6 +122,7 @@ public sealed class ManiaDriver
     void Apply(in ManiaEvent e, IInputSink sink)
     {
         int column = e.Column;
+        wantHeld[column] = e.Down;
         if (held[column] == e.Down)
             return;
 

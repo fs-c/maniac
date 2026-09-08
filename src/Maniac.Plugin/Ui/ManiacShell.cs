@@ -33,6 +33,7 @@ public partial class ManiacShell : CompositeDrawable
     readonly Drawable[] pages;
     readonly StatusLine diagLine;
     readonly StatusLine playLine;
+    readonly StatusLine probeLine;
     readonly PanelButton[] nav;
     readonly ToggleRow autoRow;
     readonly ToggleRow osuRow;
@@ -41,19 +42,7 @@ public partial class ManiacShell : CompositeDrawable
     readonly SliderRow maniaSkill;
     readonly Container maniaAdvanced;
     readonly FillFlowContainer advancedColumn;
-    readonly AutoSliderRow timingSigma;
-    readonly AutoSliderRow fingerSigma;
-    readonly AutoSliderRow timingCorrelation;
-    readonly AutoSliderRow earlyLate;
-    readonly AutoSliderRow densitySensitivity;
-    readonly AutoSliderRow densityThreshold;
-    readonly AutoSliderRow densityWindow;
-    readonly AutoSliderRow chordSigma;
-    readonly AutoSliderRow missChance;
-    readonly AutoSliderRow missBurstDuration;
-    readonly AutoSliderRow missBurstMultiplier;
-    readonly AutoSliderRow tapDuration;
-    readonly AutoSliderRow holdRelease;
+    readonly HumanSliderBinding[] humanSliders;
     readonly SpriteText? expiryHint;
     readonly SpriteText? expiryDiagHint;
     double lastStatusAt;
@@ -123,44 +112,8 @@ public partial class ManiacShell : CompositeDrawable
         maniaAdvancedRow = new DisclosureRow("Advanced", store.Current.Mania.ShowAdvanced, ToggleAdvanced);
 
         var resolved = ManiaHumanParams.From(store.Current.Mania);
-        var human = store.Current.Mania.Human;
-        timingSigma = HumanSlider("Timing variation", ManiaHumanLimits.TimingSigmaMin, ManiaHumanLimits.TimingSigmaMax, 0.1, resolved.Sigma0, human.TimingSigmaMs != null, (h, v) => h.TimingSigmaMs = v, v => $"{v:0.0} ms", "Base press-time spread. Higher means less consistent tapping.");
-        fingerSigma = HumanSlider("Finger variation", ManiaHumanLimits.FingerSigmaMin, ManiaHumanLimits.FingerSigmaMax, 0.1, resolved.FingerBiasSigma, human.FingerSigmaMs != null, (h, v) => h.FingerSigmaMs = v, v => $"{v:0.0} ms", "Per-column bias so each finger is consistently a bit early or late.");
-        timingCorrelation = HumanSlider("Timing correlation", ManiaHumanLimits.CorrelationMin, ManiaHumanLimits.CorrelationMax, 0.01, resolved.Phi, human.TimingCorrelation != null, (h, v) => h.TimingCorrelation = v, v => $"{v:0.00}", "How much nearby notes share the same early/late drift. 0 is independent errors.");
-        earlyLate = HumanSlider("Early/late", ManiaHumanLimits.EarlyLateMin, ManiaHumanLimits.EarlyLateMax, 0.5, resolved.EarlyLate, human.GlobalTimingOffsetMs != null, (h, v) => h.GlobalTimingOffsetMs = v, v => $"{v:+0.0;-0.0;0} ms", "Constant shift applied to every press. Negative is early, positive is late.");
-        densitySensitivity = HumanSlider("Density sensitivity", ManiaHumanLimits.DensitySensitivityMin, ManiaHumanLimits.DensitySensitivityMax, 0.01, resolved.PressureK, human.DensitySensitivity != null, (h, v) => h.DensitySensitivity = v, v => $"{v:0.00}/nps", "Extra timing spread added for each NPS above the density threshold.");
-        densityThreshold = HumanSlider("Density threshold", ManiaHumanLimits.DensityThresholdMin, ManiaHumanLimits.DensityThresholdMax, 0.5, resolved.DensityThresholdNps, human.DensityThresholdNps != null, (h, v) => h.DensityThresholdNps = v, v => $"{v:0.0} nps", "Notes-per-second at which density starts widening timing.");
-        densityWindow = HumanSlider("Density lookaround", ManiaHumanLimits.DensityWindowMin, ManiaHumanLimits.DensityWindowMax, 10, resolved.DensityWindowMs, human.DensityWindowMs != null, (h, v) => h.DensityWindowMs = v, v => $"{v:0} ms", "How far before and after each note is counted when measuring density.");
-        chordSigma = HumanSlider("Chord spread", ManiaHumanLimits.ChordSigmaMin, ManiaHumanLimits.ChordSigmaMax, 0.1, resolved.ChordSigma, human.ChordSigmaMs != null, (h, v) => h.ChordSigmaMs = v, v => $"{v:0.0} ms", "How far apart chord keys are rolled.");
-        missChance = HumanSlider("Miss chance", ManiaHumanLimits.MissChanceMin, ManiaHumanLimits.MissChanceMax, 0.0005, resolved.MissRate, human.MissChanceAt8Nps != null, (h, v) => h.MissChanceAt8Nps = v, v => $"{v * 100:0.00}%", "Chance of skipping a note at 8 NPS. Denser patterns miss more often.");
-        missBurstDuration = HumanSlider("Miss-burst window", ManiaHumanLimits.MissBurstDurationMin, ManiaHumanLimits.MissBurstDurationMax, 10, resolved.MissBurstDurationMs, human.MissBurstDurationMs != null, (h, v) => h.MissBurstDurationMs = v, v => $"{v:0} ms", "After a miss, later notes in this window are more likely to miss too.");
-        missBurstMultiplier = HumanSlider("Miss-burst multiplier", ManiaHumanLimits.MissBurstMultiplierMin, ManiaHumanLimits.MissBurstMultiplierMax, 0.05, resolved.MissBurstMultiplier, human.MissBurstMultiplier != null, (h, v) => h.MissBurstMultiplier = v, v => $"{v:0.00}×", "How much the miss chance increases during a burst window.");
-        tapDuration = HumanSlider("Tap duration", ManiaHumanLimits.TapDurationMin, ManiaHumanLimits.TapDurationMax, 1, resolved.TapLength, human.TapDurationMs != null, (h, v) => h.TapDurationMs = v, v => $"{v:0} ms", "Average how long a non-hold key is held.");
-        holdRelease = HumanSlider("Hold-release offset", ManiaHumanLimits.HoldReleaseMin, ManiaHumanLimits.HoldReleaseMax, 0.5, resolved.HoldTailBias, human.HoldReleaseOffsetMs != null, (h, v) => h.HoldReleaseOffsetMs = v, v => $"{v:+0.0;-0.0;0} ms", "Bias on hold-note releases. Negative means releasing early.");
-
-        advancedColumn = UiLayout.Column(
-            UiLayout.Section("Timing"),
-            timingSigma,
-            fingerSigma,
-            timingCorrelation,
-            earlyLate,
-            UiLayout.Section("Density"),
-            densitySensitivity,
-            densityThreshold,
-            densityWindow,
-            UiLayout.Section("Chords"),
-            chordSigma,
-            UiLayout.Section("Misses"),
-            missChance,
-            missBurstDuration,
-            missBurstMultiplier,
-            UiLayout.Section("Releases"),
-            tapDuration,
-            holdRelease,
-            new QuietLink(
-                "Reset advanced to Auto",
-                () => settings.Update(s => s.Mania.Human.Clear()),
-                "Clear custom advanced values so they follow skill again."));
+        var humanColumn = HumanSliderLayout.BuildColumn(store, resolved, store.Current.Mania.Human, out humanSliders);
+        advancedColumn = UiLayout.Column(humanColumn);
         advancedColumn.Padding = new MarginPadding { Right = 8 };
         maniaAdvanced = new Container
         {
@@ -175,6 +128,7 @@ public partial class ManiacShell : CompositeDrawable
             },
         };
         playLine = new StatusLine();
+        probeLine = new StatusLine { Text = ProbeHint() };
         diagLine = new StatusLine();
         statusDot = new StatusDot();
         settingsButton = new IconButton(
@@ -213,9 +167,7 @@ public partial class ManiacShell : CompositeDrawable
                 expiryDiagHint,
                 playLine,
                 diagLine,
-                UiLayout.Hint(string.Join(" · ", GameBindings.LastProbe.Ok
-                    ? GameBindings.LastProbe.Resolved
-                    : GameBindings.LastProbe.Failures))),
+                probeLine),
         ];
 
         pageHost = new Container
@@ -270,22 +222,6 @@ public partial class ManiacShell : CompositeDrawable
         ApplyAdvanced(lastAdvanced);
         ShowPage(0);
     }
-
-    AutoSliderRow HumanSlider(
-        string title,
-        double min,
-        double max,
-        double step,
-        double initial,
-        bool custom,
-        Action<ManiaHumanOverrides, double?> assign,
-        Func<double, string> format,
-        string tooltip) =>
-        new(title, min, max, step, initial, custom,
-            v => settings.Update(s => assign(s.Mania.Human, v)),
-            () => settings.Update(s => assign(s.Mania.Human, null)),
-            format,
-            tooltip);
 
     static Drawable AdvancedInset(Drawable header, Drawable content) => new Container
     {
@@ -502,6 +438,8 @@ public partial class ManiacShell : CompositeDrawable
             lastDiagText = diag;
             diagLine.Text = string.IsNullOrEmpty(diag) ? "ok" : diag;
         }
+
+        probeLine.Text = ProbeHint();
     }
 
     void RefreshHumanSliders()
@@ -511,19 +449,21 @@ public partial class ManiacShell : CompositeDrawable
             ? ManiaHumanProfile.Resolve(new ManiaSettings { Skill = skill, Human = mania.Human })
             : ManiaHumanParams.From(mania);
         var h = mania.Human;
-        timingSigma.SetValue(resolved.Sigma0, h.TimingSigmaMs != null);
-        fingerSigma.SetValue(resolved.FingerBiasSigma, h.FingerSigmaMs != null);
-        timingCorrelation.SetValue(resolved.Phi, h.TimingCorrelation != null);
-        earlyLate.SetValue(resolved.EarlyLate, h.GlobalTimingOffsetMs != null);
-        densitySensitivity.SetValue(resolved.PressureK, h.DensitySensitivity != null);
-        densityThreshold.SetValue(resolved.DensityThresholdNps, h.DensityThresholdNps != null);
-        densityWindow.SetValue(resolved.DensityWindowMs, h.DensityWindowMs != null);
-        chordSigma.SetValue(resolved.ChordSigma, h.ChordSigmaMs != null);
-        missChance.SetValue(resolved.MissRate, h.MissChanceAt8Nps != null);
-        missBurstDuration.SetValue(resolved.MissBurstDurationMs, h.MissBurstDurationMs != null);
-        missBurstMultiplier.SetValue(resolved.MissBurstMultiplier, h.MissBurstMultiplier != null);
-        tapDuration.SetValue(resolved.TapLength, h.TapDurationMs != null);
-        holdRelease.SetValue(resolved.HoldTailBias, h.HoldReleaseOffsetMs != null);
+        for (int i = 0; i < humanSliders.Length; i++)
+            humanSliders[i].Refresh(resolved, h);
+    }
+
+    string ProbeHint()
+    {
+        var startup = GameBindings.LastProbe;
+        var input = GameBindings.LastInputProbe;
+        var parts = new List<string>();
+        parts.AddRange(startup.Ok ? startup.Resolved : startup.Failures);
+        if (input.Resolved.Count > 0 || input.Failures.Count > 0)
+            parts.AddRange(input.Ok ? input.Resolved : input.Failures);
+        if (!string.IsNullOrEmpty(settings.LastLoadError))
+            parts.Add("settings " + settings.LastLoadError);
+        return parts.Count == 0 ? "probe pending" : string.Join(" · ", parts);
     }
 
     static string FormatPlay(in AutoplayStatus snap)
