@@ -10,15 +10,15 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="osu.Framework">
-      <HintPath>$(LazerDir)\osu.Framework.dll</HintPath>
+      <HintPath>$([System.IO.Path]::Combine('$(LazerDir)', 'osu.Framework.dll'))</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="osu.Game">
-      <HintPath>$(LazerDir)\osu.Game.dll</HintPath>
+      <HintPath>$([System.IO.Path]::Combine('$(LazerDir)', 'osu.Game.dll'))</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="osuTK">
-      <HintPath>$(LazerDir)\osuTK.dll</HintPath>
+      <HintPath>$([System.IO.Path]::Combine('$(LazerDir)', 'osuTK.dll'))</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj" />
   </ItemGroup>
   <Target Name="CheckLazerDir" BeforeTargets="ResolveAssemblyReferences">
-    <Warning Condition="!Exists('$(LazerDir)\osu.Game.dll')" Text="LazerDir '$(LazerDir)' does not contain osu.Game.dll. Install osu!lazer or pass -p:LazerDir=..." />
+    <Warning Condition="!Exists('$(LazerDir)/osu.Game.dll')" Text="LazerDir '$(LazerDir)' does not contain osu.Game.dll. Install osu!lazer or pass -p:LazerDir=..." />
   </Target>
   <Target Name="CopyBesideStub" AfterTargets="Build">
     <PropertyGroup>

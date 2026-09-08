@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Maniac.Launcher;
 
@@ -11,6 +9,10 @@ static class LazerInstall
         string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         yield return Path.Combine(local, "osulazer", "current");
         yield return Path.Combine(local, "osu!lazer", "current");
+        yield return Path.Combine("/Applications", "osu!.app", "Contents", "MacOS");
+        yield return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Applications", "osu!.app", "Contents", "MacOS");
     }
 
     public static string? FindDirectory()
@@ -26,7 +28,7 @@ static class LazerInstall
 
     public static string? DirectoryFromProcess(Process process)
     {
-        string path = QueryImagePath(process.Id);
+        string path = ProcessImagePath.Query(process.Id);
         if (string.IsNullOrEmpty(path))
         {
             try { path = process.MainModule?.FileName ?? ""; }
@@ -56,32 +58,13 @@ static class LazerInstall
             }
         }
 
-        string exe = Path.Combine(gameDirectory, "osu!.exe");
-        if (File.Exists(exe))
-            return FileVersionInfo.GetVersionInfo(exe).ProductVersion;
+        foreach (string name in new[] { "osu!.exe", "osu!" })
+        {
+            string exe = Path.Combine(gameDirectory, name);
+            if (File.Exists(exe))
+                return FileVersionInfo.GetVersionInfo(exe).ProductVersion;
+        }
+
         return null;
     }
-
-    static string QueryImagePath(int pid)
-    {
-        var handle = OpenProcess(0x1000, false, pid);
-        if (handle == IntPtr.Zero)
-            return "";
-        try
-        {
-            var buffer = new StringBuilder(32768);
-            int size = buffer.Capacity;
-            return QueryFullProcessImageName(handle, 0, buffer, ref size) ? buffer.ToString() : "";
-        }
-        finally { CloseHandle(handle); }
-    }
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern IntPtr OpenProcess(int access, bool inherit, int pid);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern bool CloseHandle(IntPtr handle);
-
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    static extern bool QueryFullProcessImageName(IntPtr process, int flags, StringBuilder path, ref int size);
 }

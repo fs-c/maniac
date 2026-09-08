@@ -13,7 +13,7 @@ public static class Entry
         try
         {
             Session.SetSourceDir(Path.GetDirectoryName(typeof(Entry).Assembly.Location) ?? "");
-            Session.Run(ReadArg(argument, size));
+            Session.Run(ReadArg(argument, size), InjectMethod.RemoteThread);
             return 0;
         }
         catch (Exception ex)

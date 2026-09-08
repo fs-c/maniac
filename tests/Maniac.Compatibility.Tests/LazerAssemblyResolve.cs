@@ -36,6 +36,16 @@ static class LazerAssemblyResolve
                 return dir;
         }
 
+        foreach (string dir in new[]
+        {
+            Path.Combine("/Applications", "osu!.app", "Contents", "MacOS"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Applications", "osu!.app", "Contents", "MacOS"),
+        })
+        {
+            if (File.Exists(Path.Combine(dir, "osu.Game.dll")))
+                return dir;
+        }
+
         return null;
     }
 }

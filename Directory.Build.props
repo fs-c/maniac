@@ -4,13 +4,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <PlatformTarget>x64</PlatformTarget>
     <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     <Deterministic>true</Deterministic>
     <_LazerDirA>$(LOCALAPPDATA)\osulazer\current</_LazerDirA>
     <_LazerDirB>$(LOCALAPPDATA)\osu!lazer\current</_LazerDirB>
+    <_LazerDirMacA>/Applications/osu!.app/Contents/MacOS</_LazerDirMacA>
+    <_LazerDirMacB>$(HOME)/Applications/osu!.app/Contents/MacOS</_LazerDirMacB>
     <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirA)\osu.Game.dll')">$(_LazerDirA)</LazerDir>
     <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirB)\osu.Game.dll')">$(_LazerDirB)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirMacA)/osu.Game.dll')">$(_LazerDirMacA)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirMacB)/osu.Game.dll')">$(_LazerDirMacB)</LazerDir>
     <LazerDir Condition="'$(LazerDir)' == ''">$(_LazerDirA)</LazerDir>
     <ManiacBuildExpiry Condition="'$(ManiacBuildExpiry)' == ''">$(MANIAC_BUILD_EXPIRY)</ManiacBuildExpiry>
   </PropertyGroup>

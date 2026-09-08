@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
-using HarmonyLib;
 using osu.Framework.Platform;
 
 namespace Maniac;
@@ -11,8 +10,8 @@ namespace Maniac;
 /// Harmony cannot emit a postfix that lives in one either (non-collectible
 /// dynamic assemblies may not reference collectible types).
 ///
-/// This type owns a single UpdateFrame postfix and a delegate into the plugin.
-/// After unload the delegate is null; the postfix is a no-op.
+/// This type owns plugin load/unload and a delegate into the plugin. After
+/// unload the delegate is null; the frame hook is a no-op.
 /// </summary>
 public static class Session
 {
@@ -24,12 +23,11 @@ public static class Session
     static WeakReference? alcWeak;
     static MethodInfo? start;
     static Action<GameHost>? tick;
-    static Harmony? harmony;
-    static int patched;
     static string sourceDir = "";
     static string? loadDir;
     static int pending;
     static int continueCmd;
+    static int attached;
 
     public static void SetSourceDir(string dir)
     {
@@ -55,126 +53,36 @@ public static class Session
         }
     }
 
-    public static void Run(string command)
+    internal static void Run(string command, InjectMethod method)
     {
         lock (Gate)
         {
-            AttachOnce();
+            AttachOnce(method);
             bool unload = command.Equals("unload", StringComparison.OrdinalIgnoreCase);
-            if (alc == null)
+            if (unload)
             {
-                if (!unload)
-                    StartPlugin();
+                FrameHook.Stop();
+                RequestUnload();
                 return;
             }
 
-            if (unload)
-            {
-                Volatile.Write(ref pumping, 0);
-                RequestUnload();
-            }
+            if (alc == null)
+                StartPlugin();
             else
                 RequestReload();
         }
     }
 
-    static int pumping;
-
-    static void AttachOnce()
+    static void AttachOnce(InjectMethod method)
     {
-        if (Interlocked.Exchange(ref patched, 1) != 0)
+        if (Interlocked.Exchange(ref attached, 1) != 0)
             return;
-
-        Environment.SetEnvironmentVariable("MONOMOD_DMD_TYPE", "dynamicmethod");
-        try
-        {
-            harmony = new Harmony("maniac-stub");
-            var updateFrame = AccessTools.Method(typeof(GameHost), "UpdateFrame")
-                ?? throw new MissingMethodException("GameHost.UpdateFrame");
-            harmony.Patch(updateFrame, postfix: new HarmonyMethod(typeof(Session), nameof(OnUpdateFrame)));
-            return;
-        }
-        catch (Exception ex)
-        {
-            Log(ex);
-        }
-
-        StartSchedulerPump();
+        FrameHook.Attach(OnUpdateFrame, method);
     }
 
-    static void StartSchedulerPump()
-    {
-        var host = FindHost();
-        if (host?.UpdateThread?.Scheduler != null)
-        {
-            QueuePump(host);
-            return;
-        }
-
-        _ = Task.Run(async () =>
-        {
-            for (int i = 0; i < 200; i++)
-            {
-                await Task.Delay(50).ConfigureAwait(false);
-                var found = FindHost();
-                if (found?.UpdateThread?.Scheduler == null)
-                    continue;
-                QueuePump(found);
-                return;
-            }
-        });
-    }
-
-    static void QueuePump(GameHost host)
-    {
-        if (Interlocked.Exchange(ref pumping, 1) != 0)
-            return;
-        host.UpdateThread.Scheduler.Add(() => Pump(host));
-    }
-
-    static void Pump(GameHost host)
+    static void OnUpdateFrame(GameHost host)
     {
         try { tick?.Invoke(host); }
-        catch (Exception ex) { Log(ex); }
-
-        if (Volatile.Read(ref pumping) == 0)
-            return;
-        host.UpdateThread.Scheduler.Add(() => Pump(host));
-    }
-
-    static GameHost? FindHost()
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            string? name = assembly.GetName().Name;
-            if (name is null || name.StartsWith("System", StringComparison.Ordinal) || name.StartsWith("Microsoft", StringComparison.Ordinal))
-                continue;
-
-            Type[] types;
-            try { types = assembly.GetTypes(); }
-            catch (ReflectionTypeLoadException ex) { types = ex.Types!; }
-
-            foreach (var type in types)
-            {
-                if (type == null)
-                    continue;
-                foreach (var member in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
-                {
-                    object? value;
-                    try { value = member.GetValue(null); }
-                    catch { continue; }
-                    if (value is GameHost host)
-                        return host;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    static void OnUpdateFrame(GameHost __instance)
-    {
-        try { tick?.Invoke(__instance); }
         catch (Exception ex) { Log(ex); }
     }
 
@@ -237,25 +145,20 @@ public static class Session
             ?? throw new MissingMethodException("Maniac.Plugin.Entry.Start");
     }
 
-    static string? lastLog;
-    static long lastLogTicks;
-
-    public static void Log(Exception ex)
+    public static void Log(string message)
     {
-        string text = ex.ToString();
-        long now = DateTime.UtcNow.Ticks;
-        if (text == lastLog && now - lastLogTicks < TimeSpan.FromSeconds(30).Ticks)
-            return;
-        lastLog = text;
-        lastLogTicks = now;
-
         try
         {
             string dir = Path.Combine(Path.GetTempPath(), "maniac-lazer");
             Directory.CreateDirectory(dir);
-            File.AppendAllText(Path.Combine(dir, "bootstrap.log"), $"{DateTime.Now:O} {ex}\n");
+            File.AppendAllText(Path.Combine(dir, "bootstrap.log"), $"{DateTime.Now:O} {message}\n");
         }
         catch { /* nowhere to write */ }
+    }
+
+    public static void Log(Exception ex)
+    {
+        Log(ex.ToString());
     }
 
     sealed class PluginLoadContext : AssemblyLoadContext

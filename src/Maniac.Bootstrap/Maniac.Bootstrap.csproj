@@ -8,11 +8,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="osu.Framework">
-      <HintPath>$(LazerDir)\osu.Framework.dll</HintPath>
+      <HintPath>$([System.IO.Path]::Combine('$(LazerDir)', 'osu.Framework.dll'))</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
+    <PackageReference Include="Lib.Harmony" Version="2.4.2" />
   </ItemGroup>
 </Project>
