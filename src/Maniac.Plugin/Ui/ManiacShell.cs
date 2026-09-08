@@ -56,8 +56,8 @@ public partial class ManiacShell : CompositeDrawable
         settings = store;
         status = statusOf;
         extraDiagnostic = diagnosticOf;
-        Anchor = Anchor.TopLeft;
-        Origin = Anchor.TopLeft;
+        Anchor = Anchor.BottomLeft;
+        Origin = Anchor.BottomLeft;
         Margin = new MarginPadding(12);
         Width = OverlayWidth;
         AutoSizeAxes = Axes.Y;
@@ -68,12 +68,12 @@ public partial class ManiacShell : CompositeDrawable
         generalNav = new BrandButton("maniac", () => OpenPage(0));
         nav =
         [
-            new PanelButton(OsuIcon.RulesetOsu, () => OpenPage(1), "osu!standard")
+            new PanelButton(OsuIcon.RulesetOsu, () => OpenPage(1))
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
             },
-            new PanelButton(OsuIcon.RulesetMania, () => OpenPage(2), "mania")
+            new PanelButton(OsuIcon.RulesetMania, () => OpenPage(2))
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
@@ -133,12 +133,10 @@ public partial class ManiacShell : CompositeDrawable
         statusDot = new StatusDot();
         settingsButton = new IconButton(
             UiTheme.Icon(OsuIcon.Settings, UiTheme.IconMedium, UiTheme.IconMuted),
-            OpenSettings,
-            "Reload, unload, and diagnostics");
+            OpenSettings);
         panelToggle = new IconButton(
             UiTheme.Icon(FontAwesome.Solid.ChevronDown, UiTheme.IconSmall),
-            ToggleExpanded,
-            "Collapse panel");
+            ToggleExpanded);
 
         pages =
         [
@@ -184,8 +182,17 @@ public partial class ManiacShell : CompositeDrawable
         {
             RelativeSizeAxes = Axes.X,
             AutoSizeAxes = Axes.Y,
-            Padding = new MarginPadding { Horizontal = 12, Top = 4, Bottom = 12 },
-            Child = pageHost,
+            Children = new Drawable[]
+            {
+                new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.OverlayContentBackground },
+                new Container
+                {
+                    RelativeSizeAxes = Axes.X,
+                    AutoSizeAxes = Axes.Y,
+                    Padding = new MarginPadding(12),
+                    Child = pageHost,
+                },
+            },
         };
 
         InternalChild = new OverlayTooltipContainer
@@ -208,8 +215,8 @@ public partial class ManiacShell : CompositeDrawable
                         Direction = FillDirection.Vertical,
                         Children = new Drawable[]
                         {
-                            compactBar,
                             body,
+                            compactBar,
                         },
                     },
                 },
@@ -344,8 +351,7 @@ public partial class ManiacShell : CompositeDrawable
             body.Show();
         else
             body.Hide();
-        panelToggle.Icon.Rotation = expanded ? 180 : 0;
-        panelToggle.TooltipText = expanded ? "Collapse panel" : "Expand panel";
+        panelToggle.Icon.Rotation = expanded ? 0 : 180;
     }
 
     void ToggleAdvanced(bool show)

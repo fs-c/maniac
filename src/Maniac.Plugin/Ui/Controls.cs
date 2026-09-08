@@ -103,7 +103,7 @@ sealed partial class IconButton : ClickableContainer, IHasTooltip
 
     public LocalisableString TooltipText { get; set; }
 
-    public IconButton(Drawable icon, Action action, string tooltip)
+    public IconButton(Drawable icon, Action action, string tooltip = "")
     {
         Size = new Vector2(UiTheme.ButtonSize);
         Action = action;
@@ -169,7 +169,7 @@ sealed partial class PanelButton : ClickableContainer, IHasTooltip
         Finish(label);
     }
 
-    public PanelButton(IconUsage icon, Action action, string tooltip)
+    public PanelButton(IconUsage icon, Action action, string tooltip = "")
     {
         Size = new Vector2(UiTheme.ButtonSize);
         Action = action;
