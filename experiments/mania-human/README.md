@@ -13,7 +13,7 @@ Parses `.osr` keypresses, aligns them to `.osu` notes, writes `data/report.html`
 
 Converts and `RD`/`AU` scores are skipped. Mirror is applied.
 
-The osu! API leaderboard is only the **top 50**. There is no 100th place. Fetch therefore (1) spreads across that top 50 on **hard** ranked 4K/7K maps (stars ≥ 6) and (2) pulls **recent** plays (including fails) from mid-tier 4K pp ranking pages, which are not career BPs.
+The osu! API leaderboard is only the **top 50**. Fetch therefore (1) spreads across that top 50 on **hard** ranked 4K/7K maps (stars ≥ 6) and (2) pulls **recent** plays (including fails) from mid-tier 4K pp ranking pages, which are not career BPs.
 
 ## Run
 
