@@ -8,7 +8,7 @@ namespace Maniac.Plugin.Ui;
 static class UiTheme
 {
     public static readonly Colour4 OverlayBackground = Colour4.Black.Opacity(0.95f);
-    public static readonly Colour4 OverlayContentBackground = Colour4.White.Opacity(0.10f);
+    public static readonly Colour4 OverlayContentBackground = Colour4.White.Opacity(0.05f);
     public static readonly Colour4 TooltipBackground = Colour4.Black.Opacity(0.94f);
     public static readonly Colour4 InsetBackground = Colour4.White.Opacity(0.08f);
     public static readonly Colour4 Well = Colour4.White.Opacity(0.12f);

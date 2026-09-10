@@ -17,7 +17,7 @@ public partial class ManiacShell : CompositeDrawable
 {
     public const double StatusIntervalMs = 100;
     public const float AdvancedMaxHeight = 560;
-    public const float OverlayWidth = 360;
+    public const float OverlayWidth = 400;
     public const int SettingsPage = 3;
 
     readonly SettingsStore settings;
@@ -26,6 +26,7 @@ public partial class ManiacShell : CompositeDrawable
     readonly Container body;
     readonly Drawable compactBar;
     readonly StatusDot statusDot;
+    readonly BarStatus barStatus;
     readonly BrandButton generalNav;
     readonly IconButton settingsButton;
     readonly IconButton panelToggle;
@@ -131,6 +132,7 @@ public partial class ManiacShell : CompositeDrawable
         probeLine = new StatusLine { Text = ProbeHint() };
         diagLine = new StatusLine();
         statusDot = new StatusDot();
+        barStatus = new BarStatus();
         settingsButton = new IconButton(
             UiTheme.Icon(OsuIcon.Settings, UiTheme.IconMedium, UiTheme.IconMuted),
             OpenSettings);
@@ -256,34 +258,48 @@ public partial class ManiacShell : CompositeDrawable
         RelativeSizeAxes = Axes.X,
         Height = 36,
         Padding = new MarginPadding { Horizontal = 10 },
-        Children = new Drawable[]
+        Child = new GridContainer
         {
-            new FillFlowContainer
+            RelativeSizeAxes = Axes.Both,
+            ColumnDimensions =
+            [
+                new Dimension(GridSizeMode.AutoSize),
+                new Dimension(),
+                new Dimension(GridSizeMode.AutoSize),
+            ],
+            Content = new[]
             {
-                AutoSizeAxes = Axes.Both,
-                Direction = FillDirection.Horizontal,
-                Spacing = new Vector2(8, 0),
-                Anchor = Anchor.CentreLeft,
-                Origin = Anchor.CentreLeft,
-                Children = new Drawable[]
+                new Drawable[]
                 {
-                    statusDot,
-                    generalNav,
-                    nav[0],
-                    nav[1],
-                },
-            },
-            new FillFlowContainer
-            {
-                AutoSizeAxes = Axes.Both,
-                Direction = FillDirection.Horizontal,
-                Spacing = new Vector2(2, 0),
-                Anchor = Anchor.CentreRight,
-                Origin = Anchor.CentreRight,
-                Children = new Drawable[]
-                {
-                    settingsButton,
-                    panelToggle,
+                    new FillFlowContainer
+                    {
+                        AutoSizeAxes = Axes.Both,
+                        Direction = FillDirection.Horizontal,
+                        Spacing = new Vector2(8, 0),
+                        Anchor = Anchor.CentreLeft,
+                        Origin = Anchor.CentreLeft,
+                        Children = new Drawable[]
+                        {
+                            statusDot,
+                            generalNav,
+                            nav[0],
+                            nav[1],
+                        },
+                    },
+                    barStatus,
+                    new FillFlowContainer
+                    {
+                        AutoSizeAxes = Axes.Both,
+                        Direction = FillDirection.Horizontal,
+                        Spacing = new Vector2(2, 0),
+                        Anchor = Anchor.CentreRight,
+                        Origin = Anchor.CentreRight,
+                        Children = new Drawable[]
+                        {
+                            settingsButton,
+                            panelToggle,
+                        },
+                    },
                 },
             },
         },
@@ -428,6 +444,10 @@ public partial class ManiacShell : CompositeDrawable
         string play = expired ? "expired" : FormatPlay(snap);
         bool on = !expired && snap.Enabled;
         statusDot.SetState(on, on && snap.Blocked, play);
+        barStatus.Set(
+            OverlayStatus.ScreenLabel(snap.Screen),
+            string.IsNullOrEmpty(snap.Ruleset) ? "" : OverlayStatus.FormatClock(snap.Time),
+            play);
         if (play != lastPlayText)
         {
             lastPlayText = play;

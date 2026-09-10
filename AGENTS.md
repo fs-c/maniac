@@ -1,19 +1,17 @@
-# maniac-lazer
+## About
 
-maniac-lazer is an auto-player for osu! (lazer, not stable) that is in early development.
+maniac is an auto-player for osu! (lazer, not stable), it's sometimes referred to as maniac-lazer to distinguish it from the defunct legacy version that targeted osu!stable.
 
-# Context
+### Codebase
 
-osu! is written in C# and open-source.
+- prefer to fail early and loudly if something is not as expected
+- avoid introducing fallbacks, prefer to fix/clarify the root cause
+- there's no expectation of strong stableness, this is experimental code that interfaces with osu! in a way that's inherently not stable
 
-The game code is available in references/osu/ - use this for reference but don't necessesarily assume that it is exactly the same as the code used to build the game binaries.
+## References
 
-Assuming osu!lazer is installed with defaults on Windows, game binaries are available in `%LOCALAPPDATA%\osulazer\current\` (some installs use `osu!lazer` instead). The launcher probes both.
+To reduce the dependence on (slow) GitHub queries to research the osu! codebase, some references are provided:
 
-osu! uses the osu-framework, which is available in references/osu-framework/.
-
-# Prior art
-
-As an example of an application reading osu! memory, tosu is provided in references/tosu/. (Note that since this is written in TS, it shouldn't be taken as an 1-1 example.)
-
-Note that many osu!-related projects are targeting osu!stable, the legacy application, which is completely different from osu!lazer.
+- `references/osu` - osu! codebase
+- `references/osu-framework` - osu! framework
+- `references/tosu` - tosu (example of an application reading osu! memory)

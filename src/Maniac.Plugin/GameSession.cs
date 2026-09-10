@@ -302,6 +302,8 @@ sealed class GameSession
         Status.Applied = 0;
         Status.Total = 0;
         Status.Columns = 0;
+        Status.Time = 0;
+        Status.Blocked = false;
     }
 
     static Player? FindPlayer(OsuGame game)

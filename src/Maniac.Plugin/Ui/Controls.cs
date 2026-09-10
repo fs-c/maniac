@@ -22,6 +22,62 @@ sealed partial class BlockingBox : Box
     protected override bool OnScroll(ScrollEvent e) => true;
 }
 
+sealed partial class BarStatus : CompositeDrawable, IHasTooltip
+{
+    readonly SpriteText screen;
+    readonly SpriteText clock;
+
+    public LocalisableString TooltipText { get; private set; }
+
+    public BarStatus()
+    {
+        RelativeSizeAxes = Axes.Both;
+        Padding = new MarginPadding { Horizontal = 10 };
+        InternalChild = new GridContainer
+        {
+            RelativeSizeAxes = Axes.Both,
+            ColumnDimensions = [new Dimension(), new Dimension(GridSizeMode.AutoSize)],
+            Content = new[]
+            {
+                new Drawable[]
+                {
+                    screen = new SpriteText
+                    {
+                        Font = UiTheme.Caption,
+                        Colour = UiTheme.TextMuted,
+                        Anchor = Anchor.CentreRight,
+                        Origin = Anchor.CentreRight,
+                        RelativeSizeAxes = Axes.X,
+                        Truncate = true,
+                    },
+                    clock = new SpriteText
+                    {
+                        Font = UiTheme.CaptionBold,
+                        Colour = UiTheme.TextBody,
+                        Anchor = Anchor.CentreRight,
+                        Origin = Anchor.CentreRight,
+                    },
+                },
+            },
+        };
+    }
+
+    public void Set(string screenText, string clockText, string tooltip)
+    {
+        if (screen.Text != screenText)
+            screen.Text = screenText;
+        if (clock.Text != clockText)
+        {
+            clock.Text = clockText;
+            clock.Margin = string.IsNullOrEmpty(clockText)
+                ? new MarginPadding()
+                : new MarginPadding { Left = 8 };
+        }
+
+        TooltipText = tooltip;
+    }
+}
+
 sealed partial class StatusDot : CircularContainer, IHasTooltip
 {
     readonly Circle fill;
