@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using InjectDotnet;
-using Maniac.Core;
 
 namespace Maniac.Launcher;
 
@@ -10,10 +9,10 @@ static class WindowsRemoteInject
     {
         string runtimeConfig = Path.Combine(pluginDir, "Maniac.runtimeconfig.json");
         if (!File.Exists(runtimeConfig))
-            throw new FileNotFoundException("Maniac.runtimeconfig.json not found. Build the plugin first.", runtimeConfig);
+            throw new PayloadMissingException();
 
-        Console.WriteLine($"runtime   {runtimeConfig}");
-        Console.WriteLine("method    injectdotnet");
+        Cli.WriteVerbose($"runtime   {runtimeConfig}");
+        Cli.WriteVerbose("method    injectdotnet");
 
         int? result = process.Inject(
             runtimeConfig,
@@ -24,17 +23,13 @@ static class WindowsRemoteInject
             waitForReturn: true);
 
         if (result is not 0)
-        {
-            string log = ManiacPaths.BootstrapLog;
-            string details = File.Exists(log) ? $" details: {log}" : "";
-            throw new InvalidOperationException($"bootstrap returned {DescribeHostResult(result)}.{details}");
-        }
+            throw new InjectFailedException(DescribeHostResult(result));
     }
 
-    static string DescribeHostResult(int? result)
+    internal static string DescribeHostResult(int? result)
     {
         if (result is null)
-            return "null";
+            return "bootstrap returned null";
 
         int code = result.Value;
         string name = (uint)code switch
@@ -51,6 +46,6 @@ static class WindowsRemoteInject
             0xC0000005 => "STATUS_ACCESS_VIOLATION (entry point signature must be int Method(IntPtr, int))",
             _ => "unknown",
         };
-        return $"{code} (0x{code:X8}) {name}";
+        return $"bootstrap returned {code} (0x{code:X8}) {name}";
     }
 }

@@ -80,3 +80,12 @@ jobs:
 
       - name: Pack
         run: pwsh ./scripts/pack.ps1 -Configuration Release
+
+      - name: Upload packed exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: maniac-win-x64
+          path: artifacts/maniac/maniac.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7

@@ -9,12 +9,20 @@
     <HostArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</HostArchitecture>
     <_DefaultUseInjectDotnet>false</_DefaultUseInjectDotnet>
     <_DefaultUseInjectDotnet Condition="$([MSBuild]::IsOSPlatform('windows')) AND '$(HostArchitecture)' == 'X64'">true</_DefaultUseInjectDotnet>
+    <_DefaultUseInjectDotnet Condition="'$(RuntimeIdentifier)' == 'win-x64'">true</_DefaultUseInjectDotnet>
     <UseInjectDotnet Condition="'$(UseInjectDotnet)' == ''">$(_DefaultUseInjectDotnet)</UseInjectDotnet>
     <DefineConstants Condition="'$(UseInjectDotnet)' == 'true'">$(DefineConstants);USE_INJECTDOTNET</DefineConstants>
     <PlatformTarget Condition="'$(UseInjectDotnet)' == 'true'">x64</PlatformTarget>
     <Platforms Condition="'$(UseInjectDotnet)' == 'true'">x64</Platforms>
     <Platform Condition="'$(UseInjectDotnet)' == 'true' AND ('$(Platform)' == '' or '$(Platform)' == 'AnyCPU')">x64</Platform>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract Condition="'$(PublishSingleFile)' == 'true'">true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile Condition="'$(PublishSingleFile)' == 'true'">true</EnableCompressionInSingleFile>
+    <CopyOutputSymbolsToPublishDirectory Condition="'$(PublishSingleFile)' == 'true'">false</CopyOutputSymbolsToPublishDirectory>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Maniac.Launcher.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.621003" />
   </ItemGroup>
@@ -40,28 +48,43 @@
   <ItemGroup>
     <ProjectReference Include="..\Maniac.Bootstrap\Maniac.Bootstrap.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <GlobalPropertiesToRemove>PublishSingleFile;SelfContained</GlobalPropertiesToRemove>
     </ProjectReference>
     <ProjectReference Include="..\Maniac.Plugin\Maniac.Plugin.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <GlobalPropertiesToRemove>PublishSingleFile;SelfContained</GlobalPropertiesToRemove>
     </ProjectReference>
     <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj" />
   </ItemGroup>
-  <Target Name="CopyPlugin" AfterTargets="Build">
+  <Target Name="CollectPluginFiles" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
       <_StubDir>$(MSBuildThisFileDirectory)..\Maniac.Bootstrap\bin\$(Configuration)\net8.0</_StubDir>
       <_PluginDir>$(MSBuildThisFileDirectory)..\Maniac.Plugin\bin\$(Configuration)\net8.0</_PluginDir>
     </PropertyGroup>
     <ItemGroup>
-      <_PluginFiles Include="$(_StubDir)/Maniac.dll" />
-      <_PluginFiles Include="$(_StubDir)/Maniac.pdb" Condition="Exists('$(_StubDir)/Maniac.pdb')" />
-      <_PluginFiles Include="$(_StubDir)/Maniac.runtimeconfig.json" Condition="Exists('$(_StubDir)/Maniac.runtimeconfig.json')" />
-      <_PluginFiles Include="$(_StubDir)/Maniac.deps.json" Condition="Exists('$(_StubDir)/Maniac.deps.json')" />
-      <_PluginFiles Include="$(_StubDir)/*Harmony*.dll" />
-      <_PluginFiles Include="$(_PluginDir)/Maniac.Plugin.dll" />
-      <_PluginFiles Include="$(_PluginDir)/Maniac.Plugin.pdb" Condition="Exists('$(_PluginDir)/Maniac.Plugin.pdb')" />
-      <_PluginFiles Include="$(_PluginDir)/Maniac.Core.dll" />
-      <_PluginFiles Include="$(_PluginDir)/Maniac.Core.pdb" Condition="Exists('$(_PluginDir)/Maniac.Core.pdb')" />
+      <_PluginFiles Remove="@(_PluginFiles)" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.dll" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.pdb" Condition="Exists('$(_StubDir)\Maniac.pdb')" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.runtimeconfig.json" Condition="Exists('$(_StubDir)\Maniac.runtimeconfig.json')" />
+      <_PluginFiles Include="$(_StubDir)\Maniac.deps.json" Condition="Exists('$(_StubDir)\Maniac.deps.json')" />
+      <_PluginFiles Include="$(_StubDir)\*Harmony*.dll" />
+      <_PluginFiles Include="$(_PluginDir)\Maniac.Plugin.dll" />
+      <_PluginFiles Include="$(_PluginDir)\Maniac.Plugin.pdb" Condition="Exists('$(_PluginDir)\Maniac.Plugin.pdb')" />
+      <_PluginFiles Include="$(_PluginDir)\Maniac.Core.dll" />
+      <_PluginFiles Include="$(_PluginDir)\Maniac.Core.pdb" Condition="Exists('$(_PluginDir)\Maniac.Core.pdb')" />
     </ItemGroup>
-    <Copy SourceFiles="@(_PluginFiles)" DestinationFolder="$(OutputPath)plugin" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="EmbedPluginPayload" BeforeTargets="AssignTargetPaths" DependsOnTargets="CollectPluginFiles">
+    <ItemGroup>
+      <EmbeddedResource Include="@(_PluginFiles)">
+        <LogicalName>plugin.%(Filename)%(Extension)</LogicalName>
+        <ManifestResourceName>plugin.%(Filename)%(Extension)</ManifestResourceName>
+        <Type>Non-Resx</Type>
+        <WithCulture>false</WithCulture>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyPlugin" AfterTargets="Build" DependsOnTargets="CollectPluginFiles" Condition="'$(PublishSingleFile)' != 'true'">
+    <Copy SourceFiles="@(_PluginFiles)" DestinationFolder="$(OutputPath)plugin" SkipUnchangedFiles="true" Retries="0" ContinueOnError="true" />
   </Target>
 </Project>

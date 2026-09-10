@@ -8,7 +8,7 @@ static class DiagnosticInject
 {
     public static void Apply(Process process, string hookDll, string command)
     {
-        Console.WriteLine("method   diagnostic ipc");
+        Cli.WriteVerbose("method    diagnostic ipc");
         int pid = process.Id;
         try
         {
@@ -17,15 +17,15 @@ static class DiagnosticInject
             client.SetEnvironmentVariable("MANIAC_COMMAND", command);
             client.ApplyStartupHook(path);
         }
-        catch (ServerNotAvailableException)
+        catch (ServerNotAvailableException ex)
         {
-            throw new InvalidOperationException(
-                $"pid {pid} has no .NET diagnostic port. Is osu!lazer running, and is DOTNET_EnableDiagnostics enabled?");
+            throw new InjectFailedException(
+                $"pid {pid} has no .NET diagnostic port. Is osu!lazer running, and is DOTNET_EnableDiagnostics enabled?",
+                ex);
         }
         catch (Exception ex) when (ex is EndOfStreamException or IOException or DiagnosticsClientException)
         {
-            string hint = File.Exists(ManiacPaths.BootstrapLog) ? $" See {ManiacPaths.BootstrapLog}" : "";
-            throw new InvalidOperationException($"diagnostic inject failed: {ex.Message}.{hint}", ex);
+            throw new InjectFailedException($"diagnostic inject failed: {ex.Message}", ex);
         }
 
         Thread.Sleep(400);
@@ -33,14 +33,14 @@ static class DiagnosticInject
         {
             var still = Process.GetProcessById(pid);
             if (still.HasExited)
-                throw new InvalidOperationException($"osu! exited after inject. See {ManiacPaths.BootstrapLog}");
+                throw new InjectFailedException($"osu! exited after inject. See {ManiacPaths.BootstrapLog}");
         }
         catch (ArgumentException)
         {
-            throw new InvalidOperationException($"osu! exited after inject. See {ManiacPaths.BootstrapLog}");
+            throw new InjectFailedException($"osu! exited after inject. See {ManiacPaths.BootstrapLog}");
         }
 
         if (File.Exists(ManiacPaths.BootstrapLog))
-            Console.WriteLine($"details: {ManiacPaths.BootstrapLog}");
+            Cli.WriteVerbose($"details   {ManiacPaths.BootstrapLog}");
     }
 }

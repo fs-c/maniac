@@ -7,22 +7,37 @@ static class OsuProcess
     public static Process Find(int? pid)
     {
         if (pid is int requested)
-            return Process.GetProcessById(requested);
+        {
+            try
+            {
+                return Process.GetProcessById(requested);
+            }
+            catch (ArgumentException)
+            {
+                throw new InvalidOperationException(CliMessages.ProcessNotFound(requested));
+            }
+        }
 
         var windowPids = FindWindowPids();
         if (windowPids.Count == 1)
             return Process.GetProcessById(windowPids[0]);
         if (windowPids.Count > 1)
-            throw new InvalidOperationException($"Multiple osu! windows: pids {string.Join(", ", windowPids)}. Pass --pid.");
+        {
+            Cli.WriteVerbose($"pids {string.Join(", ", windowPids)}");
+            throw new InvalidOperationException(CliMessages.MultipleOsu);
+        }
 
         var matches = Process.GetProcesses()
             .Where(IsOsuProcess)
             .ToList();
 
         if (matches.Count == 0)
-            throw new InvalidOperationException("No osu! window or process found. Start osu!lazer and retry.");
+            throw new InvalidOperationException(CliMessages.OsuNotRunning);
         if (matches.Count > 1)
-            throw new InvalidOperationException($"Multiple osu! processes: {string.Join(", ", matches.Select(p => p.Id))}. Pass --pid.");
+        {
+            Cli.WriteVerbose($"pids {string.Join(", ", matches.Select(p => p.Id))}");
+            throw new InvalidOperationException(CliMessages.MultipleOsu);
+        }
 
         return matches[0];
     }
