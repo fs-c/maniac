@@ -28,7 +28,37 @@ New-Item -ItemType Directory -Force $extract | Out-Null
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::ExtractToDirectory($nupkg, $extract)
 
-$game = Get-ChildItem $extract -Recurse -Filter osu.Game.dll | Select-Object -First 1
+function Find-OsuGameDll([string]$root) {
+    Get-ChildItem $root -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq "osu.Game.dll" } |
+        Select-Object -First 1
+}
+
+$game = Find-OsuGameDll $extract
+if (-not $game) {
+    # Velopack Linux full nupkgs wrap a single AppImage instead of loose assemblies.
+    $appImage = Get-ChildItem $extract -Recurse -File |
+        Where-Object { $_.Name -like "*.AppImage" } |
+        Select-Object -First 1
+    if (-not $appImage) {
+        $names = @(Get-ChildItem $extract -Recurse -File | Select-Object -First 20 -ExpandProperty Name)
+        throw "osu.Game.dll not found in nupkg. Entries: $($names -join ', ')"
+    }
+
+    Write-Host "Extracting $($appImage.Name)"
+    & chmod +x $appImage.FullName
+    if ($LASTEXITCODE -ne 0) { throw "chmod +x failed for $($appImage.FullName)" }
+
+    Push-Location $extract
+    try {
+        & $appImage.FullName --appimage-extract
+        if ($LASTEXITCODE -ne 0) { throw "AppImage extract failed with $LASTEXITCODE" }
+    } finally {
+        Pop-Location
+    }
+
+    $game = Find-OsuGameDll $extract
+}
 if (-not $game) { throw "osu.Game.dll not found in nupkg" }
 
 Write-Host "LazerDir $($game.DirectoryName)"

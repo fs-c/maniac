@@ -17,7 +17,7 @@ public partial class ManiacShell : CompositeDrawable
 {
     public const double StatusIntervalMs = 100;
     public const float AdvancedMaxHeight = 560;
-    public const float OverlayWidth = 400;
+    public const float OverlayWidth = 350;
     public const int GeneralPage = 0;
     public const int OsuPage = 1;
     public const int ManiaPage = 2;
@@ -54,6 +54,7 @@ public partial class ManiacShell : CompositeDrawable
     string? lastDiagText;
     bool lastAdvanced;
     double? skillPreview;
+    int currentPage;
 
     public ManiacShell(SettingsStore store, Func<AutoplayStatus> statusOf, Func<string> diagnosticOf)
     {
@@ -142,7 +143,7 @@ public partial class ManiacShell : CompositeDrawable
         barStatus = new BarStatus();
         settingsButton = new IconButton(
             UiTheme.Icon(OsuIcon.Settings, UiTheme.IconMedium, UiTheme.IconMuted),
-            OpenSettings);
+            () => OpenPage(SettingsPage));
         panelToggle = new IconButton(
             UiTheme.Icon(FontAwesome.Solid.ChevronDown, UiTheme.IconSmall),
             ToggleExpanded);
@@ -155,7 +156,7 @@ public partial class ManiacShell : CompositeDrawable
                 autoRow,
                 new KeybindRow("Toggle overlay", store.Current.PanelHotkey, v => store.Update(s => s.PanelHotkey = v), "Hotkey that hides or shows the overlay."),
                 new KeybindRow("Toggle autoplay", store.Current.AutoplayHotkey, v => store.Update(s => s.AutoplayHotkey = v), "Hotkey that turns autoplay on or off."),
-                UiLayout.Hint("Made by fsoc, github.com/fs-c/maniac")),
+                UiLayout.HintWithLink("Made by fsoc, ", "discord.gg/Wenkmg7", "https://discord.gg/Wenkmg7")),
             UiLayout.Column(
                 UiLayout.Heading("osu!standard"),
                 osuRow,
@@ -170,7 +171,7 @@ public partial class ManiacShell : CompositeDrawable
                 UiLayout.Nav(
                     new PanelButton("Reload", Session.RequestReload, fillWidth: true),
                     new PanelButton("Unload", Session.RequestUnload, fillWidth: true)),
-                new StatusLine { Text = $"plugin {File.GetLastWriteTime(typeof(ManiacShell).Assembly.Location):HH:mm:ss}" },
+                new StatusLine { Text = $"{ManiacVersion.Current} · plugin {File.GetLastWriteTime(typeof(ManiacShell).Assembly.Location):HH:mm:ss}" },
                 expiryDiagHint,
                 playLine,
                 diagLine,
@@ -330,14 +331,14 @@ public partial class ManiacShell : CompositeDrawable
     {
         if (index == OsuPage && !Features.OsuStandard)
             return;
+        if (body.IsPresent && currentPage == index)
+        {
+            ToggleExpanded();
+            return;
+        }
+
         EnsureExpanded();
         ShowPage(index);
-    }
-
-    void OpenSettings()
-    {
-        EnsureExpanded();
-        ShowPage(SettingsPage);
     }
 
     void EnsureExpanded()
@@ -409,6 +410,7 @@ public partial class ManiacShell : CompositeDrawable
 
     void ShowPage(int index)
     {
+        currentPage = index;
         generalNav.SetActive(index == GeneralPage);
         for (int i = 0; i < nav.Length; i++)
             nav[i].SetActive(i + 1 == index);

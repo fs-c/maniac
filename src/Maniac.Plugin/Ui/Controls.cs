@@ -1,3 +1,5 @@
+using Maniac.Core;
+using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
@@ -5,6 +7,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
+using osu.Framework.Platform;
 using osuTK;
 
 namespace Maniac.Plugin.Ui;
@@ -124,13 +127,30 @@ sealed partial class BrandButton : ClickableContainer
         Children = new Drawable[]
         {
             background = new Box { RelativeSizeAxes = Axes.Both, Colour = UiTheme.ChromeIdle },
-            new SpriteText
+            new FillFlowContainer
             {
-                Text = text,
-                Font = UiTheme.Heading,
-                Anchor = Anchor.Centre,
-                Origin = Anchor.Centre,
-                Padding = new MarginPadding { Horizontal = 6, Vertical = 4 },
+                AutoSizeAxes = Axes.Both,
+                Direction = FillDirection.Vertical,
+                Spacing = Vector2.Zero,
+                Padding = new MarginPadding { Horizontal = 6, Vertical = 2 },
+                Children =
+                [
+                    new SpriteText
+                    {
+                        Text = text,
+                        Font = UiTheme.Heading,
+                        Anchor = Anchor.TopCentre,
+                        Origin = Anchor.TopCentre,
+                    },
+                    new SpriteText
+                    {
+                        Text = ManiacVersion.Current,
+                        Font = UiTheme.Caption,
+                        Colour = UiTheme.TextMuted,
+                        Anchor = Anchor.TopRight,
+                        Origin = Anchor.TopRight,
+                    },
+                ],
             },
         };
     }
@@ -443,6 +463,39 @@ sealed partial class DisclosureRow : CompositeDrawable
     static string ActionLabel(bool value) => value ? "Hide" : "Show";
 }
 
+sealed partial class InlineLink : ClickableContainer, IHasTooltip
+{
+    readonly SpriteText label;
+    readonly string url;
+
+    [Resolved]
+    GameHost host { get; set; } = null!;
+
+    public LocalisableString TooltipText { get; }
+
+    public InlineLink(string text, string url)
+    {
+        this.url = url;
+        AutoSizeAxes = Axes.Both;
+        Action = () => host.OpenUrlExternally(this.url);
+        TooltipText = url;
+        Child = label = new SpriteText
+        {
+            Text = text,
+            Font = UiTheme.Caption,
+            Colour = UiTheme.AccentMuted,
+        };
+    }
+
+    protected override bool OnHover(HoverEvent e)
+    {
+        label.Colour = UiTheme.Accent;
+        return true;
+    }
+
+    protected override void OnHoverLost(HoverLostEvent e) => label.Colour = UiTheme.AccentMuted;
+}
+
 sealed partial class QuietLink : ClickableContainer, IHasTooltip
 {
     readonly SpriteText label;
@@ -584,6 +637,23 @@ static class UiLayout
         Font = UiTheme.Caption,
         Colour = UiTheme.TextMuted,
         RelativeSizeAxes = Axes.X,
+    };
+
+    public static FillFlowContainer HintWithLink(string text, string linkText, string url) => new()
+    {
+        RelativeSizeAxes = Axes.X,
+        AutoSizeAxes = Axes.Y,
+        Direction = FillDirection.Horizontal,
+        Children =
+        [
+            new SpriteText
+            {
+                Text = text,
+                Font = UiTheme.Caption,
+                Colour = UiTheme.TextMuted,
+            },
+            new InlineLink(linkText, url),
+        ],
     };
 
     public static SpriteText Section(string text) => new()

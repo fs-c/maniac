@@ -34,8 +34,8 @@ public static class Entry
         session = new GameSession(settings);
         Session.SetTick(OnTick);
         Logger.Log(probe.Ok
-            ? "maniac: plugin started."
-            : "maniac: plugin started with failed probe; autoplay disabled.");
+            ? $"maniac: plugin started ({ManiacVersion.Current})."
+            : $"maniac: plugin started with failed probe; autoplay disabled ({ManiacVersion.Current}).");
     }
 
     public static void Stop()

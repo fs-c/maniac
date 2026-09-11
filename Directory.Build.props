@@ -6,6 +6,7 @@
     <LangVersion>latest</LangVersion>
     <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     <Deterministic>true</Deterministic>
+    <Version>0.1.0</Version>
     <_LazerDirWinA>$([System.IO.Path]::Combine('$(LOCALAPPDATA)', 'osulazer', 'current'))</_LazerDirWinA>
     <_LazerDirWinB>$([System.IO.Path]::Combine('$(LOCALAPPDATA)', 'osu!lazer', 'current'))</_LazerDirWinB>
     <_LazerDirMacA>$([System.IO.Path]::Combine('/Applications', 'osu!.app', 'Contents', 'MacOS'))</_LazerDirMacA>
