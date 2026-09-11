@@ -144,7 +144,22 @@ sealed class GameSession
 
         if (ruleset.Equals("osu", StringComparison.OrdinalIgnoreCase))
         {
-            TickOsu(state, play, cfg.Osu.Enabled);
+            // Features.OsuStandard is a compile-time flag - at the time of writing we set it
+            // to false because the feature isn't fleshed out yet, but we wanted to already
+            // release demo builds
+#pragma warning disable CS0162
+            if (Features.OsuStandard)
+                TickOsu(state, play, cfg.Osu.Enabled);
+            else
+            {
+                sink?.ReleaseHeld();
+                Status.Bound = false;
+                Status.Applied = 0;
+                Status.Total = 0;
+                Status.Columns = 0;
+                Status.Diagnostic = "osu!standard is not available yet";
+            }
+#pragma warning restore CS0162
             return;
         }
 

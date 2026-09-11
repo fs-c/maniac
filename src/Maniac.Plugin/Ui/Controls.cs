@@ -225,13 +225,14 @@ sealed partial class PanelButton : ClickableContainer, IHasTooltip
         Finish(label);
     }
 
-    public PanelButton(IconUsage icon, Action action, string tooltip = "")
+    public PanelButton(IconUsage icon, Action action, string tooltip = "", bool enabled = true)
     {
         Size = new Vector2(UiTheme.ButtonSize);
         Action = action;
         TooltipText = tooltip;
         background = MakeBackground();
         Finish(UiTheme.Icon(icon, UiTheme.IconLarge));
+        Enabled.Value = enabled;
     }
 
     static Box MakeBackground() => new()
@@ -245,6 +246,13 @@ sealed partial class PanelButton : ClickableContainer, IHasTooltip
         Masking = true;
         CornerRadius = UiTheme.ControlRadius;
         Children = new Drawable[] { background, content };
+        Enabled.BindValueChanged(_ => ApplyEnabled(), true);
+    }
+
+    void ApplyEnabled()
+    {
+        Alpha = Enabled.Value ? 1 : 0.4f;
+        background.Colour = Enabled.Value ? UiTheme.TabFill(active) : UiTheme.TabFill(false);
     }
 
     public void SetText(string text)
@@ -256,18 +264,21 @@ sealed partial class PanelButton : ClickableContainer, IHasTooltip
     public void SetActive(bool value)
     {
         active = value;
-        background.Colour = UiTheme.TabFill(value);
+        if (Enabled.Value)
+            background.Colour = UiTheme.TabFill(value);
     }
 
     protected override bool OnHover(HoverEvent e)
     {
-        background.Colour = UiTheme.TabFill(active, hovered: true);
+        if (Enabled.Value)
+            background.Colour = UiTheme.TabFill(active, hovered: true);
         return true;
     }
 
     protected override void OnHoverLost(HoverLostEvent e)
     {
-        background.Colour = UiTheme.TabFill(active);
+        if (Enabled.Value)
+            background.Colour = UiTheme.TabFill(active);
     }
 }
 

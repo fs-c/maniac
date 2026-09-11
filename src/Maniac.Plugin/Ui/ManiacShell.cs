@@ -18,6 +18,9 @@ public partial class ManiacShell : CompositeDrawable
     public const double StatusIntervalMs = 100;
     public const float AdvancedMaxHeight = 560;
     public const float OverlayWidth = 400;
+    public const int GeneralPage = 0;
+    public const int OsuPage = 1;
+    public const int ManiaPage = 2;
     public const int SettingsPage = 3;
 
     readonly SettingsStore settings;
@@ -66,15 +69,19 @@ public partial class ManiacShell : CompositeDrawable
         Depth = float.MinValue;
         Name = "maniac-overlay";
 
-        generalNav = new BrandButton("maniac", () => OpenPage(0));
+        generalNav = new BrandButton("maniac", () => OpenPage(GeneralPage));
         nav =
         [
-            new PanelButton(OsuIcon.RulesetOsu, () => OpenPage(1))
+            new PanelButton(
+                OsuIcon.RulesetOsu,
+                () => OpenPage(OsuPage),
+                Features.OsuStandard ? "" : "osu!std is not supported yet.",
+                enabled: Features.OsuStandard)
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
             },
-            new PanelButton(OsuIcon.RulesetMania, () => OpenPage(2))
+            new PanelButton(OsuIcon.RulesetMania, () => OpenPage(ManiaPage))
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
@@ -152,7 +159,7 @@ public partial class ManiacShell : CompositeDrawable
             UiLayout.Column(
                 UiLayout.Heading("osu!standard"),
                 osuRow,
-                UiLayout.Hint("osu!std humanization will be available in a future update.")),
+                UiLayout.Hint("osu!std humanization is not supported yet.")),
             UiLayout.Column(
                 UiLayout.Heading("mania"),
                 maniaRow,
@@ -229,7 +236,7 @@ public partial class ManiacShell : CompositeDrawable
         ApplyExpanded(store.Current.General.PanelExpanded);
         lastAdvanced = store.Current.Mania.ShowAdvanced;
         ApplyAdvanced(lastAdvanced);
-        ShowPage(0);
+        ShowPage(GeneralPage);
     }
 
     static Drawable AdvancedInset(Drawable header, Drawable content) => new Container
@@ -321,6 +328,8 @@ public partial class ManiacShell : CompositeDrawable
 
     void OpenPage(int index)
     {
+        if (index == OsuPage && !Features.OsuStandard)
+            return;
         EnsureExpanded();
         ShowPage(index);
     }
@@ -400,7 +409,7 @@ public partial class ManiacShell : CompositeDrawable
 
     void ShowPage(int index)
     {
-        generalNav.SetActive(index == 0);
+        generalNav.SetActive(index == GeneralPage);
         for (int i = 0; i < nav.Length; i++)
             nav[i].SetActive(i + 1 == index);
         for (int i = 0; i < pages.Length; i++)
