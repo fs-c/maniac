@@ -39,10 +39,12 @@ app.get("/api/catalog", (c) => c.json(catalog.catalog()));
 
 app.get("/api/replays/:file", (c) => {
   const file = c.req.param("file");
-  const offset = Number(c.req.query("offset") ?? 0) || 0;
-  const limit = Math.min(2000, Math.max(1, Number(c.req.query("limit") ?? 400) || 400));
+  const eventOffset = Number(c.req.query("offset") ?? 0) || 0;
+  const eventLimit = Math.min(2000, Math.max(0, Number(c.req.query("limit") ?? 400) || 0));
+  const hitOffset = Number(c.req.query("hitsOffset") ?? 0) || 0;
+  const hitLimit = Math.min(2000, Math.max(0, Number(c.req.query("hitsLimit") ?? 400) || 0));
   try {
-    return c.json(catalog.inspector(file, offset, limit));
+    return c.json(catalog.inspector(file, eventOffset, eventLimit, hitOffset, hitLimit));
   } catch (err) {
     return c.json({ error: err instanceof Error ? err.message : String(err) }, 404);
   }

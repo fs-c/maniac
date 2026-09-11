@@ -116,6 +116,50 @@ export type ReplayEvent = {
   down: boolean;
 };
 
+export type Judgement = "miss" | "meh" | "ok" | "good" | "great" | "perfect";
+export type HitKind = "tap" | "holdHead" | "holdTail";
+
+export type HitWindowsInfo = {
+  classic: boolean;
+  rate: number;
+  od: number;
+  convert: boolean;
+  perfect: number;
+  great: number;
+  good: number;
+  ok: number;
+  meh: number;
+  miss: number;
+};
+
+export type NoteHit = {
+  noteIndex: number;
+  noteStart: number;
+  noteEnd: number;
+  column: number;
+  kind: HitKind;
+  pressTime?: number;
+  releaseTime?: number;
+  /** Action time − note time. Negative is early. */
+  error?: number;
+  judgement: Judgement;
+  hit: boolean;
+};
+
+export type MatchSummary = {
+  noteCount: number;
+  columns: number;
+  matchedHeads: number;
+  missedHeads: number;
+  ghostTaps: number;
+  extraReleases: number;
+  meanError?: number;
+  stdError?: number;
+  unstableRate?: number;
+  judgements: Record<Judgement, number>;
+  windows: HitWindowsInfo;
+};
+
 export type ReplayInspector = {
   file: string;
   player: string;
@@ -140,4 +184,9 @@ export type ReplayInspector = {
   events: ReplayEvent[];
   eventOffset: number;
   eventTotal: number;
+  matchError?: string;
+  match?: MatchSummary;
+  hits: NoteHit[];
+  hitOffset: number;
+  hitTotal: number;
 };

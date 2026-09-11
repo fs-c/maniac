@@ -106,6 +106,19 @@ export type OsuMeta = {
   displayName: string;
   columns: number;
   isMania: boolean;
+  fileFormat: number;
+};
+
+export type ManiaNote = {
+  index: number;
+  start: number;
+  end: number;
+  column: number;
+  hold: boolean;
+};
+
+export type ManiaBeatmap = OsuMeta & {
+  notes: ManiaNote[];
 };
 
 const UNUSABLE = new Set(["RD", "AU", "CN", "RX", "AP"]);
@@ -124,6 +137,30 @@ export function modsLabel(replay: Pick<OsrReplay, "mods" | "legacyMods">): strin
 
 export function hasAcronym(replay: Pick<OsrReplay, "mods">, acronym: string): boolean {
   return replay.mods.some((m) => m.acronym.toUpperCase() === acronym.toUpperCase());
+}
+
+export function replayRate(replay: Pick<OsrReplay, "mods" | "legacyMods">): number {
+  for (const mod of replay.mods) {
+    if (mod.speedChange && mod.speedChange > 0)
+      return mod.speedChange;
+  }
+  const mods = replay.legacyMods;
+  if ((mods & LegacyMods.DoubleTime) !== 0 || (mods & LegacyMods.Nightcore) !== 0)
+    return 1.5;
+  if ((mods & LegacyMods.HalfTime) !== 0)
+    return 0.75;
+  return 1;
+}
+
+/** Stable always uses classic windows. Lazer needs CL; SV2 forces lazer-style windows. */
+export function hasClassicWindows(replay: Pick<OsrReplay, "version" | "mods" | "legacyMods">): boolean {
+  if (hasAcronym(replay, "SV2") || (replay.legacyMods & LegacyMods.ScoreV2) !== 0)
+    return false;
+  return !isLazer(replay) || hasAcronym(replay, "CL");
+}
+
+export function hasMirror(replay: Pick<OsrReplay, "mods" | "legacyMods">): boolean {
+  return hasAcronym(replay, "MR") || (replay.legacyMods & LegacyMods.Mirror) !== 0;
 }
 
 export function isUnusable(replay: Pick<OsrReplay, "mods" | "legacyMods">): boolean {
@@ -201,6 +238,12 @@ export function parseOsrBuffer(buffer: Uint8Array, path?: string): OsrReplay {
 }
 
 export function parseOsuMeta(bytes: Uint8Array): OsuMeta {
+  const { notes, ...meta } = parseOsu(bytes);
+  void notes;
+  return meta;
+}
+
+export function parseOsu(bytes: Uint8Array): ManiaBeatmap {
   const md5 = createHash("md5").update(bytes).digest("hex");
   const text = new TextDecoder("utf-8").decode(bytes);
   let section = "";
@@ -212,35 +255,56 @@ export function parseOsuMeta(bytes: Uint8Array): OsuMeta {
   let overallDifficulty = 8;
   let beatmapId = 0;
   let beatmapSetId = 0;
+  let fileFormat = 14;
+  const notes: ManiaNote[] = [];
+  let columns = 4;
 
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith("//"))
       continue;
+    if (line.toLowerCase().startsWith("osu file format v")) {
+      const ver = Number.parseInt(line.slice("osu file format v".length), 10);
+      if (Number.isFinite(ver))
+        fileFormat = ver;
+      continue;
+    }
     if (line.startsWith("[") && line.endsWith("]")) {
       section = line.slice(1, -1);
       continue;
     }
-    if (section !== "General" && section !== "Metadata" && section !== "Difficulty")
+    if (section === "General" || section === "Metadata" || section === "Difficulty") {
+      const colon = line.indexOf(":");
+      if (colon <= 0)
+        continue;
+      const key = line.slice(0, colon).trim();
+      const value = line.slice(colon + 1).trim();
+      switch (key) {
+        case "Mode": mode = Number.parseInt(value, 10) || 0; break;
+        case "Title": title = value; break;
+        case "Artist": artist = value; break;
+        case "Version": version = value; break;
+        case "BeatmapID": beatmapId = Number.parseInt(value, 10) || 0; break;
+        case "BeatmapSetID": beatmapSetId = Number.parseInt(value, 10) || 0; break;
+        case "CircleSize":
+          circleSize = Number.parseFloat(value) || 0;
+          columns = Math.min(18, Math.max(1, Math.round(circleSize)));
+          break;
+        case "OverallDifficulty": overallDifficulty = Number.parseFloat(value) || 0; break;
+      }
       continue;
-    const colon = line.indexOf(":");
-    if (colon <= 0)
-      continue;
-    const key = line.slice(0, colon).trim();
-    const value = line.slice(colon + 1).trim();
-    switch (key) {
-      case "Mode": mode = Number.parseInt(value, 10) || 0; break;
-      case "Title": title = value; break;
-      case "Artist": artist = value; break;
-      case "Version": version = value; break;
-      case "BeatmapID": beatmapId = Number.parseInt(value, 10) || 0; break;
-      case "BeatmapSetID": beatmapSetId = Number.parseInt(value, 10) || 0; break;
-      case "CircleSize": circleSize = Number.parseFloat(value) || 0; break;
-      case "OverallDifficulty": overallDifficulty = Number.parseFloat(value) || 0; break;
     }
+    if (section !== "HitObjects")
+      continue;
+    const note = parseHitObject(line, columns, fileFormat < 5 ? 24 : 0);
+    if (note)
+      notes.push({ ...note, index: 0 });
   }
 
-  const columns = Math.min(18, Math.max(1, Math.round(circleSize)));
+  notes.sort((a, b) => a.start - b.start || a.column - b.column);
+  for (let i = 0; i < notes.length; i++)
+    notes[i] = { ...notes[i], index: i };
+
   return {
     title,
     artist,
@@ -254,6 +318,42 @@ export function parseOsuMeta(bytes: Uint8Array): OsuMeta {
     columns,
     isMania: mode === 3,
     displayName: `${artist} - ${title} [${version}]`,
+    fileFormat,
+    notes,
+  };
+}
+
+export function columnFromX(x: number, columns: number): number {
+  const n = columns > 0 ? columns : 1;
+  return Math.min(n - 1, Math.max(0, Math.floor(x * n / 512)));
+}
+
+function parseHitObject(line: string, columns: number, offset: number): Omit<ManiaNote, "index"> | undefined {
+  const parts = line.split(",");
+  if (parts.length < 5)
+    return undefined;
+  const x = Number.parseFloat(parts[0]);
+  const time = Number.parseFloat(parts[2]) + offset;
+  const type = Number.parseInt(parts[3], 10) || 0;
+  const hold = (type & 128) !== 0;
+  const circle = (type & 1) !== 0;
+  if (!hold && !circle)
+    return undefined;
+  let end = time;
+  if (hold && parts.length > 5) {
+    const rest = parts[5];
+    const cut = rest.indexOf(":");
+    end = Number.parseFloat(cut >= 0 ? rest.slice(0, cut) : rest) + offset;
+    if (!Number.isFinite(end) || end < time)
+      end = time;
+  }
+  if (!Number.isFinite(x) || !Number.isFinite(time))
+    return undefined;
+  return {
+    start: time,
+    end,
+    column: columnFromX(x, columns),
+    hold: hold && end > time,
   };
 }
 

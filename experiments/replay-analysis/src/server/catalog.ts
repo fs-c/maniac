@@ -24,10 +24,11 @@ import {
   looksLikeOsu,
   modsLabel,
   parseOsr,
-  parseOsuMeta,
+  parseOsu,
   type OsrReplay,
-  type OsuMeta,
+  type ManiaBeatmap,
 } from "./osr.ts";
+import { matchNotes, serializeHits, summarizeMatch } from "./match.ts";
 import { beatmapDir, dataDir, ensureDataDirs, replayDir } from "./paths.ts";
 
 const SKIP_MODS = new Set(["RD", "AU", "CN", "RX", "AP", "4K", "5K", "6K", "7K", "8K", "9K"]);
@@ -58,7 +59,7 @@ type MapRef = { id: number; stars: number; keys: number };
 
 export class Catalog {
   private manifest = new Map<number, ScoreMeta>();
-  private beatmaps = new Map<string, OsuMeta>();
+  private beatmaps = new Map<string, ManiaBeatmap>();
   private runs: FetchRun[] = [];
   readonly osu: OsuClient;
 
@@ -82,14 +83,18 @@ export class Catalog {
     };
   }
 
-  inspector(file: string, offset = 0, limit = 400): ReplayInspector {
+  inspector(file: string, eventOffset = 0, eventLimit = 400, hitOffset = 0, hitLimit = 400): ReplayInspector {
     const path = join(replayDir, file);
     if (!existsSync(path))
       throw new Error(`replay not found: ${file}`);
     const replay = parseOsr(path);
     const map = this.beatmaps.get(replay.beatmapMd5.toLowerCase());
     const events = replay.events;
-    const slice = events.slice(offset, offset + limit);
+    const eventSlice = events.slice(eventOffset, eventOffset + eventLimit);
+    const matched = this.matchReplay(replay, map);
+    const hitSlice = matched.result && hitLimit > 0
+      ? serializeHits(matched.result.hits, hitOffset, hitLimit)
+      : [];
     return {
       file,
       player: replay.player,
@@ -111,10 +116,29 @@ export class Catalog {
       frameCount: replay.frames.length,
       eventCount: events.length,
       parseError: replay.frameError,
-      events: slice.map((e) => ({ time: e.time, column: e.column, down: e.down })),
-      eventOffset: offset,
+      events: eventSlice.map((e) => ({ time: e.time, column: e.column, down: e.down })),
+      eventOffset,
       eventTotal: events.length,
+      matchError: matched.error,
+      match: matched.result ? summarizeMatch(matched.result) : undefined,
+      hits: hitSlice,
+      hitOffset,
+      hitTotal: matched.result?.hits.length ?? 0,
     };
+  }
+
+  private matchReplay(replay: OsrReplay, map: ManiaBeatmap | undefined): { result?: ReturnType<typeof matchNotes>; error?: string } {
+    if (replay.mode !== GameMode.Mania)
+      return { error: `replay mode is ${GameModeName[replay.mode] ?? replay.mode}, not mania` };
+    if (replay.frameError)
+      return { error: `replay frames unusable: ${replay.frameError}` };
+    if (!map)
+      return { error: `no beatmap for md5 ${replay.beatmapMd5}` };
+    if (!map.isMania)
+      return { error: `beatmap is not mania (mode ${map.mode})` };
+    if (map.notes.length === 0)
+      return { error: `beatmap has no hit objects: ${map.displayName}` };
+    return { result: matchNotes(replay, map) };
   }
 
   async fetch(req: FetchRequest, log: (line: string) => void): Promise<number> {
@@ -329,11 +353,11 @@ export class Catalog {
     for (const file of readdirSync(beatmapDir).filter((f) => f.endsWith(".osu"))) {
       try {
         const bytes = new Uint8Array(readFileSync(join(beatmapDir, file)));
-        const meta = parseOsuMeta(bytes);
-        this.beatmaps.set(meta.md5.toLowerCase(), meta);
+        const map = parseOsu(bytes);
+        this.beatmaps.set(map.md5.toLowerCase(), map);
         const stem = file.replace(/\.osu$/i, "").toLowerCase();
-        if (stem !== meta.md5.toLowerCase())
-          this.beatmaps.set(stem, meta);
+        if (stem !== map.md5.toLowerCase())
+          this.beatmaps.set(stem, map);
       } catch {
         // skip
       }
@@ -576,7 +600,7 @@ export class Catalog {
     return bytes;
   }
 
-  private async downloadBeatmap(beatmapId: number, log: (line: string) => void): Promise<OsuMeta | undefined> {
+  private async downloadBeatmap(beatmapId: number, log: (line: string) => void): Promise<ManiaBeatmap | undefined> {
     const urls = [
       `https://osu.direct/api/osu/${beatmapId}`,
       `https://catboy.best/osu/${beatmapId}`,
@@ -586,7 +610,7 @@ export class Catalog {
         const { bytes } = await this.osu.getBytes(url, { authorize: false, accept: "*/*" });
         if (!bytes || bytes.length < 32 || !looksLikeOsu(bytes))
           continue;
-        const map = parseOsuMeta(bytes);
+        const map = parseOsu(bytes);
         if (!map.isMania)
           continue;
         const path = join(beatmapDir, `${map.md5}.osu`);

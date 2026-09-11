@@ -118,15 +118,19 @@ export function App() {
 
   async function openInspector(file: string) {
     setSelected(file);
-    const data = await loadReplay(file, 0, 400);
+    const data = await loadReplay(file);
     setInspector(data);
   }
 
-  async function loadMore() {
-    if (!selected || !inspector) return;
+  async function loadMoreEvents() {
+    if (!selected || !inspector)
+      return;
     setLoadingMore(true);
     try {
-      const next = await loadReplay(selected, inspector.events.length, 400);
+      const next = await loadReplay(selected, {
+        eventOffset: inspector.events.length,
+        hitLimit: 0,
+      });
       setInspector({
         ...inspector,
         events: inspector.events.concat(next.events),
@@ -137,9 +141,28 @@ export function App() {
     }
   }
 
+  async function loadMoreHits() {
+    if (!selected || !inspector)
+      return;
+    setLoadingMore(true);
+    try {
+      const next = await loadReplay(selected, {
+        eventLimit: 0,
+        hitOffset: inspector.hits.length,
+      });
+      setInspector({
+        ...inspector,
+        hits: inspector.hits.concat(next.hits),
+        hitTotal: next.hitTotal,
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   const visible = filterReplays(replays, runFilter);
   const gridCols = inspector
-    ? "xl:grid-cols-[18rem_minmax(0,1fr)_22rem]"
+    ? "xl:grid-cols-[18rem_minmax(0,1fr)_26rem]"
     : "xl:grid-cols-[18rem_minmax(0,1fr)]";
 
   return (
@@ -195,7 +218,8 @@ export function App() {
                 setInspector(undefined);
                 setSelected(undefined);
               }}
-              onMore={() => void loadMore()}
+              onMoreEvents={() => void loadMoreEvents()}
+              onMoreHits={() => void loadMoreHits()}
             />
           )}
         </section>

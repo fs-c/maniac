@@ -28,8 +28,20 @@ export function startFetch(req: FetchRequest): Promise<JobStatus> {
   });
 }
 
-export function loadReplay(file: string, offset = 0, limit = 400): Promise<ReplayInspector> {
-  return api(`/api/replays/${encodeURIComponent(file)}?offset=${offset}&limit=${limit}`);
+export type ReplaySlice = {
+  eventOffset?: number;
+  eventLimit?: number;
+  hitOffset?: number;
+  hitLimit?: number;
+};
+
+export function loadReplay(file: string, slice: ReplaySlice = {}): Promise<ReplayInspector> {
+  const q = new URLSearchParams();
+  q.set("offset", String(slice.eventOffset ?? 0));
+  q.set("limit", String(slice.eventLimit ?? 400));
+  q.set("hitsOffset", String(slice.hitOffset ?? 0));
+  q.set("hitsLimit", String(slice.hitLimit ?? 400));
+  return api(`/api/replays/${encodeURIComponent(file)}?${q}`);
 }
 
 export function followJob(id: string, onLog: (line: string) => void): Promise<JobStatus> {

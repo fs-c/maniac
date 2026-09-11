@@ -1,6 +1,6 @@
 # replay-analysis
 
-Web-first experiment for collecting public osu! mania replays. v1 only **gathers** data and shows a catalog. Timing analysis is intentionally absent.
+Web-first experiment for collecting public osu! mania replays and lining them up with beatmap notes.
 
 Leave `experiments/mania-human` alone; this is the next surface.
 
@@ -36,4 +36,8 @@ Each card is a separate stream. Run them independently.
 
 Unusable mods (`RD`, `AU`, `CN`, `RX`, `AP`, key-count mods) are skipped. Mirror is kept.
 
-The inspector shows replay headers and key events (time, column, down/up). It does not match notes or compute UR.
+## Matching
+
+Selecting a catalog row matches that replay’s key events to the `.osu` notes (press → head/tap, release → hold tail). Error is action time − note time (negative = early). Hit windows follow mania classic vs lazer, including EZ/HR/DT/HT/CL/SV2 and Mirror.
+
+The inspector shows per-replay match counts, mean error, UR (`10 × σ` of head errors), and a hit list. Cross-replay aggregates are not here yet. Missing beatmaps fail loudly instead of guessing.
