@@ -4,13 +4,7 @@ Auto-player for [osu!lazer](https://github.com/ppy/osu).
 
 ## Build
 
-osu!lazer must be installed. The plugin compiles against those shipped DLLs.
-
-| Platform | Default install |
-|---|---|
-| Windows | `%LOCALAPPDATA%\osulazer\current` |
-| macOS | `/Applications/osu!.app/Contents/MacOS` |
-| Linux | `~/.local/share/osulazer/current` |
+osu!lazer binaries must be available, we compile against them. See `Directory.Build.props` for paths that are checked by default, you can override the path with `-p:LazerDir=/path/to/osulazer`.
 
 ```
 dotnet build Maniac.sln -c Release
@@ -18,20 +12,16 @@ dotnet test tests/Maniac.Core.Tests -c Release
 dotnet test tests/Maniac.Launcher.Tests -c Release
 ```
 
-Optional: `-p:LazerDir=/path/to/osulazer`
-
-That drops a `plugin/` folder next to the launcher for local iteration. CI publishes a single-file binary per platform (plugin payload embedded, extracted on first run).
-
 ## Run
 
 1. Start osu!lazer.
-2. Run the launcher build output (`maniac.exe` on Windows, `maniac` elsewhere), or a CI artifact.
+2. Run `maniac`
 
 On macOS, a downloaded binary may be quarantined; right-click the file and choose Open the first time.
 
-During development, running the launcher again will reload the plugin.
+## Development
 
-## Layout
+Re-running maniac will reload the plugin, there's a bootstrap layer that handles this - if you touch that you have to restart osu!.
 
 | Project | Role |
 |---|---|

@@ -15,8 +15,8 @@ jobs:
   test-core:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "8.0.x"
       - name: Test Core
@@ -41,8 +41,8 @@ jobs:
       MANIAC_BUILD_EXPIRY: ${{ github.event.inputs.build_expiry }}
       RID: ${{ matrix.nupkg_rid }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "8.0.x"
 
@@ -53,7 +53,7 @@ jobs:
           OSU_TAG: ${{ github.event.inputs.osu_tag }}
         run: ./.github/scripts/resolve-osu-release.ps1 -RuntimeIdentifier ${{ matrix.nupkg_rid }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/osu-cache
           key: osulazer-nupkg-${{ matrix.nupkg_rid }}-${{ steps.osu.outputs.tag }}
@@ -74,7 +74,7 @@ jobs:
 
       - name: Upload Windows
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maniac-win-x64
           path: artifacts/maniac-win-x64/maniac.exe
@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload Linux
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maniac-linux-x64
           path: artifacts/maniac-linux-x64/maniac
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload macOS
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maniac-osx-arm64
           path: artifacts/maniac-osx-arm64/maniac
