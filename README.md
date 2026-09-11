@@ -4,32 +4,30 @@ Auto-player for [osu!lazer](https://github.com/ppy/osu).
 
 ## Build
 
-osu!lazer must be installed (Velopack default is `%LOCALAPPDATA%\osulazer\current`). The plugin compiles against those shipped DLLs.
+osu!lazer must be installed. The plugin compiles against those shipped DLLs.
 
-```powershell
+| Platform | Default install |
+|---|---|
+| Windows | `%LOCALAPPDATA%\osulazer\current` |
+| macOS | `/Applications/osu!.app/Contents/MacOS` |
+| Linux | `~/.local/share/osulazer/current` |
+
+```
 dotnet build Maniac.sln -c Release
 dotnet test tests/Maniac.Core.Tests -c Release
 dotnet test tests/Maniac.Launcher.Tests -c Release
 ```
 
-Optional: `-p:LazerDir=C:\path\to\osulazer\current`
+Optional: `-p:LazerDir=/path/to/osulazer`
 
-Pack a single self-contained `maniac.exe` (plugin payload is embedded and extracted on first run):
-
-```powershell
-powershell -File ./scripts/pack.ps1 -Configuration Release
-```
-
-That writes `artifacts/maniac/maniac.exe`. `dotnet build` still drops a `plugin/` folder next to the launcher for local iteration.
+That drops a `plugin/` folder next to the launcher for local iteration. CI publishes a single-file binary per platform (plugin payload embedded, extracted on first run).
 
 ## Run
 
 1. Start osu!lazer.
-2. Run `maniac.exe` (packed artifact or the launcher build output):
+2. Run the launcher build output (`maniac.exe` on Windows, `maniac` elsewhere), or a CI artifact.
 
-```powershell
-.\maniac.exe
-```
+On macOS, a downloaded binary may be quarantined; right-click the file and choose Open the first time.
 
 During development, running the launcher again will reload the plugin.
 

@@ -1,8 +1,13 @@
+# CI only (.github/workflows/ci.yml). GitHub-hosted runners include pwsh.
 param(
-    [string]$Tag = $env:OSU_TAG
+    [string]$Tag = $env:OSU_TAG,
+    [Parameter(Mandatory = $true)]
+    [string]$RuntimeIdentifier
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "common.ps1")
+
 $headers = @{
     "User-Agent" = "maniac-lazer-ci"
     "Accept"     = "application/vnd.github+json"
@@ -25,7 +30,7 @@ if ([string]::IsNullOrWhiteSpace($Tag)) {
     $release = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/ppy/osu/releases/tags/$Tag"
 }
 
-$nupkgName = "osulazer-$Tag-full.nupkg"
+$nupkgName = Get-OsuNupkgName $Tag $RuntimeIdentifier
 $asset = $release.assets | Where-Object { $_.name -eq $nupkgName } | Select-Object -First 1
 if (-not $asset) {
     $available = ($release.assets | ForEach-Object { $_.name }) -join ", "
@@ -35,11 +40,14 @@ if (-not $asset) {
 Write-Host "osu!lazer tag $Tag ($nupkgName)"
 if ($env:GITHUB_OUTPUT) {
     "tag=$Tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+    "rid=$RuntimeIdentifier" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+    "nupkg=$nupkgName" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 }
 if ($env:GITHUB_ENV) {
     "OSU_TAG=$Tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
     "OSU_NUPKG_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+    "RID=$RuntimeIdentifier" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 }
 if ($env:GITHUB_STEP_SUMMARY) {
-    "Resolved osu!lazer **$Tag**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+    "Resolved osu!lazer **$Tag** ($RuntimeIdentifier)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 }

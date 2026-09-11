@@ -84,7 +84,7 @@ static class CliMessages
 {
     public const string Incomplete = "This copy of maniac is incomplete.";
     public const string OsuNotRunning = "osu!lazer is not running.";
-    public const string MultipleOsu = "Several osu! windows are open. Close the extras, or pass --pid <id>.";
+    public const string MultipleOsu = "Several osu! instances are running. Close the extras, or pass --pid <id>.";
     public const string InjectFailed = "Could not load into osu!.";
     public const string PidRequired = "maniac --pid needs a process id.";
     public const string Help =

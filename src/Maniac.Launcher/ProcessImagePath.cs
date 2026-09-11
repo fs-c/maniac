@@ -7,7 +7,11 @@ static class ProcessImagePath
 #if WINDOWS
         return WindowsProcessImagePath.Query(pid);
 #else
-        return OperatingSystem.IsMacOS() ? MacProcessImagePath.Query(pid) : "";
+        if (OperatingSystem.IsMacOS())
+            return MacProcessImagePath.Query(pid);
+        if (OperatingSystem.IsLinux())
+            return LinuxProcessImagePath.Query(pid);
+        return "";
 #endif
     }
 }

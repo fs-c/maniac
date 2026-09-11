@@ -6,15 +6,21 @@
     <LangVersion>latest</LangVersion>
     <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     <Deterministic>true</Deterministic>
-    <_LazerDirA>$(LOCALAPPDATA)\osulazer\current</_LazerDirA>
-    <_LazerDirB>$(LOCALAPPDATA)\osu!lazer\current</_LazerDirB>
-    <_LazerDirMacA>/Applications/osu!.app/Contents/MacOS</_LazerDirMacA>
-    <_LazerDirMacB>$(HOME)/Applications/osu!.app/Contents/MacOS</_LazerDirMacB>
-    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirA)\osu.Game.dll')">$(_LazerDirA)</LazerDir>
-    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirB)\osu.Game.dll')">$(_LazerDirB)</LazerDir>
+    <_LazerDirWinA>$([System.IO.Path]::Combine('$(LOCALAPPDATA)', 'osulazer', 'current'))</_LazerDirWinA>
+    <_LazerDirWinB>$([System.IO.Path]::Combine('$(LOCALAPPDATA)', 'osu!lazer', 'current'))</_LazerDirWinB>
+    <_LazerDirMacA>$([System.IO.Path]::Combine('/Applications', 'osu!.app', 'Contents', 'MacOS'))</_LazerDirMacA>
+    <_LazerDirMacB>$([System.IO.Path]::Combine('$(HOME)', 'Applications', 'osu!.app', 'Contents', 'MacOS'))</_LazerDirMacB>
+    <_LazerDirLinuxA>$([System.IO.Path]::Combine('$(HOME)', '.local', 'share', 'osulazer', 'current'))</_LazerDirLinuxA>
+    <_LazerDirLinuxB>$([System.IO.Path]::Combine('$(HOME)', '.local', 'share', 'osu!lazer', 'current'))</_LazerDirLinuxB>
+    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirWinA)/osu.Game.dll')">$(_LazerDirWinA)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirWinB)/osu.Game.dll')">$(_LazerDirWinB)</LazerDir>
     <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirMacA)/osu.Game.dll')">$(_LazerDirMacA)</LazerDir>
     <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirMacB)/osu.Game.dll')">$(_LazerDirMacB)</LazerDir>
-    <LazerDir Condition="'$(LazerDir)' == ''">$(_LazerDirA)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirLinuxA)/osu.Game.dll')">$(_LazerDirLinuxA)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND Exists('$(_LazerDirLinuxB)/osu.Game.dll')">$(_LazerDirLinuxB)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND $([MSBuild]::IsOSPlatform('osx'))">$(_LazerDirMacA)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == '' AND $([MSBuild]::IsOSPlatform('linux'))">$(_LazerDirLinuxA)</LazerDir>
+    <LazerDir Condition="'$(LazerDir)' == ''">$(_LazerDirWinA)</LazerDir>
     <ManiacBuildExpiry Condition="'$(ManiacBuildExpiry)' == ''">$(MANIAC_BUILD_EXPIRY)</ManiacBuildExpiry>
   </PropertyGroup>
 </Project>
