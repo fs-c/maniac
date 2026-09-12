@@ -32,7 +32,10 @@ jobs:
             pack_rids: win-x64
           - os: ubuntu-latest
             nupkg_rid: linux-x64
-            pack_rids: "linux-x64,osx-arm64"
+            pack_rids: linux-x64
+          - os: macos-latest
+            nupkg_rid: osx-arm64
+            pack_rids: osx-arm64
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -93,7 +96,7 @@ jobs:
           retention-days: 7
 
       - name: Upload macOS
-        if: runner.os == 'Linux'
+        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
           name: maniac-osx-arm64

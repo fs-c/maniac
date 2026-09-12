@@ -1,62 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <TargetFramework Condition="'$(RuntimeIdentifier)' == 'win-x64'">net8.0-windows</TargetFramework>
-    <TargetFramework Condition="'$(RuntimeIdentifier)' == '' AND $([MSBuild]::IsOSPlatform('windows'))">net8.0-windows</TargetFramework>
-    <RootNamespace>Maniac.Launcher</RootNamespace>
-    <AssemblyName>maniac</AssemblyName>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <HostArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</HostArchitecture>
-    <_DefaultUseInjectDotnet>false</_DefaultUseInjectDotnet>
-    <_DefaultUseInjectDotnet Condition="'$(RuntimeIdentifier)' == 'win-x64'">true</_DefaultUseInjectDotnet>
-    <_DefaultUseInjectDotnet Condition="'$(RuntimeIdentifier)' == '' AND $([MSBuild]::IsOSPlatform('windows')) AND '$(HostArchitecture)' == 'X64'">true</_DefaultUseInjectDotnet>
-    <UseInjectDotnet Condition="'$(UseInjectDotnet)' == ''">$(_DefaultUseInjectDotnet)</UseInjectDotnet>
-    <DefineConstants Condition="'$(UseInjectDotnet)' == 'true'">$(DefineConstants);USE_INJECTDOTNET</DefineConstants>
-    <PlatformTarget Condition="'$(UseInjectDotnet)' == 'true'">x64</PlatformTarget>
-    <Platforms Condition="'$(UseInjectDotnet)' == 'true'">x64</Platforms>
-    <Platform Condition="'$(UseInjectDotnet)' == 'true' AND ('$(Platform)' == '' or '$(Platform)' == 'AnyCPU')">x64</Platform>
-    <PublishTrimmed>false</PublishTrimmed>
-    <IncludeNativeLibrariesForSelfExtract Condition="'$(PublishSingleFile)' == 'true'">true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile Condition="'$(PublishSingleFile)' == 'true'">true</EnableCompressionInSingleFile>
-    <CopyOutputSymbolsToPublishDirectory Condition="'$(PublishSingleFile)' == 'true'">false</CopyOutputSymbolsToPublishDirectory>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <NoWarn>$(NoWarn);CS2008</NoWarn>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <UseAppHost>false</UseAppHost>
+    <DebugType>none</DebugType>
+    <ManiacPack Condition="'$(ManiacPack)' == ''">false</ManiacPack>
   </PropertyGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="Maniac.Launcher.Tests" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.621003" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(UseInjectDotnet)' == 'true'">
-    <PackageReference Include="InjectDotnet" Version="0.4.0">
-      <ExcludeAssets>build;buildTransitive</ExcludeAssets>
-    </PackageReference>
-    <Reference Include="InjectDotnet">
-      <HintPath>$([System.IO.Path]::Combine($(NuGetPackageRoot), 'injectdotnet', '0.4.0', 'build', 'net8.0-windows7.0', 'x64', 'InjectDotnet.dll'))</HintPath>
-      <Private>true</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition="'$(UseInjectDotnet)' != 'true'">
-    <Compile Remove="WindowsRemoteInject.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'net8.0-windows'">
-    <Compile Remove="WindowsOsuWindows.cs" />
-    <Compile Remove="WindowsProcessImagePath.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <Compile Remove="MacProcessImagePath.cs" />
-    <Compile Remove="LinuxProcessImagePath.cs" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Maniac.Bootstrap\Maniac.Bootstrap.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <GlobalPropertiesToRemove>PublishSingleFile;SelfContained</GlobalPropertiesToRemove>
     </ProjectReference>
     <ProjectReference Include="..\Maniac.Plugin\Maniac.Plugin.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <GlobalPropertiesToRemove>PublishSingleFile;SelfContained</GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj" />
   </ItemGroup>
   <Target Name="CollectPluginFiles" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
@@ -76,17 +42,25 @@
       <_PluginFiles Include="$(_PluginDir)/Maniac.Core.pdb" Condition="Exists('$(_PluginDir)/Maniac.Core.pdb')" />
     </ItemGroup>
   </Target>
-  <Target Name="EmbedPluginPayload" BeforeTargets="AssignTargetPaths" DependsOnTargets="CollectPluginFiles">
-    <ItemGroup>
-      <EmbeddedResource Include="@(_PluginFiles)">
-        <LogicalName>plugin.%(Filename)%(Extension)</LogicalName>
-        <ManifestResourceName>plugin.%(Filename)%(Extension)</ManifestResourceName>
-        <Type>Non-Resx</Type>
-        <WithCulture>false</WithCulture>
-      </EmbeddedResource>
-    </ItemGroup>
+  <Target Name="CopyPlugin" AfterTargets="Build" DependsOnTargets="CollectPluginFiles">
+    <PropertyGroup>
+      <_StageDir>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), 'obj', '$(Configuration)', 'plugin'))</_StageDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_StageDir)" />
+    <Copy SourceFiles="@(_PluginFiles)" DestinationFolder="$(_StageDir)" SkipUnchangedFiles="true" Condition="Exists('$(_StubDir)/Maniac.dll')" />
   </Target>
-  <Target Name="CopyPlugin" AfterTargets="Build" DependsOnTargets="CollectPluginFiles" Condition="'$(PublishSingleFile)' != 'true'">
-    <Copy SourceFiles="@(_PluginFiles)" DestinationFolder="$(OutputPath)plugin" SkipUnchangedFiles="true" Retries="0" ContinueOnError="true" />
+  <Target Name="BuildNativeLauncher" AfterTargets="CopyPlugin">
+    <PropertyGroup>
+      <_Pwsh Condition="'$(OS)' == 'Windows_NT'">powershell.exe</_Pwsh>
+      <_Pwsh Condition="'$(OS)' != 'Windows_NT'">pwsh</_Pwsh>
+      <_NativeOut>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine($(MSBuildProjectDirectory), '$(OutputPath)'))))</_NativeOut>
+      <_NativeOut>$(_NativeOut.TrimEnd('\').TrimEnd('/'))</_NativeOut>
+      <_StageDir>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), 'obj', '$(Configuration)', 'plugin'))</_StageDir>
+      <_StageDir>$(_StageDir.TrimEnd('\').TrimEnd('/'))</_StageDir>
+      <_NativeArgs>-Configuration $(Configuration) -OutputDir "$(_NativeOut)" -PluginDir "$(_StageDir)"</_NativeArgs>
+      <_NativeArgs Condition="'$(ManiacBuildExpiry)' != ''">$(_NativeArgs) -Expiry "$(ManiacBuildExpiry)"</_NativeArgs>
+      <_NativeArgs Condition="'$(ManiacPack)' == 'true'">$(_NativeArgs) -Embed</_NativeArgs>
+    </PropertyGroup>
+    <Exec Command="$(_Pwsh) -NoProfile -File &quot;$(MSBuildThisFileDirectory)build.ps1&quot; $(_NativeArgs)" WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
 </Project>

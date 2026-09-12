@@ -5,7 +5,7 @@ namespace Maniac;
 public static class Entry
 {
     /// <summary>
-    /// InjectDotnet entry point. Signature must stay (IntPtr, int).
+    /// Native stub / hostfxr entry point. Signature must stay (IntPtr, int).
     /// Argument is UTF-16: "reload" (default) or "unload".
     /// </summary>
     public static int Bootstrap(IntPtr argument, int size)
