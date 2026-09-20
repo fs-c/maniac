@@ -33,7 +33,7 @@
   </Target>
   <Target Name="CopyBesideStub" AfterTargets="Build">
     <PropertyGroup>
-      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Bootstrap', 'bin', '$(Configuration)', 'net8.0'))</_StubDir>
+      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Bootstrap', 'bin', '$(Configuration)', '$(TargetFramework)'))</_StubDir>
     </PropertyGroup>
     <ItemGroup>
       <_PluginOut Include="$(TargetPath)" />

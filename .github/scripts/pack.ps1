@@ -43,7 +43,7 @@ foreach ($rid in $RuntimeIdentifier) {
     dotnet @build
     if ($LASTEXITCODE -ne 0) { throw "dotnet build launcher failed with $LASTEXITCODE" }
 
-    $built = Join-Path $root "src/Maniac.Launcher/bin/$Configuration/net8.0/$binary"
+    $built = Join-Path $root "src/Maniac.Launcher/bin/$Configuration/net10.0/$binary"
     if (-not (Test-Path $built)) { throw "Packed launcher not found at $built" }
     Copy-Item $built (Join-Path $dest $binary) -Force
     if ($binary -ne "maniac.exe") {

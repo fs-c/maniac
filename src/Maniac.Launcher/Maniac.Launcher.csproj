@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -26,8 +26,8 @@
   </ItemGroup>
   <Target Name="CollectPluginFiles" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
-      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Bootstrap', 'bin', '$(Configuration)', 'net8.0'))</_StubDir>
-      <_PluginDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Plugin', 'bin', '$(Configuration)', 'net8.0'))</_PluginDir>
+      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Bootstrap', 'bin', '$(Configuration)', '$(TargetFramework)'))</_StubDir>
+      <_PluginDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Plugin', 'bin', '$(Configuration)', '$(TargetFramework)'))</_PluginDir>
     </PropertyGroup>
     <ItemGroup>
       <_PluginFiles Remove="@(_PluginFiles)" />

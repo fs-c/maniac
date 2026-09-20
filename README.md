@@ -13,7 +13,7 @@ dotnet build Maniac.sln -c Release
 dotnet test tests/Maniac.Core.Tests -c Release
 ```
 
-`dotnet build` also compiles the native launcher and runs its tests. The exe is `src/Maniac.Launcher/bin/Release/net8.0/maniac.exe` (or `maniac` on Linux and macOS), with a `plugin/` sidecar for local iteration.
+`dotnet build` also compiles the native launcher and runs its tests. The exe is `src/Maniac.Launcher/bin/Release/net10.0/maniac.exe` (or `maniac` on Linux and macOS), with a `plugin/` sidecar for local iteration.
 
 ## Run
 
