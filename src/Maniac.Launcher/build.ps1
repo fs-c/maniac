@@ -59,7 +59,7 @@ function Write-PayloadArchive([string]$plugin, [string]$dest) {
     [System.IO.File]::WriteAllBytes($dest, $ms.ToArray())
 }
 
-$isWindows = $env:OS -eq "Windows_NT"
+$onWindows = $env:OS -eq "Windows_NT"
 
 $cflags = @()
 if ($Expiry) { $cflags += "-DMANIAC_BUILD_EXPIRY=`"$Expiry`"" }
@@ -70,7 +70,7 @@ if ($Embed -and -not (Test-Path (Join-Path $PluginDir "Maniac.dll"))) {
     throw "Cannot embed: $PluginDir has no Maniac.dll"
 }
 
-if ($isWindows) {
+if ($onWindows) {
     $vcvars = $null
     $vswherePaths = @(
         [IO.Path]::Combine([Environment]::GetFolderPath("ProgramFilesX86"), "Microsoft Visual Studio", "Installer", "vswhere.exe"),
@@ -207,9 +207,9 @@ if ([IO.Path]::GetFullPath($PluginDir) -ne [IO.Path]::GetFullPath($sidecar)) {
 }
 
 if (-not $SkipTests) {
-    $testExe = if ($isWindows) { Join-Path $ObjDir "maniac-launcher-tests.exe" } else { Join-Path $ObjDir "maniac-launcher-tests" }
+    $testExe = if ($onWindows) { Join-Path $ObjDir "maniac-launcher-tests.exe" } else { Join-Path $ObjDir "maniac-launcher-tests" }
     & $testExe
     if ($LASTEXITCODE -ne 0) { throw "native launcher tests failed" }
 }
 
-Write-Host "Launcher $(Join-Path $OutputDir $(if ($isWindows) { 'maniac.exe' } else { 'maniac' }))"
+Write-Host "Launcher $(Join-Path $OutputDir $(if ($onWindows) { 'maniac.exe' } else { 'maniac' }))"
