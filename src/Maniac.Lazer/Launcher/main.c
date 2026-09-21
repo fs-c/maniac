@@ -5,7 +5,6 @@
 #include <string.h>
 
 #ifndef _WIN32
-#include <signal.h>
 #include <unistd.h>
 #endif
 
@@ -39,11 +38,9 @@ static char **utf8_args(int *argc)
     *argc = wargc;
     return argv;
 }
-#endif
 
 static int process_alive(int pid)
 {
-#ifdef _WIN32
     HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, (DWORD)pid);
     if (!h)
         return 0;
@@ -51,10 +48,8 @@ static int process_alive(int pid)
     int alive = GetExitCodeProcess(h, &code) && code == STILL_ACTIVE;
     CloseHandle(h);
     return alive;
-#else
-    return kill(pid, 0) == 0;
-#endif
 }
+#endif
 
 static void print_error(const char *user, const char *detail, int show_log)
 {

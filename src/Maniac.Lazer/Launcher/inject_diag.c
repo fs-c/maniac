@@ -31,14 +31,6 @@ static void wr_u32(uint8_t *p, uint32_t v)
 }
 
 /* string = uint32 wchar-count including NUL, then UTF-16LE including NUL */
-static size_t str_size(const char *utf8)
-{
-    size_t n = 0;
-    while (utf8[n])
-        n++;
-    return 4 + (n + 1) * 2;
-}
-
 static uint8_t *wr_str(uint8_t *p, const char *utf8)
 {
     size_t n = 0;
