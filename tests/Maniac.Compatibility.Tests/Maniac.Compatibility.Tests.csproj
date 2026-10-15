@@ -14,8 +14,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Maniac.Plugin\Maniac.Plugin.csproj" />
-    <ProjectReference Include="..\..\src\Maniac.Bootstrap\Maniac.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\src\Maniac.Lazer\Plugin\Maniac.Lazer.Plugin.csproj" />
+    <ProjectReference Include="..\..\src\Maniac.Lazer\Bootstrap\Maniac.Lazer.Bootstrap.csproj" />
     <Reference Include="osu.Framework">
       <HintPath>$([System.IO.Path]::Combine('$(LazerDir)', 'osu.Framework.dll'))</HintPath>
       <Private>false</Private>

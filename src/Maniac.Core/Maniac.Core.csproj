@@ -2,6 +2,8 @@
   <PropertyGroup>
     <RootNamespace>Maniac.Core</RootNamespace>
     <AssemblyName>Maniac.Core</AssemblyName>
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
     <IsAotCompatible>false</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>

@@ -14,4 +14,14 @@ public class ManiacPathsTests
             "payload");
         Assert.Equal(expected, ManiacPaths.PayloadDirectory);
     }
+
+    [Fact]
+    public void Stable_settings_file_is_under_app_data()
+    {
+        string expected = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "maniac-stable",
+            "settings.json");
+        Assert.Equal(expected, ManiacPaths.StableSettingsFile);
+    }
 }

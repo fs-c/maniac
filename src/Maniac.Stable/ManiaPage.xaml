@@ -1,0 +1,72 @@
+<Page
+    x:Class="Maniac.Stable.ManiaPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+    <ScrollViewer Padding="36,12,36,32">
+        <StackPanel MaxWidth="800" Spacing="12">
+            <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Mania" />
+            <Border Style="{StaticResource SettingsCard}">
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Mania driver" />
+                        <TextBlock Style="{StaticResource SettingDescription}" Text="When off, mania charts are not autoplayed." />
+                    </StackPanel>
+                    <ToggleSwitch
+                        x:Name="DriverToggle"
+                        Grid.Column="1"
+                        MinWidth="0"
+                        VerticalAlignment="Center"
+                        OffContent=""
+                        OnContent=""
+                        Toggled="DriverToggle_Toggled" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource SettingsCard}">
+                <Grid ColumnSpacing="24" RowSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock VerticalAlignment="Center" Style="{StaticResource BodyStrongTextBlockStyle}" Text="Skill" />
+                    <TextBlock
+                        x:Name="SkillValue"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Style="{StaticResource SettingDescription}"
+                        Text="Overall performance level. 100 is tighter than typical top-level play; 0 is well below mid-tier. Advanced values follow this until you customize them." />
+                    <Slider
+                        x:Name="SkillSlider"
+                        Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        Maximum="100"
+                        Minimum="0"
+                        StepFrequency="1"
+                        TickFrequency="10"
+                        Loaded="SkillSlider_Loaded"
+                        ValueChanged="SkillSlider_ValueChanged" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource AdvancedCard}">
+                <StackPanel Spacing="8">
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Advanced" />
+                    <TextBlock Style="{StaticResource SettingDescription}" Text="These follow skill until you customize a value." />
+                    <StackPanel x:Name="AdvancedHost" Spacing="10" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

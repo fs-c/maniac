@@ -17,17 +17,17 @@
     <ManiacPack Condition="'$(ManiacPack)' == ''">false</ManiacPack>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Maniac.Bootstrap\Maniac.Bootstrap.csproj">
+    <ProjectReference Include="..\Bootstrap\Maniac.Lazer.Bootstrap.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\Maniac.Plugin\Maniac.Plugin.csproj">
+    <ProjectReference Include="..\Plugin\Maniac.Lazer.Plugin.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Target Name="CollectPluginFiles" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
-      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Bootstrap', 'bin', '$(Configuration)', '$(TargetFramework)'))</_StubDir>
-      <_PluginDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Plugin', 'bin', '$(Configuration)', '$(TargetFramework)'))</_PluginDir>
+      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Bootstrap', 'bin', '$(Configuration)', '$(TargetFramework)'))</_StubDir>
+      <_PluginDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Plugin', 'bin', '$(Configuration)', '$(TargetFramework)'))</_PluginDir>
     </PropertyGroup>
     <ItemGroup>
       <_PluginFiles Remove="@(_PluginFiles)" />

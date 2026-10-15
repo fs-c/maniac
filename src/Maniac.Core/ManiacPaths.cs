@@ -9,4 +9,10 @@ public static class ManiacPaths
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "maniac-lazer",
         "payload");
+
+    public static string StableSettingsDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "maniac-stable");
+
+    public static string StableSettingsFile => Path.Combine(StableSettingsDirectory, "settings.json");
 }

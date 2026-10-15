@@ -10,6 +10,9 @@ param(
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "common.ps1")
 $root = Split-Path (Split-Path $PSScriptRoot)
+if ($env:GITHUB_OUTPUT -and @($RuntimeIdentifier).Count -ne 1) {
+    throw "Setting the artifact output requires exactly one RuntimeIdentifier."
+}
 
 function Get-HostRid {
     $os = if ($IsWindows) { "win" } elseif ($IsMacOS) { "osx" } elseif ($IsLinux) { "linux" } else {
@@ -30,7 +33,7 @@ foreach ($rid in $RuntimeIdentifier) {
     if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
     New-Item -ItemType Directory -Force $dest | Out-Null
 
-    $project = Join-Path $root "src/Maniac.Launcher/Maniac.Launcher.csproj"
+    $project = Join-Path $root "src/Maniac.Lazer/Launcher/Maniac.Lazer.Launcher.csproj"
     $build = @(
         "build", $project,
         "-c", $Configuration,
@@ -43,13 +46,18 @@ foreach ($rid in $RuntimeIdentifier) {
     dotnet @build
     if ($LASTEXITCODE -ne 0) { throw "dotnet build launcher failed with $LASTEXITCODE" }
 
-    $built = Join-Path $root "src/Maniac.Launcher/bin/$Configuration/net10.0/$binary"
+    $built = Join-Path $root "src/Maniac.Lazer/Launcher/bin/$Configuration/net10.0/$binary"
     if (-not (Test-Path $built)) { throw "Packed launcher not found at $built" }
-    Copy-Item $built (Join-Path $dest $binary) -Force
-    if ($binary -ne "maniac.exe") {
-        & chmod +x (Join-Path $dest $binary)
-        if ($LASTEXITCODE -ne 0) { throw "chmod +x failed for $binary" }
+    $publishName = Get-PackedPublishName $rid $binary
+    $published = Join-Path $dest $publishName
+    Copy-Item $built $published -Force
+    if ($publishName -notlike "*.exe") {
+        & chmod +x $published
+        if ($LASTEXITCODE -ne 0) { throw "chmod +x failed for $publishName" }
     }
 
-    Write-Host "Packed $(Join-Path $dest $binary)"
+    if ($env:GITHUB_OUTPUT) {
+        [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "artifact=$published$([Environment]::NewLine)")
+    }
+    Write-Host "Packed $published"
 }

@@ -23,17 +23,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Maniac.Bootstrap\Maniac.Bootstrap.csproj">
+    <ProjectReference Include="..\Bootstrap\Maniac.Lazer.Bootstrap.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Maniac.Core\Maniac.Core.csproj" />
+    <ProjectReference Include="..\..\Maniac.Core\Maniac.Core.csproj" />
   </ItemGroup>
   <Target Name="CheckLazerDir" BeforeTargets="ResolveAssemblyReferences">
     <Warning Condition="!Exists('$(LazerDir)/osu.Game.dll')" Text="LazerDir '$(LazerDir)' does not contain osu.Game.dll. Install osu!lazer or pass -p:LazerDir=..." />
   </Target>
   <Target Name="CopyBesideStub" AfterTargets="Build">
     <PropertyGroup>
-      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Maniac.Bootstrap', 'bin', '$(Configuration)', '$(TargetFramework)'))</_StubDir>
+      <_StubDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), '..', 'Bootstrap', 'bin', '$(Configuration)', '$(TargetFramework)'))</_StubDir>
     </PropertyGroup>
     <ItemGroup>
       <_PluginOut Include="$(TargetPath)" />

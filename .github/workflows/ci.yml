@@ -22,7 +22,7 @@ jobs:
       - name: Test Core
         run: dotnet test tests/Maniac.Core.Tests/Maniac.Core.Tests.csproj -c Release --nologo
 
-  build-against-lazer:
+  build-lazer:
     strategy:
       fail-fast: false
       matrix:
@@ -73,6 +73,7 @@ jobs:
         run: dotnet test Maniac.sln -c Release "-p:LazerDir=$env:LAZER_DIR" --no-build --nologo
 
       - name: Pack
+        id: pack
         run: ./.github/scripts/pack.ps1 -Configuration Release -RuntimeIdentifier ${{ matrix.pack_rids }}
 
       - name: Upload Windows
@@ -80,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: maniac-win-x64
-          path: artifacts/maniac-win-x64/maniac.exe
+          path: ${{ steps.pack.outputs.artifact }}
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
@@ -90,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: maniac-linux-x64
-          path: artifacts/maniac-linux-x64/maniac
+          path: ${{ steps.pack.outputs.artifact }}
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
@@ -100,7 +101,30 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: maniac-osx-arm64
-          path: artifacts/maniac-osx-arm64/maniac
+          path: ${{ steps.pack.outputs.artifact }}
           if-no-files-found: error
           compression-level: 0
+          retention-days: 7
+
+  build-stable:
+    runs-on: windows-latest
+    env:
+      MANIAC_BUILD_EXPIRY: ${{ github.event.inputs.build_expiry }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish
+        id: publish
+        shell: pwsh
+        run: ./.github/scripts/publish-stable.ps1 -Configuration Release
+
+      - name: Upload Windows
+        uses: actions/upload-artifact@v7
+        with:
+          name: maniac-stable-win-x86
+          path: ${{ steps.publish.outputs.artifact }}
+          if-no-files-found: error
           retention-days: 7
