@@ -1,3 +1,5 @@
+![](assets/screenshot.png)
+
 # maniac
 
 Autoplayer for [osu!mania](https://osu.ppy.sh/wiki/en/Game_mode/osu!mania). There are two builds: one for osu!lazer (Windows, Linux, and macOS), and one for osu!stable (Windows only).
