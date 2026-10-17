@@ -1,4 +1,4 @@
-![](assets/screenshot.png)
+![](assets/header.png)
 
 # maniac
 
