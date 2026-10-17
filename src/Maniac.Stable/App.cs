@@ -1,23 +1,18 @@
+using System.Windows;
 using Maniac.Core;
 using Maniac.Core.Settings;
-using Microsoft.UI.Xaml;
 
 namespace Maniac.Stable;
 
-public partial class App : Application
+sealed class App : Application
 {
     public static SettingsStore Settings { get; private set; } = null!;
     public static StableSession Session { get; private set; } = null!;
 
-    Window? window;
-
-    public App()
+    protected override void OnStartup(StartupEventArgs e)
     {
-        InitializeComponent();
-    }
-
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
-    {
+        // Hide() must not exit. The window hotkey hides the window while the play thread keeps running.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
         Settings = new SettingsStore(ManiacPaths.StableSettingsFile);
         if (BuildExpiry.Current.IsExpired())
         {
@@ -26,12 +21,10 @@ public partial class App : Application
         }
 
         Session = new StableSession(Settings);
-        window = new MainWindow();
-        window.Closed += (_, _) =>
-        {
-            Session.Dispose();
-            Settings.Flush();
-        };
-        window.Activate();
+        var window = new MainWindow();
+        MainWindow = window;
+        window.Show();
+        Hotkeys.Start(window);
+        base.OnStartup(e);
     }
 }

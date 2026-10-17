@@ -1,3 +1,4 @@
+using System.Windows.Input;
 using Maniac.Core.Mania;
 
 namespace Maniac.Stable;
@@ -83,6 +84,13 @@ static class SelfTest
             throw new InvalidOperationException("7K hold on last column was not preserved.");
 
         _ = new SendInputSink("sdf-jkl");
+
+        if (HotkeyNames.FromKey(Key.F8) != "F8" || HotkeyNames.FromKey(Key.F7) != "F7")
+            throw new InvalidOperationException("function-key hotkey names do not match lazer.");
+        if (HotkeyNames.FromKey(Key.D1) != "Number1" || HotkeyNames.FromKey(Key.LeftShift) != "LShift")
+            throw new InvalidOperationException("hotkey names do not match lazer.");
+        if (HotkeyNames.FromKey(Key.A) != "A")
+            throw new InvalidOperationException("letter hotkey names do not match lazer.");
     }
 
     sealed class RecordingKeys : Maniac.Core.Input.IInputSink

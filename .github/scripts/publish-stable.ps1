@@ -14,7 +14,8 @@ $publish = @(
     "-c", $Configuration,
     "-p:SelfContained=true",
     "-p:PublishSingleFile=true",
-    "-p:IncludeAllContentForSelfExtract=true",
+    "-p:EnableCompressionInSingleFile=true",
+    "-p:IncludeNativeLibrariesForSelfExtract=true",
     "--nologo"
 )
 if ($BuildExpiry) { $publish += "-p:ManiacBuildExpiry=$BuildExpiry" }

@@ -1,6 +1,4 @@
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
-using WinRT;
+using System.Windows;
 
 namespace Maniac.Stable;
 
@@ -24,13 +22,8 @@ static class Program
             }
         }
 
-        ComWrappersSupport.InitializeComWrappers();
-        Application.Start(p =>
-        {
-            var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
-            SynchronizationContext.SetSynchronizationContext(context);
-            new App();
-        });
+        var app = new App();
+        app.Run();
         return 0;
     }
 }
