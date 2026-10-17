@@ -1,40 +1,64 @@
-# maniac-lazer
+# maniac
 
-Auto-player for [osu!lazer](https://github.com/ppy/osu).
+Autoplayer for [osu!mania](https://osu.ppy.sh/wiki/en/Game_mode/osu!mania). There are two builds: one for osu!lazer (Windows, Linux, and macOS), and one for osu!stable (Windows only).
 
-## Build
+(This is a completely rewritten version of the original maniac project, which is now in the [`legacy`](https://github.com/fs-c/maniac/tree/legacy) branch.)
 
-osu!lazer binaries must be available, we compile against them. See `Directory.Build.props` for paths that are checked by default, you can override the path with `-p:LazerDir=/path/to/osulazer`.
+## Download
 
-Windows needs the Visual Studio C++ x64 tools (`cl.exe`). Linux and macOS need `cc` (clang or gcc).
+The latest release is on the [releases page](https://github.com/fs-c/maniac/releases/latest).
 
-```
-dotnet build Maniac.sln -c Release
-dotnet test tests/Maniac.Core.Tests -c Release
-```
+Windows may show "Windows protected your PC". That is a false positive. Click "More info", then "Run anyway".
 
-`dotnet build` also compiles the native launcher and runs its tests. The exe is `src/Maniac.Lazer/Launcher/bin/Release/net10.0/maniac.exe` (or `maniac` on Linux and macOS), with a `plugin/` sidecar for local iteration.
+On macOS, downloads are usually quarantined. Right-click the file and choose "Open" the first time.
 
-The osu!stable host is Windows-only: `dotnet build src/Maniac.Stable/Maniac.Stable.csproj -c Release`. CI publishes it as one executable. A push build is named `maniac-stable-win-x86-<short sha>.exe`.
+### CI Builds
 
-## Run
+If you don't want to wait for a release you can also download executables from the CI which are built from the latest commit.
+
+See the [Actions](https://github.com/fs-c/maniac/actions) tab for the latest runs, select one, and scroll down to see the produced artifacts.
+
+## osu!lazer
 
 1. Start osu!lazer.
-2. Run `maniac`
+2. Start maniac.
+3. Open a mania map.
 
-Packed CI artifacts are Windows, Linux, and macOS (Apple Silicon). A push build is named `maniac-lazer-<os>-<arch>-<short sha>` (`.exe` on Windows). The packed binary embeds the plugin; a local `dotnet build` uses the `plugin/` sidecar instead.
+A panel shows up in the game. Autoplay is already on. **F8** turns it off and on, **F7** hides the panel.
 
-On macOS, a downloaded binary may be quarantined; right-click the file and choose Open the first time.
+You can customize the autoplay settings in the "mania" tab of the panel.
 
-## Development
+## osu!stable
 
-Re-running maniac-lazer will reload the plugin, there's a bootstrap layer that handles this - if you touch that you have to restart osu!.
+Windows only. This one is a separate window, next to the game.
 
-| Project | Role |
-|---|---|
-| `src/Maniac.Lazer/Launcher` | Native finder/injector (`maniac.exe`) |
-| `src/Maniac.Lazer/Bootstrap` | Injected entry (`Maniac.dll`); sets up the initial hook |
-| `src/Maniac.Lazer/Plugin` | osu!lazer bindings, overlay, session, input |
-| `src/Maniac.Stable` | osu!stable host (Windows) |
-| `src/Maniac.Core` | Humanization, mode specific drivers, settings (in principle osu!-independent) |
-| `experiments/` | Initial exploration archive, humanization/replay analysis tools, etc. |
+1. Start osu!.
+2. Start the stable build (`maniac-stable`).
+3. Open a mania map. (Note that you have to keep the osu!stable window focused while playing.)
+
+Same settings & internal humanization logic as the osu!lazer version.
+
+## Contact
+
+[Open an issue](https://github.com/fs-c/maniac/issues), or join the [Discord](https://discord.gg/Wenkmg7).
+
+Issues are the right place for bugs and feature requests, but please include as much detail as possible. For anything else, Discord is better. Please don't email me about maniac.
+
+## Building
+
+Only relevant if you want to compile it yourself.
+
+osu!lazer has to be installed, because the project compiles against it. Windows also needs the Visual Studio C++ x64 tools (`cl.exe`). Linux and macOS need `cc`.
+
+```
+git clone https://github.com/fs-c/maniac.git
+dotnet build Maniac.sln -c Release
+```
+
+If osu!lazer is not in the usual install location, add `-p:LazerDir=/path/to/osulazer`.
+
+The osu!stable program is Windows-only:
+
+```
+dotnet build src/Maniac.Stable/Maniac.Stable.csproj -c Release
+```

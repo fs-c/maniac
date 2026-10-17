@@ -128,3 +128,22 @@ jobs:
           path: ${{ steps.publish.outputs.artifact }}
           if-no-files-found: error
           retention-days: 7
+
+  release:
+    needs: [test-core, build-lazer, build-stable]
+    if: github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: maniac-*
+          path: dist
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: ./.github/scripts/publish-release.ps1 -Dist dist
