@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
-    "hono": "^4.9.8",
+    "hono": "^4.13.13",
     "lzma": "^2.3.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
